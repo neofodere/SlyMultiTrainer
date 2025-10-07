@@ -257,7 +257,7 @@ The modifications add additional data types for read and write operations and a 
 ## Credits
 - NiV-L-A
 - TheOnlyZac
-- Fr4nk0
+- fr4nk0
 - SlyCooperReloadCoded
 - Sly Cooper Modding Discord Server: https://discord.gg/2GSXcEzPJA
 - memory.dll: https://github.com/NiV-L-A/memory.dll

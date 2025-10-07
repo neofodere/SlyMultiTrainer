@@ -1699,9 +1699,9 @@
             // tabAbout
             // 
             tabAbout.Controls.Add(splitContainer1);
-            tabAbout.Location = new Point(4, 24);
+            tabAbout.Location = new Point(4, 22);
             tabAbout.Name = "tabAbout";
-            tabAbout.Size = new Size(679, 370);
+            tabAbout.Size = new Size(679, 372);
             tabAbout.TabIndex = 4;
             tabAbout.Text = "About";
             tabAbout.UseVisualStyleBackColor = true;
@@ -1725,8 +1725,8 @@
             // 
             splitContainer1.Panel2.Controls.Add(lblLogs);
             splitContainer1.Panel2.Controls.Add(txtAddresses);
-            splitContainer1.Size = new Size(679, 370);
-            splitContainer1.SplitterDistance = 223;
+            splitContainer1.Size = new Size(679, 372);
+            splitContainer1.SplitterDistance = 224;
             splitContainer1.TabIndex = 9;
             // 
             // label16
@@ -1762,9 +1762,9 @@
             label15.Font = new Font("Microsoft Sans Serif", 10F);
             label15.Location = new Point(8, 40);
             label15.Name = "label15";
-            label15.Size = new Size(662, 181);
+            label15.Size = new Size(662, 182);
             label15.TabIndex = 12;
-            label15.Text = "Credits:\r\nNiV-L-A, TheOnlyZac, Fr4nk0, SlyCooperReloadCoded, Sly Cooper Modding Discord Server, memory.dll, Microsoft Automatic Graph Layout";
+            label15.Text = "Credits:\r\nNiV-L-A, TheOnlyZac, fr4nk0, SlyCooperReloadCoded, Sly Cooper Modding Discord Server, memory.dll, Microsoft Automatic Graph Layout";
             // 
             // lblAboutTitle
             // 
@@ -1795,7 +1795,7 @@
             txtAddresses.Name = "txtAddresses";
             txtAddresses.ReadOnly = true;
             txtAddresses.ScrollBars = ScrollBars.Vertical;
-            txtAddresses.Size = new Size(668, 109);
+            txtAddresses.Size = new Size(668, 110);
             txtAddresses.TabIndex = 9;
             // 
             // lblMain
