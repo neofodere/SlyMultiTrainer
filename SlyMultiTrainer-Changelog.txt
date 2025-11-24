@@ -1,2 +1,43 @@
+Version 1.0.1 (24/11/2025)
+    - Updated to .net10.
+    - The app is now DPI-aware.
+    - Added and modified some warps.
+    - Fixed a typo in README (Sly 1 PAL Demo had the same Serial and CRC as Sly 1 PAL).
+    - Added RPCS3 support.
+    - Added builds:
+        - Sly 1 NTSC May 19
+        - Sly 2 PAL August 2
+        - Sly 2 NTSC PlayStation Magazine Demo Disc 089
+        - Sly 3 NTSC Regular Demo
+        - Sly 1 NTSC (PS3 PSN)
+        - Sly 1 PAL (PS3 PSN)
+        - Sly 1 NTSC-K (PS3 PSN)
+        - Sly 2 NTSC (PS3 PSN)
+        - Sly 2 PAL (PS3 PSN)
+        - Sly 2 NTSC-K (PS3 PSN)
+        - Sly 3 NTSC (PS3 PSN)
+        - Sly 3 PAL (PS3 PSN)
+        - Sly 3 NTSC-K (PS3 PSN)
+    - Moved the "reattach" button.
+    - Added a settings button + form to change the app's behavior.
+    - Changed position and sizes of some controls.
+    - Added the item "[Current map]" to the maps combobox.
+    - Entities:
+        - Implemented a search bar.
+    - DAG:
+        - Fixed a bug in which chalktalk tasks from episode 2 to 5 in Sly 3 did not have the octagon shape.
+    - Sly 2:
+        - Changed the address of the active character to a better one.
+        - NTSC-J:
+            - Fixed entities rotation not working.
+        - NTSC-K:
+            - Fixed entities rotation not working.
+        - NTSC March 17:
+            - Fixed a crash when the game is in the "splash" map and the user accessed the "Entities" or the "DAG" tab.
+    - Sly 3:
+        - Added the characters "Guru", "Panda King", "Penelope", "Dimitri swimmer" and "RC car".
+        - The "characters" combobox now only shows the characters that are available in the current map.
+        - Changed the address of the death barriers to a better one.
+
 Version 1.0.0 (07/10/2025)
     - Initial version

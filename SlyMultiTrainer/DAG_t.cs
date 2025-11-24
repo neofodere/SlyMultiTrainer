@@ -1,4 +1,5 @@
-﻿using Microsoft.Msagl.Drawing;
+﻿using Memory;
+using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.GraphViewerGdi;
 using Microsoft.Msagl.Layout.Layered;
 using System.Diagnostics;
@@ -26,8 +27,8 @@ namespace SlyMultiTrainer
         public string OffsetId = "";
         public string OffsetNextNodePointer = "";
         public string OffsetState = "";
-        public string OffsetFocusCount1 = "";
-        public string OffsetFocusCount2 = "";
+        public string OffsetFocusCount = "";
+        public string OffsetCompleteCount = "";
         public string OffsetGoalDescription = ""; // FOR CLUSTER: "Locate The Job Start Point" (for satellite sabotage)
         public string OffsetMissionName = ""; // FOR CLUSTER: "Satellite Sabotage"
         public string OffsetMissionDescription = ""; // FOR CLUSTER (we don't use it for now)
@@ -69,6 +70,7 @@ namespace SlyMultiTrainer
             Viewer.Dock = DockStyle.Fill;
             Viewer.OutsideAreaBrush = Brushes.White;
             Viewer.MouseClick += DAGViewer_MouseClick;
+            Viewer.MouseDoubleClick += DAGViewer_MouseDoubleClick;
             Tasks = new();
             Clusters = new();
             _m = m;
@@ -198,8 +200,8 @@ namespace SlyMultiTrainer
 
             task.Address = $"{taskAddress:X}";
             task.State = (STATE)_m.ReadInt($"{taskAddress}+{OffsetState}");
-            task.FocusCount1 = _m.ReadInt($"{taskAddress}+{OffsetFocusCount1}");
-            task.FocusCount2 = _m.ReadInt($"{taskAddress}+{OffsetFocusCount2}");
+            task.FocusCount = _m.ReadInt($"{taskAddress}+{OffsetFocusCount}");
+            task.CompleteCount = _m.ReadInt($"{taskAddress}+{OffsetCompleteCount}");
             task.CheckpointEntranceValue = _m.ReadInt($"{taskAddress}+{OffsetCheckpointEntranceValue}");
             if (task.CheckpointEntranceValue != -1)
             {
@@ -224,7 +226,9 @@ namespace SlyMultiTrainer
                 // Name
                 task.Name = TaskStringTable.GetValueOrDefault(task.Attributes[0].Id, "");
 
-                if (Regex.IsMatch(task.Name, @"^t\d_chalktalk\d$"))
+                // The 2nd regex is for sly 3 ep2-5
+                if (Regex.IsMatch(task.Name, @"^t\d_chalktalk\d$")
+                 || Regex.IsMatch(task.Name, @"^t\d_chalktalk_\d$"))
                 {
                     task.IsChalktalk = true;
                 }
@@ -310,7 +314,7 @@ namespace SlyMultiTrainer
 
                 if (Version != DAG_VERSION.V2)
                 {
-                    short missionNameId = _m.ReadShort($"{clusterAddress}+{OffsetMissionName}");
+                    int missionNameId = _m.ReadInt($"{clusterAddress}+{OffsetMissionName}");
                     cluster.Description = GetStringFromId(missionNameId);
                 }
 
@@ -326,8 +330,8 @@ namespace SlyMultiTrainer
         public bool IsTaskEqualToTask(Task_t task1, Task_t task2)
         {
             if (task1.State != task2.State
-                || task1.FocusCount1 != task2.FocusCount1
-                || task1.FocusCount2 != task2.FocusCount2)
+                || task1.FocusCount != task2.FocusCount
+                || task1.CompleteCount != task2.CompleteCount)
             {
                 return false;
             }
@@ -389,7 +393,7 @@ namespace SlyMultiTrainer
 
             while (stringId != 0x100)
             {
-                stringId = _m.ReadShort($"{TaskStringTablePointer},{i * 0x10 + 8:X}");
+                stringId = (short)_m.ReadInt($"{TaskStringTablePointer},{i * 0x10 + 8:X}");
                 int stringPointer = _m.ReadInt($"{TaskStringTablePointer},{i * 0x10 + 4:X}");
                 string taskName = _m.ReadNullTerminatedString(stringPointer.ToString("X"));
                 table.TryAdd(stringId, taskName);
@@ -427,31 +431,37 @@ namespace SlyMultiTrainer
             return state;
         }
 
-        public void WriteTaskState(Task_t task)
+        public void WriteTaskState(Task_t task, bool alsoToSavefile = false)
         {
             _m.WriteMemory($"{task.Address}+{OffsetState}", "int", ((int)task.State).ToString());
+
+            if (alsoToSavefile)
+            {
+                int addr = GetSavefileAddress(task.Attributes[3]);
+                _m.WriteMemory($"{addr}", "int", ((int)task.State).ToString());
+            }
+        }
+
+        public void WriteTaskFocusAndCompleteCount(Task_t task)
+        {
+            int[] tmp =
+            {
+                task.FocusCount,
+                task.CompleteCount,
+            };
+
+            byte[] byteArray = EndianBitConverter.ArrayToByteArray(tmp);
+            _m.WriteBytes($"{task.Address}+{OffsetFocusCount}", byteArray);
         }
 
         public void WriteTaskFocusCount(Task_t task)
         {
-            int[] tmp =
-            {
-                task.FocusCount1,
-                task.FocusCount2,
-            };
-
-            byte[] byteArray = Util.IntArrayToByteArray(tmp);
-            _m.WriteBytes($"{task.Address}+{OffsetFocusCount1}", byteArray);
+            _m.WriteMemory($"{task.Address}+{OffsetFocusCount}", "int", task.FocusCount.ToString());
         }
 
-        public void WriteTaskFocusCount1(Task_t task)
+        public void WriteTaskCompleteCount(Task_t task)
         {
-            _m.WriteMemory($"{task.Address}+{OffsetFocusCount1}", "int", task.FocusCount1.ToString());
-        }
-
-        public void WriteTaskFocusCount2(Task_t task)
-        {
-            _m.WriteMemory($"{task.Address}+{OffsetFocusCount2}", "int", task.FocusCount2.ToString());
+            _m.WriteMemory($"{task.Address}+{OffsetCompleteCount}", "int", task.CompleteCount.ToString());
         }
 
         private void LoadCheckpoint(Task_t targetTask, bool withZeroFocus)
@@ -477,17 +487,20 @@ namespace SlyMultiTrainer
             // Each attribute has an id (the same for all 5 attributes) and a subId.
             // The id is used to get the internal task name (t1_follow_intro) and the internal mission name (m1_follow_dimitri)
             // The subId is a code to indicate which field it represents
-            // For tasks in sly 2 ntsc,
-            //  0x6F is FocusCount1,
-            //  0xC1 is FocusCount2,
-            //  0xC2 is State,
-            //  Rest is unknown
-            // For clusters in sly 2 ntsc,
-            //  0x6F is "attempts" (how many reloads there have been since the start of the job),
-            //  0x70 is if it has been completed,
-            //  0x71 is playtime (maybe?),
-            //  0x72 is the suck value
             // The subId codes are different between builds, so that's why an enum was not implemented.
+            
+            // For tasks in sly 2 ntsc,
+            //  0x6F is the focus count (internally called "focus_count"),
+            //  0xC1 is internally called "complete_count",
+            //  0x70 is internally called "is_complete",
+            //  0xC2 is State (internally called "state"),
+            //  0xC3 is internally called "from_memcard"
+
+            // For clusters in sly 2 ntsc,
+            //  0x6F is the number of attempts (internally called "focus_count")
+            //  0x70 is internally called "is_complete",
+            //  0x71 is internally called "time_played",
+            //  0x72 is internally called "suck_value"
 
             // When we loaded the dag, we have populated SavefileValuesTable.
             // By combining each attribute's id and subId, we get an offset from the beginning of the savefile region (in SavefileValuesTable it has already been converted to an absolute address)
@@ -510,11 +523,11 @@ namespace SlyMultiTrainer
             // 0x003D610C
             // 0x003D6110
             // So, for t1_follow_intro:
-            // 0xF8, 0x6F = 0x006F00F8 = 0x003D6100 = FocusCount1
-            // 0xF8, 0xC1 = 0x00C100F8 = 0x003D6104 = FocusCount2
-            // 0xF8, 0x70 = 0x007000F8 = 0x003D6108 = ?
+            // 0xF8, 0x6F = 0x006F00F8 = 0x003D6100 = FocusCount
+            // 0xF8, 0xC1 = 0x00C100F8 = 0x003D6104 = CompleteCount
+            // 0xF8, 0x70 = 0x007000F8 = 0x003D6108 = IsComplete
             // 0xF8, 0xC2 = 0x00C200F8 = 0x003D610C = State
-            // 0xF8, 0xC3 = 0x00C300F8 = 0x003D6110 = ?
+            // 0xF8, 0xC3 = 0x00C300F8 = 0x003D6110 = FromMemcard
             // NOTE: As mentioned in a comment above, in memory there's a table of id+subId pairs that have an offset associated with them.
             // The offset is added to "SavefileStartAddress" (in sly 2 ntsc, at 3D4A60).
             // To get to 0x003D6100 we added 16A0 to 3D4A60. 16A0 is at 004B817E, at -4 from that (4B817A) we have 0x6F, which is the subId of the first attribute listed in the t1_follow_intro task's struct, and at -A from that (4B8170) we have 0xF8, which is the id of the first attribute (and all the other attributes for this task) listed in the t1_follow_intro task's struct
@@ -579,22 +592,22 @@ namespace SlyMultiTrainer
                     if (task.StateSavefileChange == STATE.Final
                         || task.StateSavefileChange == STATE.Complete)
                     {
-                        task.FocusCount1 = 1;
-                        task.FocusCount2 = 1;
+                        task.FocusCount = 1;
+                        task.CompleteCount = 1;
                     }
                     else if (task.StateSavefileChange == STATE.Available && !withZeroFocus)
                     {
-                        task.FocusCount1 = 1;
-                        task.FocusCount2 = 1;
+                        task.FocusCount = 1;
+                        task.CompleteCount = 1;
                     }
                     else
                     {
-                        task.FocusCount1 = 0;
-                        task.FocusCount2 = 0;
+                        task.FocusCount = 0;
+                        task.CompleteCount = 0;
                     }
 
                     // Optimize the write to the 2 focus counts. This saves around 50ms overall. The difference is noticeable.
-                    WriteTaskFocusCount(task);
+                    WriteTaskFocusAndCompleteCount(task);
                 }
             }
 
@@ -647,7 +660,7 @@ namespace SlyMultiTrainer
             {
                 targetTask.Cluster.Id, targetTask.Id, targetTask.Id
             };
-            _m.WriteBytes($"{ClusterIdAddress}", Util.IntArrayToByteArray(NodeIds));
+            _m.WriteBytes($"{ClusterIdAddress}", EndianBitConverter.ArrayToByteArray(NodeIds));
 
             // Entity
             WriteActCharId(targetTask.EntityId, targetTask.EntityId2);
@@ -685,7 +698,7 @@ namespace SlyMultiTrainer
 
         public (int, byte[]) TaskSetSavefileValue(Task_t task, bool withZeroFocus)
         {
-            int addr1 = GetSavefileAddress(task.Attributes[0]);
+            int address = GetSavefileAddress(task.Attributes[0]);
 
             int[] flags =
             {
@@ -714,8 +727,8 @@ namespace SlyMultiTrainer
             }
             // The rest is unavailable, so no focus because the player has not been through that task
 
-            byte[] tmp = Util.IntArrayToByteArray(flags);
-            return (addr1, tmp);
+            byte[] tmp = EndianBitConverter.ArrayToByteArray(flags);
+            return (address, tmp);
         }
 
         private void MarkTaskSavefileChange(Task_t task, STATE state)
@@ -753,7 +766,7 @@ namespace SlyMultiTrainer
                     continue;
                 }
 
-                if (task.Parent.Any(x => x.MarkSavefileChange && x.StateSavefileChange == STATE.Final))
+                if (task.Parent.All(x => x.MarkSavefileChange && x.StateSavefileChange == STATE.Final))
                 {
                     MarkTaskSavefileChange(task, STATE.Available);
                 }
@@ -1175,7 +1188,7 @@ namespace SlyMultiTrainer
             {
                 if (Viewer.Graph == null)
                 {
-                    // Prevent crash when right clicking before the graph is loaded (pcsx2 just launched and in splash screen)
+                    // Prevent crash when clicking before the graph is loaded (pcsx2 just launched and in splash screen)
                     return;
                 }
 
@@ -1204,6 +1217,55 @@ namespace SlyMultiTrainer
             }
         }
 
+        private void DAGViewer_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                if (Viewer.Graph == null)
+                {
+                    // Prevent crash when clicking before the graph is loaded (pcsx2 just launched and in splash screen)
+                    return;
+                }
+
+                DNode? dNode = Viewer.GetObjectAt(e.Location) as DNode;
+                if (dNode == null)
+                {
+                    return;
+                }
+
+                Node node = dNode.Node;
+                Task_t? task = null;
+                if (node.UserData is Task_t)
+                {
+                    SelectNode(node, SelectedNodeDefaultLineWidth);
+                    task = node.UserData as Task_t;
+
+                    if (task.CheckpointEntranceValue == -1)
+                    {
+                        return;
+                    }
+                }
+                else if (node.UserData is Cluster_t cluster)
+                {
+                    if (cluster.Address == "0")
+                    {
+                        // dummy cluster
+                        return;
+                    }
+
+                    SelectNode(node, SelectedClusterDefaultLineWidth);
+                    task = cluster.Tasks[0];
+                }
+                else
+                {
+                    return;
+                }
+
+                // load checkpoint with focus if shift is being held down
+                bool hasShift = GViewer.ModifierKeys.HasFlag(Keys.Shift);
+                LoadCheckpoint(task, hasShift);
+            }
+        }
         private void ShowGraphContextMenu(Point location)
         {
             var items = new ToolStripItem[]
@@ -1405,13 +1467,13 @@ namespace SlyMultiTrainer
                     {
                         Visible = task.CheckpointEntranceValue != -1
                     },
-                    new ToolStripMenuItem($"Focus count 1: {task.FocusCount1}", null, (s, e) =>
+                    new ToolStripMenuItem($"Focus count: {task.FocusCount}", null, (s, e) =>
                     {
-                        Clipboard.SetText(task.FocusCount1.ToString());
+                        Clipboard.SetText(task.FocusCount.ToString());
                     }),
-                    new ToolStripMenuItem($"Focus count 2: {task.FocusCount2}", null, (s, e) =>
+                    new ToolStripMenuItem($"Complete count: {task.CompleteCount}", null, (s, e) =>
                     {
-                        Clipboard.SetText(task.FocusCount2.ToString());
+                        Clipboard.SetText(task.CompleteCount.ToString());
                     }),
                     new ToolStripMenuItem($"Savefile flags address: {GetSavefileAddress(task.Attributes[0]):X}", null, (s, e) =>
                     {
@@ -1435,7 +1497,8 @@ namespace SlyMultiTrainer
             {
                 return;
             }
-            else if (cluster.Address == "0")
+
+            if (cluster.Address == "0")
             {
                 // If clicked on a dummy cluster, show the graph
                 // (it gives the illusion the invisible cluster is really not there)
@@ -1459,28 +1522,28 @@ namespace SlyMultiTrainer
                         for (int i = 0; i < cluster.Tasks.Count; i++)
                         {
                             //if (cluster.Tasks[i].State == STATE.Unavailable
-                            //    && cluster.Tasks[i].FocusCount1 == 0
-                            //    && cluster.Tasks[i].FocusCount2 == 0)
+                            //    && cluster.Tasks[i].FocusCount == 0
+                            //    && cluster.Tasks[i].CompleteCount == 0)
                             //{
                             //    continue;
                             //}
                             cluster.Tasks[i].State = STATE.Unavailable;
-                            cluster.Tasks[i].FocusCount1 = 0;
-                            cluster.Tasks[i].FocusCount2 = 0;
+                            cluster.Tasks[i].FocusCount = 0;
+                            cluster.Tasks[i].CompleteCount = 0;
                             cluster.Tasks[i].IsStateChangedByUser = true;
                         }
                     }),
                     new("Available", Util.CreateSquare(GetNodeColorFromState(STATE.Available)), (s, e) =>
                     {
                         cluster.Tasks[0].State = STATE.Available;
-                        cluster.Tasks[0].FocusCount1 = 0;
-                        cluster.Tasks[0].FocusCount2 = 0;
+                        cluster.Tasks[0].FocusCount = 0;
+                        cluster.Tasks[0].CompleteCount = 0;
                         cluster.Tasks[0].IsStateChangedByUser = true;
                         for (int i = 1; i < cluster.Tasks.Count; i++)
                         {
                             cluster.Tasks[i].State = STATE.Unavailable;
-                            cluster.Tasks[i].FocusCount1 = 0;
-                            cluster.Tasks[i].FocusCount2 = 0;
+                            cluster.Tasks[i].FocusCount = 0;
+                            cluster.Tasks[i].CompleteCount = 0;
                             cluster.Tasks[i].IsStateChangedByUser = true;
                         }
                     }),
@@ -1489,8 +1552,8 @@ namespace SlyMultiTrainer
                         for (int i = 0; i < cluster.Tasks.Count; i++)
                         {
                             cluster.Tasks[i].State = STATE.Complete;
-                            cluster.Tasks[i].FocusCount1 = 1;
-                            cluster.Tasks[i].FocusCount2 = 1;
+                            cluster.Tasks[i].FocusCount = 1;
+                            cluster.Tasks[i].CompleteCount = 1;
                             cluster.Tasks[i].IsStateChangedByUser = true;
                         }
                     }),
@@ -1499,8 +1562,8 @@ namespace SlyMultiTrainer
                         for (int i = 0; i < cluster.Tasks.Count; i++)
                         {
                             cluster.Tasks[i].State = STATE.Final;
-                            cluster.Tasks[i].FocusCount1 = 1;
-                            cluster.Tasks[i].FocusCount2 = 1;
+                            cluster.Tasks[i].FocusCount = 1;
+                            cluster.Tasks[i].CompleteCount = 1;
                             cluster.Tasks[i].IsStateChangedByUser = true;
                         }
                     }),
@@ -1691,14 +1754,14 @@ namespace SlyMultiTrainer
         public string Name;
 
         /// <summary>
-        /// How many times the task has got the focus 1
+        /// How many times the task has got the focus
         /// </summary>
-        public int FocusCount1;
+        public int FocusCount;
 
         /// <summary>
-        /// How many times the task has got the focus 2
+        /// How many times the task has been set to the complete state
         /// </summary>
-        public int FocusCount2;
+        public int CompleteCount;
 
         /// <summary>
         /// Description of the task (pause menu -> job help, the "Goals" in the job).

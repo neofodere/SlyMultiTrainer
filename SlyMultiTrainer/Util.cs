@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Memory;
+using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace SlyMultiTrainer
         public static int DefaultAmountToIncreaseOrDecreaseHealth = 10;
         public static string DefaultValueFloat = "0";
         public static string DefaultValueString = "None";
-        public static string StringBeforeSubMapName = "   ";
+        public static string SubMapNamePrefix = "   ";
 
         [DebuggerDisplay("{Title,nq} {Region,nq} | {BuildIdAddress,nq} == {BuildId,nq}")]
         public class Build_t
@@ -42,13 +43,12 @@ namespace SlyMultiTrainer
             new("Sly 1", "PAL", "1121.2105", "27FDD0"),
             new("Sly 1", "NTSC-J", "0131.1715", "27EC50"),
             new("Sly 1", "NTSC-K", "1231.1308", "27EF50"),
-            //new("Sly 1", "NTSC May 19", "0519.1812", "28C190"),
             new("Sly 1", "NTSC Demo", "0408.2044", "2AA470"),
             new("Sly 1", "PAL Demo", "1206.1234", "276150"),
-            // both ntsc-j demo and ntsc-k demo have 1219.2129 at 27DBD0
-            // Let's use the game serial instead
+            // both ntsc-j demo and ntsc-k demo have 1219.2129 at 27DBD0. Let's use the game serial instead
             new("Sly 1", "NTSC-J Demo", "PAPX_902.31;1", "15510"),
             new("Sly 1", "NTSC-K Demo", "SCKA_900.04;1", "15510"),
+            new("Sly 1", "NTSC May 19", "0519.1812", "28C190"),
 
             new("Sly 2", "NTSC", "0813.0032", "2C46D8"),
             new("Sly 2", "PAL (v1.00)", "0914.1846", "2CBB08"),
@@ -56,7 +56,8 @@ namespace SlyMultiTrainer
             new("Sly 2", "NTSC-J", "0121.1144", "2CD8E8"),
             new("Sly 2", "NTSC-K", "1221.1745", "2CCF18"),
             new("Sly 2", "NTSC E3 Demo", "0411.1757", "2A8F70"),
-            // new("Sly 2", "NTSC PlayStation Magazine Demo Disc 089", "0920.1827", "2CA218"),
+            new("Sly 2", "NTSC PlayStation Magazine Demo Disc 089", "0920.1827", "2CA218"),
+            new("Sly 2", "PAL August 2", "0802.1031", "2D8208"),
             new("Sly 2", "PAL September 11", "0911.1830", "2CBB08"),
             new("Sly 2", "NTSC March 17", "0317.1405", "2F91D8"),
             new("Sly 2", "NTSC July 11", "0711.1656", "2C6470"),
@@ -65,11 +66,23 @@ namespace SlyMultiTrainer
             new("Sly 3", "PAL", "0921.1843", "34AD78"),
             new("Sly 3", "NTSC-K", "1112.1525", "34B7F8"),
             new("Sly 3", "NTSC E3 Demo", "0418.1711", "3265E8"),
-            //new("Sly 3", "NTSC Jampack Volume 13 Demo", "0707.2044", "330A28"),
+            new("Sly 3", "NTSC Regular Demo", "0707.2044", "330A28"),
             new("Sly 3", "PAL Demo", "0906.1452", "3454C8"),
             new("Sly 3", "NTSC July 16", "0716.1854", "33E838"),
             new("Sly 3", "PAL August 2", "0802.0136", "3860E8"),
             new("Sly 3", "PAL September 2", "0902.1747", "395078"),
+
+            new("Sly 1", "NTSC (PS3 PSN)", "0906.1415", "3A0928"), // NPUA80663
+            new("Sly 1", "PAL (PS3 PSN)", "1103.1309", "3A0948"), // NPEA00341
+            new("Sly 1", "NTSC-K (PS3 PSN)", "1129.1638", "3A08F8"), // NPHA80174
+
+            new("Sly 2", "NTSC (PS3 PSN)", "0524.2241", "3FE780"), // NPUA80664
+            new("Sly 2", "PAL (PS3 PSN)", "0524.2241", "3FE7A0"), // NPEA00342
+            new("Sly 2", "NTSC-K (PS3 PSN)", "0524.2241", "3FE760"), // NPHA80175
+
+            new("Sly 3", "NTSC (PS3 PSN)", "1222.1218", "4991B0"), // NPUA80665
+            new("Sly 3", "PAL (PS3 PSN)", "1222.1218", "4991C0"), // NPEA00343
+            new("Sly 3", "NTSC-K (PS3 PSN)", "1222.1218", "499180"), // NPHA80176
         };
 
         public static Build_t? GetBuild(Memory.Mem m)
@@ -130,11 +143,16 @@ namespace SlyMultiTrainer
             public FKXEntry_t(string address, byte[] data)
             {
                 Address = address;
-                SpawnRule = BitConverter.ToInt32(data, 0);
-                PoolPointer = BitConverter.ToInt32(data, 4);
-                Count = BitConverter.ToInt32(data, 8);
-                Count2 = BitConverter.ToInt32(data, 0xC);
-                Name = Encoding.Default.GetString(data, 0x1C, 0x40).Split('\0')[0].Substring(4);
+                SpawnRule = EndianBitConverter.ToInt32(data, 0);
+                PoolPointer = EndianBitConverter.ToInt32(data, 4);
+                Count = EndianBitConverter.ToInt32(data, 8);
+                Count2 = EndianBitConverter.ToInt32(data, 0xC);
+
+                var q = Encoding.Default.GetString(data, 0x1C, 0x40);
+                var w = q.Split('\0');
+                var e = w[0];
+                var r = e.Substring(4);
+                Name = r;
 
                 EntityPointer = new(Count);
             }
@@ -177,26 +195,57 @@ namespace SlyMultiTrainer
             // This logic was made to skip visually but internally consider some of the maps
             // For example in sly 2 july 11: splash, i_palace_heist, i_temple_hesit, p_prison_heist and p_castle_int
             int comboIdx = cmb.SelectedIndex;
+
+            // Current map
+            if (comboIdx == 0)
+            {
+                return -1;
+            }
+
             List<Map_t>? comboItems = cmb.DataSource as List<Map_t>;
             List<Map_t>? originalItems = cmb.Tag as List<Map_t>;
             int originalIdx = originalItems.IndexOf(comboItems[comboIdx]);
-            return originalIdx;
+            return originalIdx - 1;
         }
 
         public class Character_t
         {
             public string Name;
             public int Id;
+            public string InternalName;
 
-            public Character_t(string name, int id)
+            public Character_t(string name, int id, string internalName)
             {
                 Name = name;
                 Id = id;
+                InternalName = internalName;
+            }
+
+            public Character_t(string name, int id) : this(name, id, "")
+            {
+
             }
 
             public override string ToString()
             {
                 return Name;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                if (obj is not Character_t)
+                {
+                    return false;
+                }
+
+                var qwe = obj as Character_t;
+
+                if (Id != qwe.Id)
+                {
+                    return false;
+                }
+
+                return true;
             }
         }
 
@@ -204,6 +253,12 @@ namespace SlyMultiTrainer
         {
             public string Name;
             public Vector3 Position;
+
+            public Warp_t()
+            {
+                Name = "None";
+                Position = new(0, 0, 0);
+            }
 
             public Warp_t(string name, Vector3 position)
             {
@@ -261,29 +316,28 @@ namespace SlyMultiTrainer
 
             public Controller_t(Memory.Mem m, string address)
             {
-                ushort value = (ushort)m.ReadShort(address);
+                short value = m.ReadShort(address);
                 ReadBinds(value);
             }
 
-            public void ReadBinds(ushort value)
+            public void ReadBinds(short value)
             {
-                value = (ushort)((value >> 8) | (value << 8));
-                Select = (value & (1 << 0)) != 0;
-                L3 = (value & (1 << 1)) != 0;
-                R3 = (value & (1 << 2)) != 0;
-                Start = (value & (1 << 3)) != 0;
-                DPadUp = (value & (1 << 4)) != 0;
-                DPadRight = (value & (1 << 5)) != 0;
-                DPadDown = (value & (1 << 6)) != 0;
-                DPadLeft = (value & (1 << 7)) != 0;
-                L2 = (value & (1 << 8)) != 0;
-                R2 = (value & (1 << 9)) != 0;
-                L1 = (value & (1 << 10)) != 0;
-                R1 = (value & (1 << 11)) != 0;
-                Triangle = (value & (1 << 12)) != 0;
-                Circle = (value & (1 << 13)) != 0;
-                Cross = (value & (1 << 14)) != 0;
-                Square = (value & (1 << 15)) != 0;
+                L2 = (value & (1 << 0)) != 0;
+                R2 = (value & (1 << 1)) != 0;
+                L1 = (value & (1 << 2)) != 0;
+                R1 = (value & (1 << 3)) != 0;
+                Triangle = (value & (1 << 4)) != 0;
+                Circle = (value & (1 << 5)) != 0;
+                Cross = (value & (1 << 6)) != 0;
+                Square = (value & (1 << 7)) != 0;
+                Select = (value & (1 << 8)) != 0;
+                L3 = (value & (1 << 9)) != 0;
+                R3 = (value & (1 << 10)) != 0;
+                Start = (value & (1 << 11)) != 0;
+                DPadUp = (value & (1 << 12)) != 0;
+                DPadRight = (value & (1 << 13)) != 0;
+                DPadDown = (value & (1 << 14)) != 0;
+                DPadLeft = (value & (1 << 15)) != 0;
             }
 
             public bool IsButtonPressed(string buttonName)
@@ -296,13 +350,21 @@ namespace SlyMultiTrainer
 
                 return false;
             }
-        }
 
-        public static byte[] IntArrayToByteArray(int[] array)
-        {
-            byte[] byteArray = new byte[array.Length * sizeof(int)];
-            Buffer.BlockCopy(array, 0, byteArray, 0, byteArray.Length);
-            return byteArray;
+            public override string ToString()
+            {
+                var properties = GetType().GetProperties();
+                var trueProperties = new List<string>();
+                foreach (var prop in properties)
+                {
+                    if (prop.PropertyType == typeof(bool) && (bool)prop.GetValue(this)!)
+                    {
+                        trueProperties.Add(prop.Name);
+                    }
+                }
+
+                return string.Join(", ", trueProperties);
+            }
         }
 
         public static Image CreateSquare(Microsoft.Msagl.Drawing.Color color, int size = 16)

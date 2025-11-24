@@ -63,7 +63,6 @@ namespace SlyMultiTrainer
             UpdateUI(lblZCoord, Util.DefaultValueFloat);
             UpdateUI(txtAddresses, "");
             ClearFKXTab();
-            UpdateUI(btnCopyBase, false);
             HideTab("Entities");
             HideTab("DAG");
             HideTab("WorldStates");
@@ -81,18 +80,17 @@ namespace SlyMultiTrainer
             }
 
             // Find pcsx2
-            UpdateUI(lblMain, "Not attached (Scanning for PCSX2 process...)");
+            UpdateUI(lblMain, "Not attached (Scanning for PCSX2/RPCS3 process...)");
             UpdateUI(lblMain, Color.Red);
             do
             {
                 Process[] processes = Process.GetProcesses();
                 for (int i = 0; i < processes.Length; i++)
                 {
-                    if (processes[i].ProcessName.StartsWith("pcsx2"))
+                    if (processes[i].ProcessName.StartsWith("pcsx2")
+                        || processes[i].ProcessName.StartsWith("rpcs3"))
                     {
                         // Open it and set ee base
-                        UpdateUI(lblMain, "PCSX2 process found, but game not started");
-                        UpdateUI(lblMain, Color.DarkOrange);
                         _m = new();
                         if (!_m.OpenProcess(processes[i].Id))
                         {
@@ -100,6 +98,8 @@ namespace SlyMultiTrainer
                             return;
                         }
 
+                        UpdateUI(lblMain, $"{_m.displayName} process found, but game not started");
+                        UpdateUI(lblMain, Color.DarkOrange);
                         break;
                     }
                 }
@@ -141,6 +141,12 @@ namespace SlyMultiTrainer
             }
 
             _game = Util.GetGameFromBuild(build, _m, this);
+
+            _game.Maps.Insert(0, new("[Current map]", new() { new() }));
+            UpdateUI(cmbMaps, _game.Maps.Where(x => x.IsVisible).ToList());
+            UpdateUI(cmbMaps, _game.Maps, "Tag");
+            UpdateUI(cmbActChar, _game.Characters);
+
             InitBuildUI(build);
 
             while (true)
@@ -157,7 +163,7 @@ namespace SlyMultiTrainer
                         // sometimes the ee region would be set to 0
                         // This would cause the comparison for the build to return false.
                         // So let's wait a bit and check again if the user actually changed the game
-                        if (_m.eeBaseAddress == 0x20000000)
+                        if (_m.baseAddress == 0x20000000)
                         {
                             Thread.Sleep(100);
                         }
@@ -216,7 +222,7 @@ namespace SlyMultiTrainer
         void InitBuildUI(Util.Build_t build)
         {
             UpdateUI(this, $"{_formTitle} - {build}");
-            UpdateUI(lblMain, $"Attached - Base at {_m.eeBaseAddress:X}");
+            UpdateUI(lblMain, $"Attached - Base at {_m.baseAddress:X}");
             UpdateUI(lblMain, Color.Green);
             UncheckAllCheckboxes(Controls);
             for (int i = 0; i < tabMain.Controls.Count; i++)
@@ -237,13 +243,22 @@ namespace SlyMultiTrainer
 
             if (build.Title == "Sly 1")
             {
+                ShowTab("WorldStates");
+
                 if (build.Region == "NTSC Demo")
                 {
                     UpdateUI(grpFOV, false, "Visible");
-                    UpdateUI(trkFOV, false, "Visible");
                     UpdateUI(btnFOVReset, false, "Visible");
                     UpdateUI(chkFOVFreeze, false, "Visible");
                 }
+                else if (build.Region == "NTSC May 19")
+                {
+                    UpdateUI(grpFOV, false, "Visible");
+                    UpdateUI(btnFOVReset, false, "Visible");
+                    UpdateUI(chkFOVFreeze, false, "Visible");
+                    HideTab("WorldStates");
+                }
+
                 UpdateUI(btnGetGadgets, "Toggle all\r\nthief moves");
                 UpdateUI(lblHealth, "Lives");
                 UpdateUI(chkInfiniteGadgetPower, false);
@@ -257,10 +272,25 @@ namespace SlyMultiTrainer
                 UpdateUI(chkToggleInvulnerable, false);
                 UpdateUI(chkToggleUndetectable, false);
                 UpdateUI(btnLoadLevelFull, false);
-                ShowTab("WorldStates");
+                
             }
             else if (build.Title == "Sly 2")
             {
+                UpdateUI(btnGetGadgets, "Toggle all\r\ngadgets");
+                UpdateUI(lblHealth, "Health");
+                UpdateUI(btnGetGadgets, true);
+                UpdateUI(chkInfiniteGadgetPower, true);
+                UpdateUI(lblLuckyCharms, false);
+                UpdateUI(cmbLuckyCharms, false);
+                UpdateUI(chkLuckyCharmsFreeze, false);
+                UpdateUI(btnLoadLevelFull, false);
+                UpdateUI(chkDisableDeathBarrier, false);
+                UpdateUI(btnSkipCurrentDialogue, false);
+                UpdateUI(chkToggleInfDbJump, true);
+                UpdateUI(chkToggleUndetectable, true);
+                UpdateUI(chkToggleInvulnerable, true);
+                UpdateUI(chkDisableGuardAI, true);
+
                 if (build.Region == "NTSC E3 Demo")
                 {
                     UpdateUI(chkToggleUndetectable, false);
@@ -271,25 +301,20 @@ namespace SlyMultiTrainer
                 {
                     UpdateUI(chkToggleUndetectable, false);
                     UpdateUI(chkToggleInvulnerable, false);
-                    UpdateUI(chkDisableGuardAI, true);
+                    UpdateUI(btnGetGadgets, false);
+                    UpdateUI(chkInfiniteGadgetPower, false);
                 }
-                else
+                else if (build.Region == "NTSC PlayStation Magazine Demo Disc 089")
                 {
-                    UpdateUI(chkToggleUndetectable, true);
-                    UpdateUI(chkToggleInvulnerable, true);
-                    UpdateUI(chkDisableGuardAI, true);
+                    UpdateUI(chkToggleUndetectable, false);
+                    UpdateUI(chkToggleInvulnerable, false);
+                }
+                else if (build.Region == "NTSC July 11")
+                {
+                    UpdateUI(chkToggleUndetectable, false);
+                    UpdateUI(chkToggleInvulnerable, false);
                 }
 
-                UpdateUI(btnGetGadgets, "Toggle all\r\ngadgets");
-                UpdateUI(lblHealth, "Health");
-                UpdateUI(chkInfiniteGadgetPower, true);
-                UpdateUI(lblLuckyCharms, false);
-                UpdateUI(cmbLuckyCharms, false);
-                UpdateUI(chkLuckyCharmsFreeze, false);
-                UpdateUI(btnLoadLevelFull, false);
-                UpdateUI(chkDisableDeathBarrier, false);
-                UpdateUI(btnSkipCurrentDialogue, false);
-                UpdateUI(chkToggleInfDbJump, true);
                 ShowTab("DAG");
                 ShowTab("Entities");
             }
@@ -363,6 +388,11 @@ namespace SlyMultiTrainer
                         }
                     }
                 }
+            }
+
+            if (tmp.EndsWith(Environment.NewLine))
+            {
+                tmp = tmp.TrimEnd('\r', '\n');
             }
 
             UpdateUI(txtAddresses, tmp);
@@ -585,10 +615,17 @@ namespace SlyMultiTrainer
 
         private void btnLoadLevel_Click(object sender, EventArgs e)
         {
-            var originalIdx = Util.GetOriginalMapId(cmbMaps);
+            var mapId = Util.GetOriginalMapId(cmbMaps);
+
+            // current map
+            if (mapId == -1)
+            {
+                mapId = _game.GetMapId();
+            }
+
             if (_game is Sly1Handler)
             {
-                _game.LoadMap(originalIdx);
+                _game.LoadMap(mapId);
             }
             else if (_game is Sly2Handler)
             {
@@ -606,7 +643,7 @@ namespace SlyMultiTrainer
                     entranceValue = 0x171;
                 }
 
-                _game.LoadMap(originalIdx, entranceValue);
+                _game.LoadMap(mapId, entranceValue);
             }
             else if (_game is Sly3Handler)
             {
@@ -619,15 +656,27 @@ namespace SlyMultiTrainer
                 {
                     entranceValue = 0x1A6;
                 }
+                else if (_game.Region == "NTSC E3 Demo")
+                {
+                    _game.LoadMap(mapId, entranceValue, 0);
+                    return;
+                }
 
-                _game.LoadMap(originalIdx, entranceValue);
+                _game.LoadMap(mapId, entranceValue);
             }
         }
 
         private void btnLoadLevelFull_Click(object sender, EventArgs e)
         {
-            var originalIdx = Util.GetOriginalMapId(cmbMaps);
-            (_game as Sly3Handler).LoadMapFull(originalIdx);
+            var mapId = Util.GetOriginalMapId(cmbMaps);
+
+            // current map
+            if (mapId == -1)
+            {
+                mapId = _game.GetMapId();
+            }
+
+            (_game as Sly3Handler).LoadMapFull(mapId);
         }
 
         private void btnActCharXCoordMinus_Click(object sender, EventArgs e)
@@ -904,6 +953,11 @@ namespace SlyMultiTrainer
         private void btnWarp_Click(object sender, EventArgs e)
         {
             Util.Warp_t warp = (Util.Warp_t)cmbWarps.SelectedItem;
+            if (warp == null)
+            {
+                return;
+            }
+
             _game.WriteActCharPosition(warp.Position);
             _game.ResetCamera();
         }
@@ -992,12 +1046,21 @@ namespace SlyMultiTrainer
                 fkxList = (_game as Sly3Handler).GetFKXList();
             }
 
+            trvFKXList.Tag = fkxList;
+
             FillFKXTreeView(fkxList);
             ClearFKXTab();
+            txtEntitiesSearch.Text = "";
+            txtEntitiesSearch.PlaceholderText = $"Search through {fkxList.Count} entities";
         }
 
-        private void FillFKXTreeView(List<Util.FKXEntry_t> fkxList)
+        private void FillFKXTreeView(List<Util.FKXEntry_t> fkxList, string filter = "")
         {
+            if (filter != "")
+            {
+                fkxList = fkxList.Where(x => x.Name.Contains(filter)).ToList();
+            }
+
             trvFKXList.BeginUpdate();
             trvFKXList.Nodes.Clear();
             for (int i = 0; i < fkxList.Count; i++)
@@ -1050,6 +1113,13 @@ namespace SlyMultiTrainer
             var fkx = node.Parent.Tag as Util.FKXEntry_t;
             int pointerToEntity = fkx.PoolPointer + node.Index * 4;
             return pointerToEntity;
+        }
+
+        private void txtEntitiesSearch_TextChanged(object sender, EventArgs e)
+        {
+            List<Util.FKXEntry_t> fkxList = trvFKXList.Tag as List<Util.FKXEntry_t>;
+            FillFKXTreeView(fkxList, txtEntitiesSearch.Text);
+            ClearFKXTab();
         }
 
         private void btnCopyFKXEntityPointer_Click(object sender, EventArgs e)
@@ -1324,12 +1394,11 @@ namespace SlyMultiTrainer
             _game.WriteActCharPosition(trans);
         }
 
-        private void btnCopyBase_Click(object sender, EventArgs e)
+        private void btnSettings_Click(object sender, EventArgs e)
         {
-            if (_m.eeBaseAddress != 0)
-            {
-                Clipboard.SetText(_m.eeBaseAddress.ToString("X"));
-            }
+            using FormSettings f2 = new();
+            f2.Icon = this.Icon;
+            f2.ShowDialog();
         }
 
         private void btnReattach_Click(object sender, EventArgs e)

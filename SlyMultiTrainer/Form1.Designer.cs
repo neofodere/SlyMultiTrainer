@@ -102,6 +102,7 @@
             cmbMaps = new ComboBox();
             btnLoadLevel = new Button();
             tabEntities = new TabPage();
+            txtEntitiesSearch = new TextBox();
             btnFKXEntityScaleReset = new Button();
             groupBox7 = new GroupBox();
             trkFKXEntityScale = new TrackBar();
@@ -159,13 +160,13 @@
             tabAbout = new TabPage();
             splitContainer1 = new SplitContainer();
             label16 = new Label();
-            btnReattach = new Button();
             label15 = new Label();
             lblAboutTitle = new Label();
             lblLogs = new Label();
             txtAddresses = new TextBox();
+            btnReattach = new Button();
             lblMain = new Label();
-            btnCopyBase = new Button();
+            btnSettings = new Button();
             tabControlMain.SuspendLayout();
             tabMain.SuspendLayout();
             toolStrip1.SuspendLayout();
@@ -321,9 +322,10 @@
             // 
             // btnSkipCurrentDialogue
             // 
-            btnSkipCurrentDialogue.Location = new Point(530, 114);
+            btnSkipCurrentDialogue.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btnSkipCurrentDialogue.Location = new Point(530, 118);
             btnSkipCurrentDialogue.Name = "btnSkipCurrentDialogue";
-            btnSkipCurrentDialogue.Size = new Size(87, 34);
+            btnSkipCurrentDialogue.Size = new Size(88, 38);
             btnSkipCurrentDialogue.TabIndex = 63;
             btnSkipCurrentDialogue.Text = "Skip current dialogue";
             btnSkipCurrentDialogue.UseVisualStyleBackColor = true;
@@ -342,7 +344,6 @@
             // chkLuckyCharmsFreeze
             // 
             chkLuckyCharmsFreeze.Appearance = Appearance.Button;
-            chkLuckyCharmsFreeze.AutoSize = true;
             chkLuckyCharmsFreeze.Location = new Point(623, 34);
             chkLuckyCharmsFreeze.Name = "chkLuckyCharmsFreeze";
             chkLuckyCharmsFreeze.Size = new Size(49, 23);
@@ -364,9 +365,10 @@
             // 
             // btnLoadLevelFull
             // 
-            btnLoadLevelFull.Location = new Point(296, 145);
+            btnLoadLevelFull.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btnLoadLevelFull.Location = new Point(301, 145);
             btnLoadLevelFull.Name = "btnLoadLevelFull";
-            btnLoadLevelFull.Size = new Size(63, 23);
+            btnLoadLevelFull.Size = new Size(65, 23);
             btnLoadLevelFull.TabIndex = 59;
             btnLoadLevelFull.Text = "Full load";
             btnLoadLevelFull.UseVisualStyleBackColor = true;
@@ -375,10 +377,10 @@
             // 
             // btnCoinsSet
             // 
-            btnCoinsSet.AutoSize = true;
+            btnCoinsSet.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnCoinsSet.Location = new Point(623, 6);
             btnCoinsSet.Name = "btnCoinsSet";
-            btnCoinsSet.Size = new Size(49, 25);
+            btnCoinsSet.Size = new Size(49, 23);
             btnCoinsSet.TabIndex = 58;
             btnCoinsSet.Text = "Set";
             btnCoinsSet.UseVisualStyleBackColor = true;
@@ -400,7 +402,6 @@
             // 
             // chkToggleInfDbJump
             // 
-            chkToggleInfDbJump.AutoSize = true;
             chkToggleInfDbJump.Location = new Point(7, 19);
             chkToggleInfDbJump.Name = "chkToggleInfDbJump";
             chkToggleInfDbJump.Size = new Size(100, 17);
@@ -411,7 +412,6 @@
             // 
             // chkToggleUndetectable
             // 
-            chkToggleUndetectable.AutoSize = true;
             chkToggleUndetectable.Location = new Point(141, 42);
             chkToggleUndetectable.Name = "chkToggleUndetectable";
             chkToggleUndetectable.Size = new Size(96, 17);
@@ -422,7 +422,6 @@
             // 
             // chkToggleInvulnerable
             // 
-            chkToggleInvulnerable.AutoSize = true;
             chkToggleInvulnerable.Location = new Point(141, 19);
             chkToggleInvulnerable.Name = "chkToggleInvulnerable";
             chkToggleInvulnerable.Size = new Size(90, 17);
@@ -433,7 +432,6 @@
             // 
             // chkDisableGuardAI
             // 
-            chkDisableGuardAI.AutoSize = true;
             chkDisableGuardAI.Location = new Point(7, 42);
             chkDisableGuardAI.Name = "chkDisableGuardAI";
             chkDisableGuardAI.Size = new Size(104, 17);
@@ -444,7 +442,6 @@
             // 
             // chkDisableDeathBarrier
             // 
-            chkDisableDeathBarrier.AutoSize = true;
             chkDisableDeathBarrier.Location = new Point(246, 19);
             chkDisableDeathBarrier.Name = "chkDisableDeathBarrier";
             chkDisableDeathBarrier.Size = new Size(128, 17);
@@ -455,6 +452,7 @@
             // 
             // btnResetCamera
             // 
+            btnResetCamera.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnResetCamera.Location = new Point(330, 195);
             btnResetCamera.Name = "btnResetCamera";
             btnResetCamera.Size = new Size(63, 23);
@@ -496,6 +494,7 @@
             // 
             // btnDrawDistanceReset
             // 
+            btnDrawDistanceReset.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnDrawDistanceReset.Location = new Point(262, 16);
             btnDrawDistanceReset.Name = "btnDrawDistanceReset";
             btnDrawDistanceReset.Size = new Size(63, 23);
@@ -522,6 +521,7 @@
             // 
             // btnFOVReset
             // 
+            btnFOVReset.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnFOVReset.Location = new Point(79, 16);
             btnFOVReset.Name = "btnFOVReset";
             btnFOVReset.Size = new Size(63, 23);
@@ -605,6 +605,7 @@
             // 
             // btnClockReset
             // 
+            btnClockReset.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnClockReset.Location = new Point(474, 214);
             btnClockReset.Name = "btnClockReset";
             btnClockReset.Size = new Size(63, 23);
@@ -638,9 +639,10 @@
             // 
             // btnGetGadgets
             // 
-            btnGetGadgets.Location = new Point(530, 74);
+            btnGetGadgets.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btnGetGadgets.Location = new Point(530, 78);
             btnGetGadgets.Name = "btnGetGadgets";
-            btnGetGadgets.Size = new Size(87, 34);
+            btnGetGadgets.Size = new Size(88, 38);
             btnGetGadgets.TabIndex = 44;
             btnGetGadgets.Text = "Toggle all\r\ngadgets";
             btnGetGadgets.UseVisualStyleBackColor = true;
@@ -651,7 +653,7 @@
             chkInfiniteGadgetPower.Appearance = Appearance.Button;
             chkInfiniteGadgetPower.Location = new Point(530, 34);
             chkInfiniteGadgetPower.Name = "chkInfiniteGadgetPower";
-            chkInfiniteGadgetPower.Size = new Size(87, 34);
+            chkInfiniteGadgetPower.Size = new Size(88, 38);
             chkInfiniteGadgetPower.TabIndex = 43;
             chkInfiniteGadgetPower.Text = "Infinite gadget power";
             chkInfiniteGadgetPower.TextAlign = ContentAlignment.MiddleCenter;
@@ -678,9 +680,10 @@
             // 
             // btnWarp
             // 
+            btnWarp.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnWarp.Location = new Point(227, 172);
             btnWarp.Name = "btnWarp";
-            btnWarp.Size = new Size(63, 23);
+            btnWarp.Size = new Size(68, 23);
             btnWarp.TabIndex = 53;
             btnWarp.Text = "Warp";
             btnWarp.UseVisualStyleBackColor = true;
@@ -689,7 +692,6 @@
             // chkActCharFly
             // 
             chkActCharFly.Appearance = Appearance.Button;
-            chkActCharFly.AutoSize = true;
             chkActCharFly.Location = new Point(265, 117);
             chkActCharFly.Name = "chkActCharFly";
             chkActCharFly.Size = new Size(30, 23);
@@ -702,7 +704,6 @@
             // chkActCharFreeze
             // 
             chkActCharFreeze.Appearance = Appearance.Button;
-            chkActCharFreeze.AutoSize = true;
             chkActCharFreeze.Location = new Point(266, 5);
             chkActCharFreeze.Name = "chkActCharFreeze";
             chkActCharFreeze.Size = new Size(49, 23);
@@ -734,7 +735,6 @@
             // 
             // btnActCharHealthPlus
             // 
-            btnActCharHealthPlus.AutoSize = true;
             btnActCharHealthPlus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharHealthPlus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharHealthPlus.Location = new Point(198, 117);
@@ -747,7 +747,6 @@
             // 
             // btnActCharHealthMinus
             // 
-            btnActCharHealthMinus.AutoSize = true;
             btnActCharHealthMinus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharHealthMinus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharHealthMinus.Location = new Point(114, 117);
@@ -770,7 +769,6 @@
             // 
             // btnActCharZCoordSet
             // 
-            btnActCharZCoordSet.AutoSize = true;
             btnActCharZCoordSet.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharZCoordSet.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharZCoordSet.Location = new Point(227, 88);
@@ -783,7 +781,6 @@
             // 
             // btnActCharYCoordSet
             // 
-            btnActCharYCoordSet.AutoSize = true;
             btnActCharYCoordSet.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharYCoordSet.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharYCoordSet.Location = new Point(227, 59);
@@ -796,7 +793,6 @@
             // 
             // btnActCharXCoordSet
             // 
-            btnActCharXCoordSet.AutoSize = true;
             btnActCharXCoordSet.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharXCoordSet.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharXCoordSet.Location = new Point(227, 30);
@@ -810,7 +806,7 @@
             // txtActCharZCoordSet
             // 
             txtActCharZCoordSet.Font = new Font("Microsoft Sans Serif", 9F);
-            txtActCharZCoordSet.Location = new Point(266, 91);
+            txtActCharZCoordSet.Location = new Point(266, 89);
             txtActCharZCoordSet.Name = "txtActCharZCoordSet";
             txtActCharZCoordSet.Size = new Size(100, 21);
             txtActCharZCoordSet.TabIndex = 26;
@@ -818,7 +814,7 @@
             // txtActCharYCoordSet
             // 
             txtActCharYCoordSet.Font = new Font("Microsoft Sans Serif", 9F);
-            txtActCharYCoordSet.Location = new Point(266, 62);
+            txtActCharYCoordSet.Location = new Point(266, 60);
             txtActCharYCoordSet.Name = "txtActCharYCoordSet";
             txtActCharYCoordSet.Size = new Size(100, 21);
             txtActCharYCoordSet.TabIndex = 25;
@@ -845,7 +841,6 @@
             // chkActCharZCoordFreeze
             // 
             chkActCharZCoordFreeze.Appearance = Appearance.Button;
-            chkActCharZCoordFreeze.AutoSize = true;
             chkActCharZCoordFreeze.Location = new Point(143, 88);
             chkActCharZCoordFreeze.Name = "chkActCharZCoordFreeze";
             chkActCharZCoordFreeze.Size = new Size(49, 23);
@@ -857,7 +852,6 @@
             // 
             // btnActCharZCoordPlus
             // 
-            btnActCharZCoordPlus.AutoSize = true;
             btnActCharZCoordPlus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharZCoordPlus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharZCoordPlus.Location = new Point(198, 88);
@@ -870,7 +864,6 @@
             // 
             // btnActCharZCoordMinus
             // 
-            btnActCharZCoordMinus.AutoSize = true;
             btnActCharZCoordMinus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharZCoordMinus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharZCoordMinus.Location = new Point(114, 88);
@@ -884,7 +877,6 @@
             // chkActCharYCoordFreeze
             // 
             chkActCharYCoordFreeze.Appearance = Appearance.Button;
-            chkActCharYCoordFreeze.AutoSize = true;
             chkActCharYCoordFreeze.Location = new Point(143, 59);
             chkActCharYCoordFreeze.Name = "chkActCharYCoordFreeze";
             chkActCharYCoordFreeze.Size = new Size(49, 23);
@@ -896,7 +888,6 @@
             // 
             // btnActCharYCoordPlus
             // 
-            btnActCharYCoordPlus.AutoSize = true;
             btnActCharYCoordPlus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharYCoordPlus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharYCoordPlus.Location = new Point(198, 59);
@@ -909,7 +900,6 @@
             // 
             // btnActCharYCoordMinus
             // 
-            btnActCharYCoordMinus.AutoSize = true;
             btnActCharYCoordMinus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharYCoordMinus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharYCoordMinus.Location = new Point(114, 59);
@@ -923,7 +913,6 @@
             // chkActCharXCoordFreeze
             // 
             chkActCharXCoordFreeze.Appearance = Appearance.Button;
-            chkActCharXCoordFreeze.AutoSize = true;
             chkActCharXCoordFreeze.Location = new Point(143, 30);
             chkActCharXCoordFreeze.Name = "chkActCharXCoordFreeze";
             chkActCharXCoordFreeze.Size = new Size(49, 23);
@@ -935,7 +924,6 @@
             // 
             // btnActCharXCoordPlus
             // 
-            btnActCharXCoordPlus.AutoSize = true;
             btnActCharXCoordPlus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharXCoordPlus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharXCoordPlus.Location = new Point(198, 30);
@@ -948,7 +936,6 @@
             // 
             // btnActCharXCoordMinus
             // 
-            btnActCharXCoordMinus.AutoSize = true;
             btnActCharXCoordMinus.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnActCharXCoordMinus.Font = new Font("Microsoft Sans Serif", 8F);
             btnActCharXCoordMinus.Location = new Point(114, 30);
@@ -1043,9 +1030,10 @@
             // 
             // btnLoadLevel
             // 
+            btnLoadLevel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             btnLoadLevel.Location = new Point(227, 145);
             btnLoadLevel.Name = "btnLoadLevel";
-            btnLoadLevel.Size = new Size(63, 23);
+            btnLoadLevel.Size = new Size(68, 23);
             btnLoadLevel.TabIndex = 0;
             btnLoadLevel.Text = "Load";
             btnLoadLevel.UseVisualStyleBackColor = true;
@@ -1054,6 +1042,7 @@
             // tabEntities
             // 
             tabEntities.BackColor = Color.White;
+            tabEntities.Controls.Add(txtEntitiesSearch);
             tabEntities.Controls.Add(btnFKXEntityScaleReset);
             tabEntities.Controls.Add(groupBox7);
             tabEntities.Controls.Add(chkFKXEntityEditRotation);
@@ -1099,6 +1088,15 @@
             tabEntities.Size = new Size(679, 370);
             tabEntities.TabIndex = 1;
             tabEntities.Text = "Entities";
+            // 
+            // txtEntitiesSearch
+            // 
+            txtEntitiesSearch.Font = new Font("Microsoft Sans Serif", 9F);
+            txtEntitiesSearch.Location = new Point(6, 5);
+            txtEntitiesSearch.Name = "txtEntitiesSearch";
+            txtEntitiesSearch.Size = new Size(248, 21);
+            txtEntitiesSearch.TabIndex = 91;
+            txtEntitiesSearch.TextChanged += txtEntitiesSearch_TextChanged;
             // 
             // btnFKXEntityScaleReset
             // 
@@ -1384,7 +1382,7 @@
             // txtFKXEntityZCoordSet
             // 
             txtFKXEntityZCoordSet.Font = new Font("Microsoft Sans Serif", 9F);
-            txtFKXEntityZCoordSet.Location = new Point(515, 117);
+            txtFKXEntityZCoordSet.Location = new Point(515, 115);
             txtFKXEntityZCoordSet.Name = "txtFKXEntityZCoordSet";
             txtFKXEntityZCoordSet.Size = new Size(100, 21);
             txtFKXEntityZCoordSet.TabIndex = 48;
@@ -1392,7 +1390,7 @@
             // txtFKXEntityYCoordSet
             // 
             txtFKXEntityYCoordSet.Font = new Font("Microsoft Sans Serif", 9F);
-            txtFKXEntityYCoordSet.Location = new Point(515, 88);
+            txtFKXEntityYCoordSet.Location = new Point(515, 86);
             txtFKXEntityYCoordSet.Name = "txtFKXEntityYCoordSet";
             txtFKXEntityYCoordSet.Size = new Size(100, 21);
             txtFKXEntityYCoordSet.TabIndex = 47;
@@ -1595,13 +1593,14 @@
             // 
             // btnRefreshFKXList
             // 
+            btnRefreshFKXList.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnRefreshFKXList.BackColor = Color.Transparent;
             btnRefreshFKXList.BackgroundImage = (Image)resources.GetObject("btnRefreshFKXList.BackgroundImage");
             btnRefreshFKXList.BackgroundImageLayout = ImageLayout.Zoom;
             btnRefreshFKXList.FlatAppearance.BorderSize = 0;
             btnRefreshFKXList.FlatAppearance.MouseDownBackColor = Color.Transparent;
             btnRefreshFKXList.FlatStyle = FlatStyle.Flat;
-            btnRefreshFKXList.ForeColor = Color.Transparent;
+            btnRefreshFKXList.ForeColor = SystemColors.ControlText;
             btnRefreshFKXList.Location = new Point(646, 3);
             btnRefreshFKXList.Name = "btnRefreshFKXList";
             btnRefreshFKXList.Size = new Size(20, 20);
@@ -1612,9 +1611,9 @@
             // trvFKXList
             // 
             trvFKXList.HideSelection = false;
-            trvFKXList.Location = new Point(6, 6);
+            trvFKXList.Location = new Point(6, 31);
             trvFKXList.Name = "trvFKXList";
-            trvFKXList.Size = new Size(248, 360);
+            trvFKXList.Size = new Size(248, 335);
             trvFKXList.TabIndex = 0;
             trvFKXList.AfterSelect += trvFKXList_AfterSelect;
             // 
@@ -1699,9 +1698,9 @@
             // tabAbout
             // 
             tabAbout.Controls.Add(splitContainer1);
-            tabAbout.Location = new Point(4, 22);
+            tabAbout.Location = new Point(4, 24);
             tabAbout.Name = "tabAbout";
-            tabAbout.Size = new Size(679, 372);
+            tabAbout.Size = new Size(679, 370);
             tabAbout.TabIndex = 4;
             tabAbout.Text = "About";
             tabAbout.UseVisualStyleBackColor = true;
@@ -1717,7 +1716,6 @@
             // splitContainer1.Panel1
             // 
             splitContainer1.Panel1.Controls.Add(label16);
-            splitContainer1.Panel1.Controls.Add(btnReattach);
             splitContainer1.Panel1.Controls.Add(label15);
             splitContainer1.Panel1.Controls.Add(lblAboutTitle);
             // 
@@ -1725,8 +1723,8 @@
             // 
             splitContainer1.Panel2.Controls.Add(lblLogs);
             splitContainer1.Panel2.Controls.Add(txtAddresses);
-            splitContainer1.Size = new Size(679, 372);
-            splitContainer1.SplitterDistance = 224;
+            splitContainer1.Size = new Size(679, 370);
+            splitContainer1.SplitterDistance = 219;
             splitContainer1.TabIndex = 9;
             // 
             // label16
@@ -1739,22 +1737,7 @@
             label16.Size = new Size(65, 17);
             label16.TabIndex = 14;
             label16.Text = "Reattach";
-            // 
-            // btnReattach
-            // 
-            btnReattach.BackColor = Color.Transparent;
-            btnReattach.BackgroundImage = (Image)resources.GetObject("btnReattach.BackgroundImage");
-            btnReattach.BackgroundImageLayout = ImageLayout.Zoom;
-            btnReattach.FlatAppearance.BorderSize = 0;
-            btnReattach.FlatAppearance.MouseDownBackColor = Color.Transparent;
-            btnReattach.FlatStyle = FlatStyle.Flat;
-            btnReattach.ForeColor = Color.Transparent;
-            btnReattach.Location = new Point(650, 9);
-            btnReattach.Name = "btnReattach";
-            btnReattach.Size = new Size(20, 20);
-            btnReattach.TabIndex = 13;
-            btnReattach.UseVisualStyleBackColor = false;
-            btnReattach.Click += btnReattach_Click;
+            label16.Visible = false;
             // 
             // label15
             // 
@@ -1762,7 +1745,7 @@
             label15.Font = new Font("Microsoft Sans Serif", 10F);
             label15.Location = new Point(8, 40);
             label15.Name = "label15";
-            label15.Size = new Size(662, 182);
+            label15.Size = new Size(662, 177);
             label15.TabIndex = 12;
             label15.Text = "Credits:\r\nNiV-L-A, TheOnlyZac, fr4nk0, SlyCooperReloadCoded, Sly Cooper Modding Discord Server, memory.dll, Microsoft Automatic Graph Layout";
             // 
@@ -1795,8 +1778,25 @@
             txtAddresses.Name = "txtAddresses";
             txtAddresses.ReadOnly = true;
             txtAddresses.ScrollBars = ScrollBars.Vertical;
-            txtAddresses.Size = new Size(668, 110);
+            txtAddresses.Size = new Size(668, 113);
             txtAddresses.TabIndex = 9;
+            // 
+            // btnReattach
+            // 
+            btnReattach.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnReattach.BackColor = Color.Transparent;
+            btnReattach.BackgroundImage = (Image)resources.GetObject("btnReattach.BackgroundImage");
+            btnReattach.BackgroundImageLayout = ImageLayout.Zoom;
+            btnReattach.FlatAppearance.BorderSize = 0;
+            btnReattach.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btnReattach.FlatStyle = FlatStyle.Flat;
+            btnReattach.ForeColor = SystemColors.ControlText;
+            btnReattach.Location = new Point(630, 1);
+            btnReattach.Name = "btnReattach";
+            btnReattach.Size = new Size(18, 18);
+            btnReattach.TabIndex = 13;
+            btnReattach.UseVisualStyleBackColor = false;
+            btnReattach.Click += btnReattach_Click;
             // 
             // lblMain
             // 
@@ -1809,27 +1809,29 @@
             lblMain.TabIndex = 2;
             lblMain.Text = "Status: ";
             // 
-            // btnCopyBase
+            // btnSettings
             // 
-            btnCopyBase.BackgroundImage = (Image)resources.GetObject("btnCopyBase.BackgroundImage");
-            btnCopyBase.BackgroundImageLayout = ImageLayout.Zoom;
-            btnCopyBase.FlatAppearance.BorderSize = 0;
-            btnCopyBase.FlatStyle = FlatStyle.Flat;
-            btnCopyBase.Font = new Font("Microsoft Sans Serif", 8F);
-            btnCopyBase.Location = new Point(224, 388);
-            btnCopyBase.Name = "btnCopyBase";
-            btnCopyBase.Size = new Size(20, 20);
-            btnCopyBase.TabIndex = 64;
-            btnCopyBase.UseVisualStyleBackColor = true;
-            btnCopyBase.Visible = false;
-            btnCopyBase.Click += btnCopyBase_Click;
+            btnSettings.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnSettings.BackColor = Color.Transparent;
+            btnSettings.BackgroundImage = (Image)resources.GetObject("btnSettings.BackgroundImage");
+            btnSettings.BackgroundImageLayout = ImageLayout.Zoom;
+            btnSettings.FlatAppearance.BorderSize = 0;
+            btnSettings.FlatStyle = FlatStyle.Flat;
+            btnSettings.Font = new Font("Microsoft Sans Serif", 8F);
+            btnSettings.Location = new Point(657, 0);
+            btnSettings.Name = "btnSettings";
+            btnSettings.Size = new Size(20, 20);
+            btnSettings.TabIndex = 64;
+            btnSettings.UseVisualStyleBackColor = false;
+            btnSettings.Click += btnSettings_Click;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(6F, 13F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(687, 411);
-            Controls.Add(btnCopyBase);
+            Controls.Add(btnSettings);
+            Controls.Add(btnReattach);
             Controls.Add(tabControlMain);
             Controls.Add(lblMain);
             Font = new Font("Microsoft Sans Serif", 8F);
@@ -1843,7 +1845,6 @@
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             groupBox5.ResumeLayout(false);
-            groupBox5.PerformLayout();
             groupBox4.ResumeLayout(false);
             grpFOV.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)trkFOV).EndInit();
@@ -1978,7 +1979,7 @@
         public Label label12;
         public Label label13;
         public Label label14;
-        public Button btnCopyBase;
+        public Button btnSettings;
         public Button btnCopyFKXEntityPointer;
         public TabPage tabDAG;
         public TrackBar trkFKXEntityRotationX;
@@ -2013,5 +2014,6 @@
         public CheckBox chkToggleInfDbJump;
         public Button btnReattach;
         public Label label16;
+        public TextBox txtEntitiesSearch;
     }
 }

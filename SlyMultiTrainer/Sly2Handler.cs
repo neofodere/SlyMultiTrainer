@@ -17,23 +17,22 @@ namespace SlyMultiTrainer
         public DAG_t DAG;
 
         private string _offsetTransformation1 = "54";
-        private string _offsetTransformation2 = "58";
-        private string _offsetTransformation3 = "5C";
+        private string _offsetTransformation2 = "";
+        private string _offsetTransformation3 = "";
         private string _offsetHealthAndGadgetPower = "E00";
         private string _offsetController = "150";
+        private string _offsetControllerBinds = "30";
         private string _offsetInfiniteDbJump = "2E8";
-        private string _offsetSpeedMultiplier = "2F8"; // 2c0 + 38
+        private string _offsetSpeedMultiplier = "2F8";
         private string _offsetInvulnerable = "298";
         private string _offsetUndetectable = "11AC";
 
         private Memory.Mem _m;
-        private Form1 _form;
         private Encoding _encoding;
 
         public Sly2Handler(Memory.Mem m, Form1 form, string region) : base(m, form, region)
         {
             _m = m;
-            _form = form;
             DAG = new(m);
             DAG.SetVersion(DAG_VERSION.V1);
             _encoding = Encoding.UTF8;
@@ -42,8 +41,8 @@ namespace SlyMultiTrainer
             DAG.OffsetNextNodePointer = "20";
             DAG.OffsetState = "54";
             DAG.OffsetGoalDescription = "5C";
-            DAG.OffsetFocusCount1 = "64";
-            DAG.OffsetFocusCount2 = "68";
+            DAG.OffsetFocusCount = "64";
+            DAG.OffsetCompleteCount = "68";
             DAG.OffsetMissionName = "6C";
             DAG.OffsetMissionDescription = "70";
             DAG.OffsetClusterPointer = "7C";
@@ -58,6 +57,7 @@ namespace SlyMultiTrainer
 
             // Listing the bases and then calculating the addresses from those + offsets was tried,
             // but was not pursued because the offsets change based on the region
+            
             if (region == "NTSC")
             {
                 ReloadAddress = "3E1080";
@@ -71,7 +71,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "2DE240";
                 MapIdAddress = "3E1110";
                 GuardAIAddress = "3E1214";
-                ActiveCharacterPointer = "2DE2F0";
+                ActiveCharacterPointer = "3E138C";
                 ActiveCharacterIdAddress = "3D4A6C";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
                 DAG.RootNodePointer = "3E0B04";
@@ -98,7 +98,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "2E5640";
                 MapIdAddress = "3E8910";
                 GuardAIAddress = "3E8A14";
-                ActiveCharacterPointer = "2E55A0";
+                ActiveCharacterPointer = "3E8B8C";
                 ActiveCharacterIdAddress = "3DC26C";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
                 DAG.RootNodePointer = "3E8304";
@@ -114,7 +114,6 @@ namespace SlyMultiTrainer
             {
                 _encoding = Encoding.Unicode;
                 _offsetTransformation1 = "44";
-                _offsetTransformation2 = "48";
                 _offsetHealthAndGadgetPower = "DF0";
                 _offsetController = "140";
                 _offsetInfiniteDbJump = "2D8";
@@ -133,7 +132,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "2E74C0";
                 MapIdAddress = "3EAB10";
                 GuardAIAddress = "3EAC14";
-                ActiveCharacterPointer = "2E7420";
+                ActiveCharacterPointer = "3EAD8C";
                 ActiveCharacterIdAddress = "3DE26C";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
                 DAG.RootNodePointer = "3EA304";
@@ -147,8 +146,8 @@ namespace SlyMultiTrainer
 
                 DAG.OffsetState = "44";
                 DAG.OffsetGoalDescription = "4C";
-                DAG.OffsetFocusCount1 = "54";
-                DAG.OffsetFocusCount2 = "58";
+                DAG.OffsetFocusCount = "54";
+                DAG.OffsetCompleteCount = "58";
                 DAG.OffsetMissionName = "5C";
                 DAG.OffsetMissionDescription = "60";
                 DAG.OffsetClusterPointer = "6C";
@@ -162,7 +161,6 @@ namespace SlyMultiTrainer
             {
                 _encoding = Encoding.Unicode;
                 _offsetTransformation1 = "44";
-                _offsetTransformation2 = "48";
                 _offsetHealthAndGadgetPower = "DF0";
                 _offsetController = "140";
                 _offsetInfiniteDbJump = "2D8";
@@ -181,7 +179,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "2E6AC0";
                 MapIdAddress = "3EA190";
                 GuardAIAddress = "3EA294";
-                ActiveCharacterPointer = "2E6A20";
+                ActiveCharacterPointer = "3EA40C";
                 ActiveCharacterIdAddress = "3DD8EC";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
                 DAG.RootNodePointer = "3E9984";
@@ -195,8 +193,8 @@ namespace SlyMultiTrainer
 
                 DAG.OffsetState = "44";
                 DAG.OffsetGoalDescription = "4C";
-                DAG.OffsetFocusCount1 = "54";
-                DAG.OffsetFocusCount2 = "58";
+                DAG.OffsetFocusCount = "54";
+                DAG.OffsetCompleteCount = "58";
                 DAG.OffsetMissionName = "5C";
                 DAG.OffsetMissionDescription = "60";
                 DAG.OffsetClusterPointer = "6C";
@@ -225,7 +223,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "2D2324";
                 MapIdAddress = "3CA7C1"; // confirm 39A8F0
                 GuardAIAddress = "";
-                ActiveCharacterPointer = "2D2300";
+                ActiveCharacterPointer = "39AB2C";
                 ActiveCharacterIdAddress = "3CA7C2";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower}";
                 DAG.RootNodePointer = "39A3E8";
@@ -250,8 +248,8 @@ namespace SlyMultiTrainer
 
                 // DAG.OffsetState = "54";
                 // DAG.OffsetGoalDescription = "5C";
-                // DAG.OffsetFocusCount1 = "64";
-                // DAG.OffsetFocusCount2 = "68";
+                // DAG.OffsetFocusCount = "64";
+                // DAG.OffsetCompleteCount = "68";
                 // DAG.OffsetMissionName = "6C";
                 // DAG.OffsetMissionDescription = "70";
                 DAG.OffsetClusterPointer = "74";
@@ -261,10 +259,40 @@ namespace SlyMultiTrainer
                 DAG.OffsetAttributes = "B8";
                 DAG.OffsetAttributesForCluster = "BC";
             }
+            else if (region == "NTSC PlayStation Magazine Demo Disc 089")
+            {
+                _offsetHealthAndGadgetPower = "E60";
+                _offsetController = "160";
+                _offsetInfiniteDbJump = "348";
+                _offsetSpeedMultiplier = "354";
+                //_offsetInvulnerable = "298"; // TO FIND
+                //_offsetUndetectable = "11AC"; // TO FIND
+
+                ReloadAddress = "3F0EC8";
+                ReloadValuesPointer = "3F1A80";
+                FKXListCount = "3F11B4";
+                ClockAddress = "302ED8";
+                CoinsAddress = "3E494C";
+                GadgetAddress = "3E4944";
+                DrawDistanceAddress = "302F5C";
+                FOVAddress = "302F64";
+                ResetCameraAddress = "303240";
+                MapIdAddress = "3F0F58";
+                GuardAIAddress = "3F105C";
+                ActiveCharacterPointer = "3F11AC";
+                ActiveCharacterIdAddress = "3E48BC";
+                ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
+                DAG.RootNodePointer = "3F0958";
+                DAG.CurrentCheckpointNodePointer = "3F0E04";
+                DAG.TaskStringTablePointer = "3F0DE8";
+                DAG.ClusterIdAddress = "303B2C";
+                DAG.SavefileStartAddress = "3E48B0";
+                DAG.SavefileValuesOffsetsTablePointer = "3F0D0C";
+                StringTableCountAddress = "3F1920";
+                IsLoadingAddress = "3E4800";
+            }
             else if (region == "NTSC July 11")
             {
-                _offsetTransformation1 = "54";
-                _offsetTransformation2 = "58";
                 _offsetHealthAndGadgetPower = "1040";
                 _offsetController = "160";
                 _offsetInfiniteDbJump = "348";
@@ -282,7 +310,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "2F9D90";
                 MapIdAddress = "3EF628";
                 GuardAIAddress = "3FC0F0";
-                ActiveCharacterPointer = "2F9CF0";
+                ActiveCharacterPointer = "3FC23C";
                 ActiveCharacterIdAddress = "3EF62C";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
                 DAG.RootNodePointer = "3FBAB4";
@@ -303,16 +331,52 @@ namespace SlyMultiTrainer
                 Maps.RemoveRange(1, 1);
 
                 Maps.Insert(0, new("Splash", new(), false));
-                Maps.Insert(12, new($"{StringBeforeSubMapName}i_palace_heist", new(), false));
-                Maps.Insert(15, new($"{StringBeforeSubMapName}i_temple_hesit", new(), false));
-                Maps.Insert(18, new($"{StringBeforeSubMapName}p_prison_heist", new(), false));
+                Maps.Insert(12, new($"{SubMapNamePrefix}i_palace_heist", new(), false));
+                Maps.Insert(15, new($"{SubMapNamePrefix}i_temple_heist", new(), false));
+                Maps.Insert(18, new($"{SubMapNamePrefix}p_prison_heist", new(), false));
+            }
+            else if (region == "PAL August 2")
+            {
+                _offsetHealthAndGadgetPower = "E10";
+                _offsetInfiniteDbJump = "2F8";
+                _offsetInvulnerable = "2A8";
+                _offsetUndetectable = "11BC";
+                _offsetController = "160";
+                _offsetSpeedMultiplier = "308";
+
+                ReloadAddress = "3F53E8";
+                ReloadValuesPointer = "3F5F90";
+                FKXListCount = "3F56D4";
+                ClockAddress = "2F3258";
+                CoinsAddress = "3E8E2C";
+                GadgetAddress = "3E8E24";
+                DrawDistanceAddress = "2F32DC";
+                FOVAddress = "2F32E4";
+                ResetCameraAddress = "2F35C0";
+                MapIdAddress = "3F5478";
+                GuardAIAddress = "3F557C";
+                ActiveCharacterPointer = "3F56CC";
+                ActiveCharacterIdAddress = "3E8D9C";
+                ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
+                DAG.RootNodePointer = "3F4E7C";
+                DAG.CurrentCheckpointNodePointer = "3F5324";
+                DAG.TaskStringTablePointer = "3F5308";
+                DAG.ClusterIdAddress = "2F3EB0";
+                DAG.SavefileStartAddress = "3E8D90";
+                DAG.SavefileValuesOffsetsTablePointer = "3F522C";
+                StringTableCountAddress = "3F5E40";
+                IsLoadingAddress = "3E8D00";
+
+                // Remove ep8
+                Maps.RemoveRange(38, 6);
+
+                Maps.Insert(12, new($"{SubMapNamePrefix}i_palace_heist", new(), false));
+                Maps.Insert(15, new($"{SubMapNamePrefix}i_temple_heist", new(), false));
+                Maps.Insert(18, new($"{SubMapNamePrefix}p_prison_heist", new(), false));
             }
             else if (region == "NTSC March 17")
             {
                 DAG.SetVersion(DAG_VERSION.V0);
-                _offsetTransformation1 = "54";
-                _offsetTransformation2 = "58";
-                _offsetTransformation3 = "5C";
                 _offsetInfiniteDbJump = "328";
                 _offsetHealthAndGadgetPower = "ED0";
                 _offsetController = "140";
@@ -330,7 +394,7 @@ namespace SlyMultiTrainer
                 ResetCameraAddress = "3041F4";
                 MapIdAddress = "41FC81";
                 GuardAIAddress = "3EEB00";
-                ActiveCharacterPointer = "304070";
+                ActiveCharacterPointer = "3EEBF0";
                 ActiveCharacterIdAddress = "41FC82";
                 ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower}";
                 DAG.RootNodePointer = "3EE52C";
@@ -358,7 +422,7 @@ namespace SlyMultiTrainer
                 Maps.RemoveRange(14, 30);
                 Maps.RemoveRange(0, 2);
 
-                Maps.Insert(0, new("Splash", new()));
+                Maps.Insert(0, new("Splash", new() { new() }));
 
                 Map_t temp = Maps[4]; // get print room
                 Maps[4] = Maps[5];
@@ -372,13 +436,107 @@ namespace SlyMultiTrainer
                 // nightclub door entrance
                 Maps[3].Warps[0].Position = new(-4200, 5400, -200);
                 //Maps.Insert(12, new($"{StringBeforeSubMapName}i_palace_heist", new(), false));
-                //Maps.Insert(15, new($"{StringBeforeSubMapName}i_temple_hesit", new(), false));
+                //Maps.Insert(15, new($"{StringBeforeSubMapName}i_temple_heist", new(), false));
                 //Maps.Insert(18, new($"{StringBeforeSubMapName}p_prison_heist", new(), false));
             }
+            else if (region == "NTSC (PS3 PSN)"
+                  || region == "NTSC-K (PS3 PSN)")
+            {
+                _encoding = Encoding.BigEndianUnicode;
+                _offsetTransformation1 = "44";
+                _offsetHealthAndGadgetPower = "DE0";
+                _offsetController = "140";
+                _offsetControllerBinds = "32";
+                _offsetInfiniteDbJump = "2C8";
+                _offsetSpeedMultiplier = "2D8";
+                _offsetInvulnerable = "278";
+                _offsetUndetectable = "118C";
+                DAG.OffsetState = "44";
+                DAG.OffsetGoalDescription = "4C";
+                DAG.OffsetFocusCount = "54";
+                DAG.OffsetCompleteCount = "58";
+                DAG.OffsetMissionName = "5C";
+                DAG.OffsetMissionDescription = "60";
+                DAG.OffsetClusterPointer = "6C";
+                DAG.OffsetChildrenCount = "90";
+                DAG.OffsetSuckPointer = "98";
+                DAG.OffsetCheckpointEntranceValue = "A8";
+                DAG.OffsetAttributes = "B8";
+                DAG.OffsetAttributesForCluster = "C0";
 
-            _form.UpdateUI(_form.cmbMaps, Maps.Where(x => x.IsVisible).ToList());
-            _form.UpdateUI(_form.cmbMaps, Maps, "Tag");
-            _form.UpdateUI(_form.cmbActChar, Characters);
+                ReloadAddress = "7B4C50";
+                ReloadValuesPointer = "7B57F0";
+                FKXListCount = "7B4F64";
+                ClockAddress = "49DF80";
+                CoinsAddress = "7A83B0";
+                GadgetAddress = "7A83A8";
+                DrawDistanceAddress = "49E04C";
+                FOVAddress = "49E054";
+                ResetCameraAddress = "49E330";
+                MapIdAddress = "7B4CE0";
+                GuardAIAddress = "7B4DE4";
+                ActiveCharacterPointer = "7B4F5C";
+                ActiveCharacterIdAddress = "7A830C";
+                ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
+                DAG.RootNodePointer = "7B44C4";
+                DAG.CurrentCheckpointNodePointer = "7B4B64";
+                DAG.TaskStringTablePointer = "7B4B48";
+                DAG.ClusterIdAddress = "4FEBF4";
+                DAG.SavefileStartAddress = "7A8300";
+                DAG.SavefileValuesOffsetsTablePointer = "7B4A6C";
+                StringTableCountAddress = "7B56A0";
+                IsLoadingAddress = "7A7200";
+            }
+            else if (region == "PAL (PS3 PSN)")
+            {
+                _encoding = Encoding.BigEndianUnicode;
+                _offsetTransformation1 = "44";
+                _offsetHealthAndGadgetPower = "DE0";
+                _offsetController = "140";
+                _offsetControllerBinds = "32";
+                _offsetInfiniteDbJump = "2C8";
+                _offsetSpeedMultiplier = "2D8";
+                _offsetInvulnerable = "278";
+                _offsetUndetectable = "118C";
+                DAG.OffsetState = "44";
+                DAG.OffsetGoalDescription = "4C";
+                DAG.OffsetFocusCount = "54";
+                DAG.OffsetCompleteCount = "58";
+                DAG.OffsetMissionName = "5C";
+                DAG.OffsetMissionDescription = "60";
+                DAG.OffsetClusterPointer = "6C";
+                DAG.OffsetChildrenCount = "90";
+                DAG.OffsetSuckPointer = "98";
+                DAG.OffsetCheckpointEntranceValue = "A8";
+                DAG.OffsetAttributes = "B8";
+                DAG.OffsetAttributesForCluster = "C0";
+
+                ReloadAddress = "7B4BD0";
+                ReloadValuesPointer = "7B5770";
+                FKXListCount = "7B4EE4";
+                ClockAddress = "49DF00";
+                CoinsAddress = "7A8330";
+                GadgetAddress = "7A8328";
+                DrawDistanceAddress = "49DFCC";
+                FOVAddress = "49DFD4";
+                ResetCameraAddress = "49E2B0";
+                MapIdAddress = "7B4C60";
+                GuardAIAddress = "7B4D64";
+                ActiveCharacterPointer = "7B4EDC";
+                ActiveCharacterIdAddress = "7A828C";
+                ActiveCharacterHealthAddress = $"{ActiveCharacterPointer},{_offsetHealthAndGadgetPower},0";
+                DAG.RootNodePointer = "7B4444";
+                DAG.CurrentCheckpointNodePointer = "7B4AE4";
+                DAG.TaskStringTablePointer = "7B4AC8";
+                DAG.ClusterIdAddress = "4FEB74";
+                DAG.SavefileStartAddress = "7A8280";
+                DAG.SavefileValuesOffsetsTablePointer = "7B49EC";
+                StringTableCountAddress = "7B5620";
+                IsLoadingAddress = "7A7180";
+            }
+
+            _offsetTransformation2 = $"{_offsetTransformation1}+4";
+            _offsetTransformation3 = $"{_offsetTransformation1}+8";
         }
 
         public override void CustomTick()
@@ -402,19 +560,7 @@ namespace SlyMultiTrainer
 
         public override void OnMapChange(int mapId)
         {
-            _form.UpdateUI(() =>
-            {
-                _form.trvFKXList.Nodes.Clear();
-                if (DAG != null)
-                {
-                    DAG.Viewer.Enabled = false;
-                }
-            });
 
-            if (DAG != null)
-            {
-                DAG.Graph = null;
-            }
         }
 
         public override Vector3 ReadActCharPosition()
@@ -538,7 +684,7 @@ namespace SlyMultiTrainer
 
         public override Controller_t GetController()
         {
-            return new(_m, $"{ActiveCharacterPointer},{_offsetController},30");
+            return new(_m, $"{ActiveCharacterPointer},{_offsetController},{_offsetControllerBinds}");
         }
 
         public override void ToggleInvulnerable(bool enableInvulnerable)
@@ -772,12 +918,6 @@ namespace SlyMultiTrainer
 
         public override void LoadMap(int mapId)
         {
-            // current map
-            if (mapId == -1)
-            {
-                mapId = GetMapId();
-            }
-
             //int extra = 0;
             //if (Region == "NTSC E3 Demo")
             //{
@@ -884,7 +1024,7 @@ namespace SlyMultiTrainer
                 new("DVD menu",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
                 new("Paris hub",
@@ -904,7 +1044,7 @@ namespace SlyMultiTrainer
                         new("Hotel", new(4430, -8000, 2420)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Wine cellar",
+                new($"{SubMapNamePrefix}Wine cellar",
                     new()
                     {
                         new("Entrance", new(14500, -6700, 470)),
@@ -913,7 +1053,7 @@ namespace SlyMultiTrainer
                         new("Music room", new(95, 2850, 125)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Nightclub",
+                new($"{SubMapNamePrefix}Nightclub",
                     new()
                     {
                         new("Entrance (door)", new(-2670, 5880, -540)),
@@ -923,7 +1063,7 @@ namespace SlyMultiTrainer
 
                     }
                 ),
-                new($"{StringBeforeSubMapName}Print room",
+                new($"{SubMapNamePrefix}Print room",
                     new()
                     {
                         new("Entrance (recon)", new(-1100, 4180, 1470)),
@@ -932,7 +1072,7 @@ namespace SlyMultiTrainer
                         new("Top floor", new(0, 1800, 1570)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Theater",
+                new($"{SubMapNamePrefix}Theater",
                     new()
                     {
                         new("Entrance", new(-40, 4220, 910)),
@@ -941,7 +1081,7 @@ namespace SlyMultiTrainer
                         new("Spotlight control", new(2560, 5820, 1560)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Water pump room",
+                new($"{SubMapNamePrefix}Water pump room",
                     new()
                     {
                         new("Entrance", new(-13060, 6580, -170)),
@@ -961,7 +1101,7 @@ namespace SlyMultiTrainer
                         new("Drawbridge control", new(200, 1980, 960)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Hotel",
+                new($"{SubMapNamePrefix}Hotel",
                     new()
                     {
                         new("Entrance", new(-80, 1800, -780)),
@@ -972,7 +1112,7 @@ namespace SlyMultiTrainer
                         new("Room 105", new(6540, -1880, 110)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Basement",
+                new($"{SubMapNamePrefix}Basement",
                     new()
                     {
                         new("Entrance", new(2470, -1850, 40)),
@@ -980,7 +1120,7 @@ namespace SlyMultiTrainer
                         new("Boardroom", new(1360, 0, 1170)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Ballroom",
+                new($"{SubMapNamePrefix}Ballroom",
                     new()
                     {
                         new("Entrance", new(1160, 5380, 910)),
@@ -1001,7 +1141,7 @@ namespace SlyMultiTrainer
                         new("Dam", new(1390, 8200, 8010)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Spice factory",
+                new($"{SubMapNamePrefix}Spice factory",
                     new()
                     {
                         new("Factory entrance", new(-10200, 9100, -30)),
@@ -1025,7 +1165,7 @@ namespace SlyMultiTrainer
                         new("The Contessa's house", new(6840, -590, 1850)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Prison",
+                new($"{SubMapNamePrefix}Prison",
                     new()
                     {
                         new("Entrance", new(540, -4040, 500)),
@@ -1034,7 +1174,7 @@ namespace SlyMultiTrainer
                         new("Control room", new(700, -1300, 250)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Vault room",
+                new($"{SubMapNamePrefix}Vault room",
                     new()
                     {
                         new("Entrance", new(-280, 390, 20)),
@@ -1061,14 +1201,14 @@ namespace SlyMultiTrainer
                     new(),
                     false
                 ),
-                new($"{StringBeforeSubMapName}Crypt 3 (Stealing Voices)",
+                new($"{SubMapNamePrefix}Crypt 3 (Stealing Voices)",
                     new()
                     {
                         new("Entrance", new(-25200, -180, 75)),
                         new("End", new(-25220, -9320, 190)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Crypts 1 & 2 (Stealing Voices)",
+                new($"{SubMapNamePrefix}Crypts 1 & 2 (Stealing Voices)",
                     new()
                     {
                         new("Entrance (crypt 1)", new(-16570, -11490, -380)),
@@ -1077,14 +1217,14 @@ namespace SlyMultiTrainer
                         new("End (crypt 2)", new(-19480, 5450, 1180)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Crypt 4 (Ghost Capture)",
+                new($"{SubMapNamePrefix}Crypt 4 (Ghost Capture)",
                     new()
                     {
                         new("Entrance", new(3530, -11640, -380)),
                         new("Tomb", new(3040, -6300, -1180)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Re-education tower & Hacking Crypt",
+                new($"{SubMapNamePrefix}Re-education tower & Hacking Crypt",
                     new()
                     {
                         new("Entrance (Re-education Tower)", new(-16020, -11490, -40)),
@@ -1096,25 +1236,25 @@ namespace SlyMultiTrainer
                         new("Unused area 3", new(13330, -7390, -380)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Crypt 1 (Mojo Trap Action)",
+                new($"{SubMapNamePrefix}Crypt 1 (Mojo Trap Action)",
                     new()
                     {
                         new("Entrance", new(-16197, -11483, -307)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Crypt 3 (Mojo Trap Action)",
+                new($"{SubMapNamePrefix}Crypt 3 (Mojo Trap Action)",
                     new()
                     {
                         new("Entrance", new(4852, -6280, -1303)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Crypt 2 (Mojo Trap Action)",
+                new($"{SubMapNamePrefix}Crypt 2 (Mojo Trap Action)",
                     new()
                     {
                         new("Entrance", new(9069, -2627, 118)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Crypt 4 (Mojo Trap Action)",
+                new($"{SubMapNamePrefix}Crypt 4 (Mojo Trap Action)",
                     new()
                     {
                         new("Entrance", new(-25210, -5428, 133)),
@@ -1132,7 +1272,7 @@ namespace SlyMultiTrainer
                         new("Plane", new(-1840, 9260, 20)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Cabins",
+                new($"{SubMapNamePrefix}Cabins",
                     new()
                     {
                         new("Cabin 1", new(-8820, -8470, 130)),
@@ -1140,14 +1280,14 @@ namespace SlyMultiTrainer
                         new("Cabin 3", new(8370, 6260, 130)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Train (Aerial Assault / Theft on Rails)",
+                new($"{SubMapNamePrefix}Train (Aerial Assault / Theft on Rails)",
                     new()
                     {
                         new("Back", new(0, -8400, 120)),
                         new("Front", new(40, 21300, 120)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Train (Operation)",
+                new($"{SubMapNamePrefix}Train (Operation)",
                     new()
                     {
                         new("Back", new(0, -8400, 120)),
@@ -1155,7 +1295,7 @@ namespace SlyMultiTrainer
                         new("Jean Bison", new(0, 2380, 120)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Train (Ride the Iron Horse)",
+                new($"{SubMapNamePrefix}Train (Ride the Iron Horse)",
                     new()
                     {
                         new("Back", new(0, -8400, 120)),
@@ -1176,14 +1316,14 @@ namespace SlyMultiTrainer
                         new("Lighthouse (top)", new(-13700, -3850, 4060)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}RC Combat Club",
+                new($"{SubMapNamePrefix}RC Combat Club",
                     new()
                     {
                         new("Moose head", new(19390, -1080, 1720)),
                         new("Sawblade crawl", new(22040, -2520, 1470)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Sawmill",
+                new($"{SubMapNamePrefix}Sawmill",
                     new()
                     {
                         new("Entrance", new(-1400, 22123, 1200)),
@@ -1192,7 +1332,7 @@ namespace SlyMultiTrainer
                         new("Lever", new(690, 22320, 1190)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Lighthouse",
+                new($"{SubMapNamePrefix}Lighthouse",
                     new()
                     {
                         new("Top entrance", new(-290, 375, 5845)),
@@ -1200,14 +1340,14 @@ namespace SlyMultiTrainer
                         new("Recon", new(680, 1060, 1015)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Bear cave",
+                new($"{SubMapNamePrefix}Bear cave",
                     new()
                     {
                         new("Entrance", new(-2525, 2960, 30)),
                         new("Large ice wall", new(1000, 5255, 165)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Sawmill (Boss)",
+                new($"{SubMapNamePrefix}Sawmill (Boss)",
                     new()
                     {
                         new("Arena", new(1140, -520, 75)),
@@ -1226,7 +1366,7 @@ namespace SlyMultiTrainer
                         new("Center", new(0, 0, 2810)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Blimp HQ",
+                new($"{SubMapNamePrefix}Blimp HQ",
                     new()
                     {
                         new("Entrance", new(-3890, 0, 730)),
@@ -1235,28 +1375,31 @@ namespace SlyMultiTrainer
                         new("Center", new(0, 0, -670)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Engine room 1 (Bentley & Murray)",
+                new($"{SubMapNamePrefix}Engine room 1 (Bentley & Murray)",
                     new()
                     {
                         new("Entrance", new(-2190, 130, 10)),
+                        new("Half", new(2300, 0, 100)),
                         new("Control room", new(-2250, -20, 710)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Engine room 2 (Sly & Bentley)",
+                new($"{SubMapNamePrefix}Engine room 2 (Sly & Bentley)",
                     new()
                     {
                         new("Entrance", new(-2140, 140, 10)),
+                        new("Half", new(2300, 0, 100)),
                         new("Control room", new(-2250, -20, 710)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Engine room 3 (Murray & Sly)",
+                new($"{SubMapNamePrefix}Engine room 3 (Murray & Sly)",
                     new()
                     {
                         new("Entrance", new(-2110, 430, 10)),
+                        new("Half", new(2300, 0, 100)),
                         new("Control room", new(-2250, -85, 710)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Paris (Clock-la)",
+                new($"{SubMapNamePrefix}Paris (Clock-la)",
                     new()
                     {
                         new("Spawn (sky)", new(-12560, 580, 86720)),

@@ -7,6 +7,8 @@ namespace SlyMultiTrainer
     {
         private Form1 _form;
         private Memory.Mem _m;
+        private int _lastMapId;
+        public bool _isFirstLoopAfterLoading;
         public string Region;
 
         protected string FOVAddress;
@@ -18,14 +20,15 @@ namespace SlyMultiTrainer
         protected string GadgetAddress;
         protected string GuardAIAddress;
 
-        protected List<Map_t> Maps;
-        protected List<Character_t> Characters;
+        public List<Map_t> Maps;
+        public List<Character_t> Characters;
 
         protected GameBase_t(Memory.Mem m, Form1 form, string region)
         {
             _form = form;
             _m = m;
             Region = region;
+            _isFirstLoopAfterLoading = true;
             Maps = GetMaps();
             Characters = GetCharacters();
         }
@@ -45,12 +48,27 @@ namespace SlyMultiTrainer
             _form.UpdateUI(_form.trkDrawDistance, ReadDrawDistance() * 10);
 
             // Set the warps for the current map
-            var mapId = GetMapId();
-            if (mapId != -1
-                && _form.cmbWarps.DataSource as List<Warp_t> != Maps[mapId].Warps)
+            var mapId = GetMapId() + 1; // + first item for current map
+            if (mapId != 0 && mapId != _lastMapId)
             {
+                _isFirstLoopAfterLoading = true;
+                _lastMapId = mapId;
                 _form.UpdateUI(_form.cmbWarps, Maps[mapId].Warps);
                 OnMapChange(mapId);
+
+                if (this is Sly2Handler || this is Sly3Handler)
+                {
+                    DAG_t DAG = this is Sly2Handler ? (this as Sly2Handler).DAG : (this as Sly3Handler).DAG;
+                    _form.UpdateUI(() =>
+                    {
+                        _form.trvFKXList.Nodes.Clear();
+                        if (DAG != null)
+                        {
+                            DAG.Viewer.Enabled = false;
+                            DAG.Graph = null;
+                        }
+                    });
+                }
             }
 
             // Active character in the dropdown
@@ -92,6 +110,42 @@ namespace SlyMultiTrainer
 
             if (!IsLoading())
             {
+                if (_isFirstLoopAfterLoading)
+                {
+                    _isFirstLoopAfterLoading = false;
+
+                    if (this is Sly3Handler)
+                    {
+                        var list = (this as Sly3Handler).GetFKXList();
+                        List<Character_t> newCharacters = new(Characters);
+                        for (int i = 0; i < newCharacters.Count; i++)
+                        {
+                            var character = newCharacters[i];
+                            var fkEntity = list.FirstOrDefault(x => x.Name == character.InternalName);
+                            if (fkEntity == null || fkEntity.SpawnRule == 0)
+                            {
+                                // Remove if not found or its spawn rule is 0 (shaman in kaine island)
+                                newCharacters.Remove(character);
+                                i--;
+                                continue;
+                            }
+
+                            // Sly 3 ntsc e3 demo doesn't have the same ids as retail
+                            // So let's read them on the fly
+                            int id = _m.ReadInt((fkEntity.EntityPointer[0] + 0x18).ToString("X"));
+                            newCharacters[i].Id = id;
+                        }
+
+                        if (newCharacters.Count != 0)
+                        {
+                            if (!newCharacters.SequenceEqual((List<Character_t>)_form.cmbActChar.DataSource))
+                            {
+                                _form.UpdateUI(_form.cmbActChar, newCharacters);
+                            }
+                        }
+                    }
+                }
+
                 if (tabName == "tabEntities")
                 {
                     UpdateEntities();
@@ -100,6 +154,10 @@ namespace SlyMultiTrainer
                 {
                     UpdateDAG();
                 }
+            }
+            else
+            {
+                _isFirstLoopAfterLoading = true;
             }
 
             // Game specific logic
@@ -199,7 +257,10 @@ namespace SlyMultiTrainer
             {
                 _form.UpdateUI(() =>
                 {
-                    _form.btnRefreshFKXList_Click(_form.btnRefreshFKXList, EventArgs.Empty);
+                    if (!_form.txtEntitiesSearch.Focused)
+                    {
+                        _form.btnRefreshFKXList_Click(_form.btnRefreshFKXList, EventArgs.Empty);
+                    }
                 });
             }
 
@@ -293,14 +354,14 @@ namespace SlyMultiTrainer
                         // Then we also need to update the in-game dag
                         task.IsStateChangedByUser = false;
                         DAG.WriteTaskState(task);
-                        DAG.WriteTaskFocusCount1(task);
-                        DAG.WriteTaskFocusCount2(task);
+                        DAG.WriteTaskFocusCount(task);
+                        DAG.WriteTaskCompleteCount(task);
                     }
                     else
                     {
                         task.State = taskInGame.State;
-                        task.FocusCount1 = taskInGame.FocusCount1;
-                        task.FocusCount2 = taskInGame.FocusCount2;
+                        task.FocusCount = taskInGame.FocusCount;
+                        task.CompleteCount = taskInGame.CompleteCount;
                     }
 
                     // Update the node's color

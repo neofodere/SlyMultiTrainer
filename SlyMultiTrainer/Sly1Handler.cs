@@ -38,11 +38,13 @@ namespace SlyMultiTrainer
         private Memory.Mem _m;
         private Form1 _form;
 
+        string[] tabWorldStateHeaderLabels = { "Levels", "Unlocked", "Key", "Safe", "Sprint" };
+
         public Sly1Handler(Memory.Mem m, Form1 form, string region) : base(m, form, region)
         {
             _m = m;
             _form = form;
-
+            
             if (region == "NTSC")
             {
                 GameStatePointer = "2623C0";
@@ -179,40 +181,6 @@ namespace SlyMultiTrainer
                 BurningRubberComputerCountPointer = "278AB4";
                 BentleyComesThroughChipCountPointer = "27081C";
             }
-            //else if (region == "NTSC May 19")
-            //{
-            //    GameStatePointer = "276220";
-            //    WorldIdAddress = $"{GameStatePointer},1078";
-            //    MapIdAddress = $"{GameStatePointer},107C";
-            //    LivesAddress = $"{GameStatePointer},1080";
-            //    LuckyCharmsAddress = $"{GameStatePointer},1084";
-            //    CoinsAddress = $"{GameStatePointer},1088";
-            //    GadgetAddress = $"{GameStatePointer},108C";
-            //    ReloadAddress = "28B40C";
-            //    ReloadValuesAddress = "";
-            //    ReloadValuesStructSize = 0x2C;
-            //    LanguageAddress = "";
-            //    IsLoadingAddress = $"{ReloadAddress}";
-            //    ClockAddress = "";
-            //    CameraPointer = "";
-            //    DrawDistanceAddress = $"{CameraPointer},B0";
-            //    FOVAddress = $"{CameraPointer},1C8";
-            //    ResetCameraAddress = $"{CameraPointer},220";
-            //    ControllerAddress = "";
-            //    DialoguePointer = "";
-            //    SlyEntityPointer = "";
-            //    ActiveCharacterVehiclePointer = "";
-            //    ActiveCharacterPointer = $"{SlyEntityPointer}";
-            //    TreasureInTheDepthsChestCountPointer = "";
-            //    RaceLapsCountPointer = "";
-            //    RaceNitrosCountPointer = "";
-            //    PiranhaLakeFishCountPointer = "";
-            //    PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
-            //    //TimerAddress = "";
-            //    BurningRubberFireSlugsComputerCountPointer = "";
-            //    BurningRubberComputerCountPointer = "";
-            //    BentleyComesThroughChipCountPointer = "";
-            //}
             else if (region == "NTSC Demo")
             {
                 _offsetCollider = "408";
@@ -224,8 +192,8 @@ namespace SlyMultiTrainer
                 CoinsAddress = $"{GameStatePointer},1050";
                 GadgetAddress = $"{GameStatePointer},1058";
                 ReloadAddress = "2AA28C";
-                ReloadValuesAddress = ""; // Works a different way
-                ReloadValuesStructSize = 0;
+                ReloadValuesAddress = "289A08";
+                ReloadValuesStructSize = 0; // Works a different way
                 LanguageAddress = "";
                 IsLoadingAddress = $"{ReloadAddress}";
                 ClockAddress = "2386E4";
@@ -349,10 +317,153 @@ namespace SlyMultiTrainer
 
                 Maps.Skip(8).ToList().ForEach(m => m.IsVisible = false);
             }
+            else if (region == "NTSC May 19")
+            {
+                _offsetTransformationPosition = "11";
+                _offsetTransformationVelocityZ = "16";
+                _offsetCollider = "398";
+                GameStatePointer = "276220";
+                WorldIdAddress = $"{GameStatePointer},1078";
+                MapIdAddress = $"{GameStatePointer},107C";
+                LivesAddress = $"{GameStatePointer},1080";
+                LuckyCharmsAddress = $"{GameStatePointer},1084";
+                CoinsAddress = $"{GameStatePointer},1088";
+                GadgetAddress = $"{GameStatePointer},1090";
+                ReloadAddress = "28B40C";
+                ReloadValuesAddress = "28A78C";
+                ReloadValuesStructSize = 0x2C;
+                LanguageAddress = "";
+                IsLoadingAddress = $"{ReloadAddress}";
+                ClockAddress = "274B04";
+                CameraPointer = "274C8C";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C4";
+                ResetCameraAddress = $"{CameraPointer},208";
+                ControllerAddress = "278DF8";
+                DialoguePointer = "285AF4";
+                SlyEntityPointer = "278EF0";
+                ActiveCharacterVehiclePointer = "280138";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "";
+                RaceLapsCountPointer = "";
+                RaceNitrosCountPointer = "";
+                PiranhaLakeFishCountPointer = "";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
+                //TimerAddress = "";
+                BurningRubberFireSlugsComputerCountPointer = "";
+                BurningRubberComputerCountPointer = "";
+                BentleyComesThroughChipCountPointer = "";
 
-            _form.UpdateUI(_form.cmbMaps, Maps.Where(x => x.IsVisible).ToList());
-            _form.UpdateUI(_form.cmbMaps, Maps, "Tag");
-            _form.UpdateUI(_form.cmbActChar, Characters);
+                Maps.Skip(20).ToList().ForEach(m => m.IsVisible = false);
+                (Maps[6], Maps[8]) = (Maps[8], Maps[6]);
+                (Maps[10], Maps[8]) = (Maps[8], Maps[10]);
+                (Maps[13], Maps[14]) = (Maps[14], Maps[13]);
+                (Maps[15], Maps[17]) = (Maps[17], Maps[15]);
+                (Maps[16], Maps[18]) = (Maps[18], Maps[16]);
+                (Maps[17], Maps[19]) = (Maps[19], Maps[17]);
+                (Maps[18], Maps[19]) = (Maps[19], Maps[18]);
+                Maps.RemoveAt(2); // hideout
+                Maps.Insert(1, new("attract", new(), false));
+            }
+            else if (region == "NTSC (PS3 PSN)")
+            {
+                GameStatePointer = "3A4FC0";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E62AC4";
+                ReloadValuesAddress = "3B54FC";
+                ReloadValuesStructSize = 0x6C;
+                //LanguageAddress = "";
+                IsLoadingAddress = $"{ReloadAddress}";
+                ClockAddress = "39C314";
+                CameraPointer = "3E6340";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "428BFC";
+                DialoguePointer = "E418B0";
+                SlyEntityPointer = "428D04";
+                ActiveCharacterVehiclePointer = "E3F790";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "E44474";
+                RaceLapsCountPointer = "E44F8C";
+                RaceNitrosCountPointer = "E45518";
+                PiranhaLakeFishCountPointer = "E470F0";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "E44A00";
+                BurningRubberFireSlugsComputerCountPointer = "E4D25C";
+                BurningRubberComputerCountPointer = "E4CCCC";
+                BentleyComesThroughChipCountPointer = "E46030";
+            }
+            else if (region == "PAL (PS3 PSN)")
+            {
+                GameStatePointer = "3A4FE0";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E63B04";
+                ReloadValuesAddress = "3B559C";
+                ReloadValuesStructSize = 0xAC;
+                //LanguageAddress = "";
+                IsLoadingAddress = $"{ReloadAddress}";
+                ClockAddress = "39C334";
+                CameraPointer = "3E6F40";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "4297FC";
+                DialoguePointer = "E424B0";
+                SlyEntityPointer = "429904";
+                ActiveCharacterVehiclePointer = "E40390";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "E45074";
+                RaceLapsCountPointer = "E45B8C";
+                RaceNitrosCountPointer = "E46118";
+                PiranhaLakeFishCountPointer = "E47CF0";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "E45600";
+                BurningRubberFireSlugsComputerCountPointer = "E4E27C";
+                BurningRubberComputerCountPointer = "E4DCEC";
+                BentleyComesThroughChipCountPointer = "E46C30";
+            }
+            else if (region == "NTSC-K (PS3 PSN)")
+            {
+                GameStatePointer = "3A4F90";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E61E44";
+                ReloadValuesAddress = "3B545C";
+                ReloadValuesStructSize = 0x2C;
+                //LanguageAddress = "";
+                IsLoadingAddress = $"{ReloadAddress}";
+                ClockAddress = "39C2F4";
+                CameraPointer = "3E56C0";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "427F7C";
+                DialoguePointer = "E40C30";
+                SlyEntityPointer = "428084";
+                ActiveCharacterVehiclePointer = "E3EB10";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "E437F4";
+                RaceLapsCountPointer = "E4430C";
+                RaceNitrosCountPointer = "E44898";
+                PiranhaLakeFishCountPointer = "E46470";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "E43D80";
+                BurningRubberFireSlugsComputerCountPointer = "E4C5DC";
+                BurningRubberComputerCountPointer = "E4C04C";
+                BentleyComesThroughChipCountPointer = "E453B0";
+            }
         }
 
         public override void CustomTick()
@@ -383,33 +494,36 @@ namespace SlyMultiTrainer
                 });
                 int worldId = Convert.ToInt32(tabName2.Last().ToString());
 
-                // If it's the first time we switched to this world state tab, fill it with the right controls
+                // If it's the first time we switched to the world state tab, fill them with the right controls
                 if (tabPage!.Controls.Count == 0)
                 {
-                    string mapNameStart = "";
-                    switch (worldId)
+                    for (int i = 1; i < 6; i++)
                     {
-                        case 1:
-                            mapNameStart = "A Stealthy Approach";
-                            break;
-                        case 2:
-                            mapNameStart = "A Rocky Start";
-                            break;
-                        case 3:
-                            mapNameStart = "The Dread Swamp Path";
-                            break;
-                        case 4:
-                            mapNameStart = "A Perilous Ascent";
-                            break;
-                        case 5:
-                            mapNameStart = "A Hazardous Path";
-                            break;
-                    }
+                        string mapNameStart = "";
+                        switch (i)
+                        {
+                            case 1:
+                                mapNameStart = "A Stealthy Approach";
+                                break;
+                            case 2:
+                                mapNameStart = "A Rocky Start";
+                                break;
+                            case 3:
+                                mapNameStart = "The Dread Swamp Path";
+                                break;
+                            case 4:
+                                mapNameStart = "A Perilous Ascent";
+                                break;
+                            case 5:
+                                mapNameStart = "A Hazardous Path";
+                                break;
+                        }
 
-                    _form.UpdateUI(() =>
-                    {
-                        FillTabWorldState(worldId, Maps.FindIndex(x => x.Name == mapNameStart));
-                    });
+                        _form.UpdateUI(() =>
+                        {
+                            FillTabWorldState(i, Maps.FindIndex(x => x.Name == mapNameStart));
+                        });
+                    }
                 }
 
                 // Update the checkboxes for each level
@@ -450,284 +564,290 @@ namespace SlyMultiTrainer
         private void FillTabWorldState(int worldId, int mapIdStart)
         {
             TabPage tabWorldState = _form.tabControlWorldStates.TabPages[$"tabWorldState{worldId}"]!;
-            TabWorldStateAddLabels(tabWorldState);
-            TabWorldStateAddButtons(tabWorldState, worldId);
-            TabWorldStateAddCheckboxes(tabWorldState, worldId);
 
+            TableLayoutPanel tableLevels = new()
+            {
+                Name = $"tabWorldState{worldId}LevelsTable",
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = tabWorldStateHeaderLabels.Length,
+                RowCount = 1,
+                GrowStyle = TableLayoutPanelGrowStyle.AddRows,
+                Anchor = AnchorStyles.None,
+            };
+
+            tableLevels.SuspendLayout();
+
+            // Add header labels
+            for (int col = 0; col < tabWorldStateHeaderLabels.Length; col++)
+            {
+                Label lbl = new()
+                {
+                    Text = tabWorldStateHeaderLabels[col],
+                    AutoSize = true,
+                    Font = _form.lblXCoord.Font,
+                    Padding = new Padding(0, 0, 0, 14),
+                };
+                tableLevels.Controls.Add(lbl, col, 0);
+            }
+
+            // For each level, add the map name and the checkboxes
             int levelCount = GetLevelCount(worldId);
             for (int i = 0; i < levelCount; i++)
             {
-                // Map name
-                Label lbl = new()
-                {
-                    Text = Maps[mapIdStart + i].Name.TrimStart(' '),
-                    AutoSize = true,
-                    Font = _form.lblXCoord.Font,
-                    Location = new Point(0, 10 + 20 * (i + 1)),
-                };
-                tabWorldState.Controls.Add(lbl);
-
-                TabWorldStateAddCheckboxesForLevel(tabWorldState, worldId, i);
+                TabWorldStateAddLevelRow(tableLevels, Maps[mapIdStart + i].Name.TrimStart(' '), tableLevels.ColumnCount, worldId, i);
             }
 
-            TabWorldStateAddWorldFlagsInputs(tabWorldState, worldId);
+            // Layout needs to be calculated first, so that we can add the buttons every 2 rows
+            tabWorldState.Controls.Add(tableLevels);
+            tableLevels.ResumeLayout();
+            tableLevels.PerformLayout();
+
+            // Add the toggle to all buttons
+            tabWorldState.Controls.Add(TabWorldStateGetToggleButtonToAll(tableLevels, worldId, tabWorldStateHeaderLabels[1], 0));
+            tabWorldState.Controls.Add(TabWorldStateGetToggleButtonToAll(tableLevels, worldId, tabWorldStateHeaderLabels[2], 2));
+            tabWorldState.Controls.Add(TabWorldStateGetToggleButtonToAll(tableLevels, worldId, tabWorldStateHeaderLabels[3], 4));
+            tabWorldState.Controls.Add(TabWorldStateGetToggleButtonToAll(tableLevels, worldId, tabWorldStateHeaderLabels[4], 6));
+
+            // Flags
+            TableLayoutPanel tableFlags = new()
+            {
+                Name = $"tabWorldState{worldId}FlagsTable",
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = 4,
+                RowCount = 1,
+                GrowStyle = TableLayoutPanelGrowStyle.AddRows,
+                Anchor = AnchorStyles.None,
+                Location = new(0, tableLevels.Height + 16),
+            };
+
+            tableFlags.SuspendLayout();
+            TabWorldStateAddWorldFlags(tableFlags, worldId);
+            tabWorldState.Controls.Add(tableFlags);
+            tableFlags.ResumeLayout();
+            tableFlags.PerformLayout();
+
+            // Flags input
+            TableLayoutPanel tableFlagsInputs = new()
+            {
+                Name = $"tabWorldState{worldId}FlagsInputsTable",
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = 2,
+                RowCount = 1,
+                GrowStyle = TableLayoutPanelGrowStyle.AddRows,
+                Anchor = AnchorStyles.None,
+                Location = new(0, tableLevels.Height + 16 + tableFlags.Height),
+            };
+
+            tableFlagsInputs.SuspendLayout();
+            TabWorldStateAddWorldFlagsInputs(tableFlagsInputs, worldId);
+            tabWorldState.Controls.Add(tableFlagsInputs);
+            tableFlagsInputs.ResumeLayout();
+            tableFlagsInputs.PerformLayout();
+
+            // Flags input specific for each world
+            TableLayoutPanel tableWorldSpecificInputs = new()
+            {
+                Name = $"tabWorldState{worldId}SpecificFlagsInputsTable",
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = 2,
+                RowCount = 1,
+                GrowStyle = TableLayoutPanelGrowStyle.AddRows,
+                Anchor = AnchorStyles.None,
+                Location = new(tableFlagsInputs.Width + 10, tableLevels.Height + 16 + tableFlags.Height),
+            };
+
+            tableWorldSpecificInputs.SuspendLayout();
+            TabWorldStateAddWorldSpecificInputs(tableWorldSpecificInputs, worldId);
+            tabWorldState.Controls.Add(tableWorldSpecificInputs);
+            tableWorldSpecificInputs.ResumeLayout();
+            tableWorldSpecificInputs.PerformLayout();
         }
 
-        private void TabWorldStateAddLabels(TabPage tabWorldState)
+        void TabWorldStateAddLevelRow(TableLayoutPanel table, string levelName, int columns, int worldId, int levelId)
         {
+            // The current row count is the index where we will insert the new row
+            int row = table.RowCount;
+
+            // Increase the row count and add a RowStyle for the new row
+            table.RowCount = row + 1;
+
             Label lbl = new()
             {
-                Text = "Levels",
+                Text = levelName,
                 AutoSize = true,
                 Font = _form.lblXCoord.Font,
-                Location = new Point(0, 0),
+                Padding = new Padding(0)
             };
-            tabWorldState.Controls.Add(lbl);
+            table.Controls.Add(lbl, 0, row);
 
-            lbl = new()
+            // Add checkboxes
+            for (int col = 1; col < columns; col++)
             {
-                Text = "Unlocked",
-                AutoSize = true,
-                Font = _form.lblXCoord.Font,
-                Location = new Point(175, 0),
-            };
-            tabWorldState.Controls.Add(lbl);
-
-            lbl = new()
-            {
-                Text = "Key",
-                AutoSize = true,
-                Font = _form.lblXCoord.Font,
-                Location = new Point(260, 0),
-            };
-            tabWorldState.Controls.Add(lbl);
-
-            lbl = new()
-            {
-                Text = "Safe",
-                AutoSize = true,
-                Font = _form.lblXCoord.Font,
-                Location = new Point(330, 0),
-            };
-            tabWorldState.Controls.Add(lbl);
-
-            lbl = new()
-            {
-                Text = "Sprint",
-                AutoSize = true,
-                Font = _form.lblXCoord.Font,
-                Location = new Point(390, 0),
-            };
-            tabWorldState.Controls.Add(lbl);
+                string type = tabWorldStateHeaderLabels[col];
+                CheckBox chk = new()
+                {
+                    Name = $"chkWorld{worldId}Level{levelId}{type}",
+                    Text = "",
+                    Anchor = AnchorStyles.None, // center inside cell
+                    AutoSize = true
+                };
+                chk.Click += (s, e) => chkWorldLevel_Click(s, e, type);
+                table.Controls.Add(chk, col, row);
+            }
         }
 
-        private void TabWorldStateAddButtons(TabPage tabWorldState, int worldId)
+        private Button TabWorldStateGetToggleButtonToAll(TableLayoutPanel table, int worldId, string name, int rowIndex)
         {
-            Button btn = new()
+            var btn = new Button
             {
-                Name = $"btnWorld{worldId}ToggleUnlockedToAll",
-                Text = "Toggle unlocked to all",
-                Location = new Point(450, 30),
-                AutoSize = true
+                Name = $"btnWorld{worldId}Toggle{name}ToAll",
+                Text = $"Toggle {name.ToLower()} to all",
+                AutoSize = true,
+                UseVisualStyleBackColor = true,
             };
-            btn.Click += (s, e) => btnToggleToAll_Click(s, e, worldId, "Unlocked");
-            tabWorldState.Controls.Add(btn);
+            btn.Click += (s, e) => btnToggleToAll_Click(s, e, table, worldId, name);
 
-            btn = new()
+            // Place the button every 2 rows, we need to calculate the vertical position by adding all the heights
+            var heights = table.GetRowHeights();
+            int y = table.Location.Y;
+            for (int i = 0; i <= rowIndex; i++)
             {
-                Name = $"btnWorld{worldId}ToggleKeyToAll",
-                Text = "Toggle key to all",
-                Location = new Point(450, 60),
-                AutoSize = true
-            };
-            btn.Click += (s, e) => btnToggleToAll_Click(s, e, worldId, "Key");
-            tabWorldState.Controls.Add(btn);
+                y += heights[i];
+            }
 
-            btn = new()
-            {
-                Name = $"btnWorld{worldId}ToggleSafeToAll",
-                Text = "Toggle safe to all",
-                Location = new Point(450, 90),
-                AutoSize = true
-            };
-            btn.Click += (s, e) => btnToggleToAll_Click(s, e, worldId, "Safe");
-            tabWorldState.Controls.Add(btn);
-
-            btn = new()
-            {
-                Name = $"btnWorld{worldId}ToggleSprintToAll",
-                Text = "Toggle sprint to all",
-                Location = new Point(450, 120),
-                AutoSize = true
-            };
-            btn.Click += (s, e) => btnToggleToAll_Click(s, e, worldId, "Sprint");
-            tabWorldState.Controls.Add(btn);
+            btn.Location = new Point( table.Location.X + table.PreferredSize.Width + 20, y);
+            return btn;
         }
 
-        private void TabWorldStateAddCheckboxes(TabPage tabWorldState, int worldId)
+        private void TabWorldStateAddWorldFlags(TableLayoutPanel table, int worldId)
         {
-            CheckBox chk = new()
+            CheckBox chk;
+
+            chk = new()
             {
                 Name = $"chkWorld{worldId}Started",
                 Text = "Started",
-                Location = new Point(5, 230),
                 AutoSize = true,
             };
             chk.Click += (s, e) => chkWorldState_Click(s, e, worldId, "Started");
-            tabWorldState.Controls.Add(chk);
+            table.Controls.Add(chk);
 
             chk = new()
             {
                 Name = $"chkWorld{worldId}Key1",
                 Text = "1 key collected",
-                Location = new Point(80, 230),
                 AutoSize = true,
             };
             chk.Click += (s, e) => chkWorldState_Click(s, e, worldId, "Key1");
-            tabWorldState.Controls.Add(chk);
+            table.Controls.Add(chk);
 
             chk = new()
             {
                 Name = $"chkWorld{worldId}Key3",
                 Text = "3 keys collected",
-                Location = new Point(195, 230),
                 AutoSize = true,
             };
             chk.Click += (s, e) => chkWorldState_Click(s, e, worldId, "Key3");
-            tabWorldState.Controls.Add(chk);
+            table.Controls.Add(chk);
 
             chk = new()
             {
                 Name = $"chkWorld{worldId}Key7",
                 Text = "7 keys collected",
-                Location = new Point(310, 230),
                 AutoSize = true,
             };
             chk.Click += (s, e) => chkWorldState_Click(s, e, worldId, "Key7");
-            tabWorldState.Controls.Add(chk);
+            table.Controls.Add(chk);
         }
 
-        private void TabWorldStateAddCheckboxesForLevel(TabPage tabWorldState, int worldId, int levelId)
+        private void TabWorldStateAddWorldFlagsInputs(TableLayoutPanel table, int worldId)
         {
-            CheckBox chk = new()
-            {
-                Name = $"chkWorld{worldId}Level{levelId}Unlocked",
-                Text = "",
-                Size = new Size(20, 23),
-                Location = new Point(200, 10 + 20 * (levelId + 1)),
-            };
-            chk.Click += (s, e) => chkWorldLevel_Click(s, e, "Unlocked");
-            tabWorldState.Controls.Add(chk);
-
-            chk = new()
-            {
-                Name = $"chkWorld{worldId}Level{levelId}Key",
-                Text = "",
-                Size = new Size(20, 23),
-                Location = new Point(270, 10 + 20 * (levelId + 1)),
-            };
-            chk.Click += (s, e) => chkWorldLevel_Click(s, e, "Key");
-            tabWorldState.Controls.Add(chk);
-
-            chk = new()
-            {
-                Name = $"chkWorld{worldId}Level{levelId}Safe",
-                Text = "",
-                Size = new Size(20, 23),
-                Location = new Point(340, 10 + 20 * (levelId + 1)),
-            };
-            chk.Click += (s, e) => chkWorldLevel_Click(s, e, "Safe");
-            tabWorldState.Controls.Add(chk);
-
-            chk = new()
-            {
-                Name = $"chkWorld{worldId}Level{levelId}Sprint",
-                Text = "",
-                Size = new Size(20, 23),
-                Location = new Point(410, 10 + 20 * (levelId + 1)),
-            };
-            chk.Click += (s, e) => chkWorldLevel_Click(s, e, "Sprint");
-            tabWorldState.Controls.Add(chk);
-        }
-
-        private void TabWorldStateAddWorldFlagsInputs(TabPage tabWorldState, int worldId)
-        {
-            Label lbl = new()
-            {
-                Text = "Keys collected",
-                AutoSize = true,
-                Font = _form.lblXCoord.Font,
-                Location = new Point(0, 260),
-            };
-            tabWorldState.Controls.Add(lbl);
-
-            TextBox txt = new()
-            {
-                Name = $"txtWorld{worldId}KeysCollected",
-                Location = new Point(130, 260),
-            };
-            txt.TextChanged += (s, e) => txtWorldFlag_TextChanged(s, e, worldId, "KeysCollected");
-            tabWorldState.Controls.Add(txt);
+            Label lbl;
+            TextBox txt;
 
             lbl = new()
             {
-                Text = "Safes opened",
+                Text = $"Keys collected",
                 AutoSize = true,
                 Font = _form.lblXCoord.Font,
-                Location = new Point(0, 285),
+                Padding = new Padding(0, 4, 0, 0),
             };
-            tabWorldState.Controls.Add(lbl);
+            table.Controls.Add(lbl, 0, 0);
+
+            txt = new()
+            {
+                Name = $"txtWorld{worldId}KeysCollected",
+            };
+            txt.TextChanged += (s, e) => txtWorldFlag_TextChanged(s, e, worldId, "KeysCollected");
+            table.Controls.Add(txt, 1, 0);
+
+            lbl = new()
+            {
+                Text = $"Safes opened",
+                AutoSize = true,
+                Font = _form.lblXCoord.Font,
+                Padding = new Padding(0, 4, 0, 0)
+            };
+            table.Controls.Add(lbl, 0, 1);
 
             txt = new()
             {
                 Name = $"txtWorld{worldId}SafesOpened",
-                Location = new Point(130, 285),
             };
             txt.TextChanged += (s, e) => txtWorldFlag_TextChanged(s, e, worldId, "SafesOpened");
-            tabWorldState.Controls.Add(txt);
+            table.Controls.Add(txt, 1, 1);
 
             lbl = new()
             {
-                Text = "Sprints completed",
+                Text = $"Sprints completed",
                 AutoSize = true,
                 Font = _form.lblXCoord.Font,
-                Location = new Point(0, 310),
+                Padding = new Padding(0, 4, 0, 0)
             };
-            tabWorldState.Controls.Add(lbl);
+            table.Controls.Add(lbl, 0, 2);
 
             txt = new()
             {
                 Name = $"txtWorld{worldId}SprintsCompleted",
-                Location = new Point(130, 310),
             };
             txt.TextChanged += (s, e) => txtWorldFlag_TextChanged(s, e, worldId, "SprintsCompleted");
-            tabWorldState.Controls.Add(txt);
+            table.Controls.Add(txt, 1, 2);
+        }
 
+        private void TabWorldStateAddWorldSpecificInputs(TableLayoutPanel table, int worldId)
+        {
             if (worldId == 1)
             {
-                lbl = new()
+                Label lbl1 = new()
                 {
                     Text = "Treasure in the Depths - Chests",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 260),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl);
+                table.Controls.Add(lbl1);
 
-                txt = new()
+                TextBox txt1 = new()
                 {
                     Name = $"txtWorld{worldId}DepthsChestCount",
-                    Location = new Point(450, 260),
                 };
-                txt.TextChanged += (s, e) =>
+                txt1.TextChanged += (s, e) =>
                 {
-                    if (!int.TryParse(txt.Text, out int value))
+                    if (!int.TryParse(txt1.Text, out int value))
                     {
-                        txt.Text = "";
+                        txt1.Text = "";
                     }
                     WriteTreasureInTheDepthsChestCount(value);
                 };
-                tabWorldState.Controls.Add(txt);
+                table.Controls.Add(txt1);
             }
             else if (worldId == 2)
             {
@@ -736,14 +856,13 @@ namespace SlyMultiTrainer
                     Text = "At the Dog Track - Nitros",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 260),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl1);
+                table.Controls.Add(lbl1);
 
                 TextBox txt1 = new()
                 {
                     Name = $"txtWorld{worldId}DogTrackNitrosCount",
-                    Location = new Point(450, 260),
                 };
                 txt1.TextChanged += (s, e) =>
                 {
@@ -753,21 +872,20 @@ namespace SlyMultiTrainer
                     }
                     WriteRaceNitrosCount(value);
                 };
-                tabWorldState.Controls.Add(txt1);
+                table.Controls.Add(txt1);
 
                 Label lbl2 = new()
                 {
                     Text = "At the Dog Track - Laps",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 285),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl2);
+                table.Controls.Add(lbl2);
 
                 TextBox txt2 = new()
                 {
                     Name = $"txtWorld{worldId}DogTrackLapsCount",
-                    Location = new Point(450, 285),
                 };
                 txt2.TextChanged += (s, e) =>
                 {
@@ -777,7 +895,7 @@ namespace SlyMultiTrainer
                     }
                     WriteRaceLapsCount(value);
                 };
-                tabWorldState.Controls.Add(txt2);
+                table.Controls.Add(txt2);
             }
             else if (worldId == 3)
             {
@@ -787,14 +905,13 @@ namespace SlyMultiTrainer
                     Text = "Piranha Lake - Fish",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 260),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl1);
+                table.Controls.Add(lbl1);
 
                 TextBox txt1 = new()
                 {
                     Name = $"txtWorld{worldId}PiranhaLakeFishCount",
-                    Location = new Point(450, 260),
                 };
                 txt1.TextChanged += (s, e) =>
                 {
@@ -804,7 +921,7 @@ namespace SlyMultiTrainer
                     }
                     WritePiranhaLakeFishCount(value);
                 };
-                tabWorldState.Controls.Add(txt1);
+                table.Controls.Add(txt1);
 
                 // Piranha Lake
                 Label lbl2 = new()
@@ -812,14 +929,13 @@ namespace SlyMultiTrainer
                     Text = "Piranha Lake - Torch",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 285),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl2);
+                table.Controls.Add(lbl2);
 
                 TextBox txt2 = new()
                 {
                     Name = $"txtWorld{worldId}PiranhaLakeTorchCount",
-                    Location = new Point(450, 285),
                 };
                 txt2.TextChanged += (s, e) =>
                 {
@@ -829,7 +945,7 @@ namespace SlyMultiTrainer
                     }
                     WritePiranhaLakeTorchDownHomeCookingChickenCount(value);
                 };
-                tabWorldState.Controls.Add(txt2);
+                table.Controls.Add(txt2);
 
                 // Down Home Cooking
                 Label lbl3 = new()
@@ -837,14 +953,13 @@ namespace SlyMultiTrainer
                     Text = "Down Home Cooking - Chicken",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 310),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl3);
+                table.Controls.Add(lbl3);
 
                 TextBox txt3 = new()
                 {
                     Name = $"txtWorld{worldId}DownHomeCookingChickenCount",
-                    Location = new Point(450, 310),
                 };
                 txt3.TextChanged += (s, e) =>
                 {
@@ -854,7 +969,7 @@ namespace SlyMultiTrainer
                     }
                     WritePiranhaLakeTorchDownHomeCookingChickenCount(value);
                 };
-                tabWorldState.Controls.Add(txt3);
+                table.Controls.Add(txt3);
             }
             else if (worldId == 4)
             {
@@ -863,14 +978,13 @@ namespace SlyMultiTrainer
                     Text = "A Desperate Race - Nitros",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 260),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl1);
+                table.Controls.Add(lbl1);
 
                 TextBox txt1 = new()
                 {
                     Name = $"txtWorld{worldId}ADesperateRaceNitrosCount",
-                    Location = new Point(450, 260),
                 };
                 txt1.TextChanged += (s, e) =>
                 {
@@ -880,21 +994,20 @@ namespace SlyMultiTrainer
                     }
                     WriteRaceNitrosCount(value);
                 };
-                tabWorldState.Controls.Add(txt1);
+                table.Controls.Add(txt1);
 
                 Label lbl2 = new()
                 {
                     Text = "A Desperate Race - Laps",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 285),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl2);
+                table.Controls.Add(lbl2);
 
                 TextBox txt2 = new()
                 {
                     Name = $"txtWorld{worldId}ADesperateRaceLapsCount",
-                    Location = new Point(450, 285),
                 };
                 txt2.TextChanged += (s, e) =>
                 {
@@ -904,7 +1017,7 @@ namespace SlyMultiTrainer
                     }
                     WriteRaceLapsCount(value);
                 };
-                tabWorldState.Controls.Add(txt2);
+                table.Controls.Add(txt2);
             }
             else if (worldId == 5)
             {
@@ -914,14 +1027,13 @@ namespace SlyMultiTrainer
                     Text = "Burning Rubber - Fire slugs computer",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 260),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl1);
+                table.Controls.Add(lbl1);
 
                 TextBox txt1 = new()
                 {
                     Name = $"txtWorld{worldId}BurningRubberSlugsComputerCount",
-                    Location = new Point(480, 260),
                 };
                 txt1.TextChanged += (s, e) =>
                 {
@@ -931,7 +1043,7 @@ namespace SlyMultiTrainer
                     }
                     WriteBurningRubberFireSlugsComputerCount(value);
                 };
-                tabWorldState.Controls.Add(txt1);
+                table.Controls.Add(txt1);
 
                 // "Burning Rubber
                 Label lbl2 = new()
@@ -939,14 +1051,13 @@ namespace SlyMultiTrainer
                     Text = "Burning Rubber - Computer",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 285),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl2);
+                table.Controls.Add(lbl2);
 
                 TextBox txt2 = new()
                 {
                     Name = $"txtWorld{worldId}BurningRubberComputerCount",
-                    Location = new Point(480, 285),
                 };
                 txt2.TextChanged += (s, e) =>
                 {
@@ -956,7 +1067,7 @@ namespace SlyMultiTrainer
                     }
                     WriteBurningRubberComputerCount(value);
                 };
-                tabWorldState.Controls.Add(txt2);
+                table.Controls.Add(txt2);
 
                 // Bentley Comes Through
                 Label lbl3 = new()
@@ -964,14 +1075,13 @@ namespace SlyMultiTrainer
                     Text = "Bentley Comes Through - Chip",
                     AutoSize = true,
                     Font = _form.lblXCoord.Font,
-                    Location = new Point(235, 310),
+                    Padding = new Padding(0, 4, 0, 0),
                 };
-                tabWorldState.Controls.Add(lbl3);
+                table.Controls.Add(lbl3);
 
                 TextBox txt3 = new()
                 {
                     Name = $"txtWorld{worldId}BentleyComesThroughChipCount",
-                    Location = new Point(480, 310),
                 };
                 txt3.TextChanged += (s, e) =>
                 {
@@ -981,48 +1091,54 @@ namespace SlyMultiTrainer
                     }
                     WriteBentleyComesThroughChipCount(value);
                 };
-                tabWorldState.Controls.Add(txt3);
+                table.Controls.Add(txt3);
             }
         }
 
         private void UpdateWorldStateTabLevelFlags(int worldId, int levelId, int levelFlag, TabPage tabPage)
         {
             CheckBox chk;
-            chk = (tabPage.Controls[$"chkWorld{worldId}Level{levelId}Unlocked"] as CheckBox)!;
+            TableLayoutPanel table = tabPage.Controls[$"tabWorldState{worldId}LevelsTable"] as TableLayoutPanel;
+
+            chk = (table.Controls[$"chkWorld{worldId}Level{levelId}Unlocked"] as CheckBox)!;
             _form.UpdateUI(chk, (levelFlag & 0x1) == 0x1, "Checked");
 
-            chk = (tabPage.Controls[$"chkWorld{worldId}Level{levelId}Key"] as CheckBox)!;
+            chk = (table.Controls[$"chkWorld{worldId}Level{levelId}Key"] as CheckBox)!;
             _form.UpdateUI(chk, (levelFlag & 0x2) == 0x2, "Checked");
 
-            chk = (tabPage.Controls[$"chkWorld{worldId}Level{levelId}Safe"] as CheckBox)!;
+            chk = (table.Controls[$"chkWorld{worldId}Level{levelId}Safe"] as CheckBox)!;
             _form.UpdateUI(chk, (levelFlag & 0x4) == 0x4, "Checked");
 
-            chk = (tabPage.Controls[$"chkWorld{worldId}Level{levelId}Sprint"] as CheckBox)!;
+            chk = (table.Controls[$"chkWorld{worldId}Level{levelId}Sprint"] as CheckBox)!;
             _form.UpdateUI(chk, (levelFlag & 0x8) == 0x8, "Checked");
         }
 
         private void UpdateWorldStateTabFlags(int worldId, int worldFlag, TabPage tabPage)
         {
             CheckBox chk;
-            chk = (tabPage.Controls[$"chkWorld{worldId}Started"] as CheckBox)!;
+            TableLayoutPanel tableFlags = tabPage.Controls[$"tabWorldState{worldId}FlagsTable"] as TableLayoutPanel;
+
+            chk = (tableFlags.Controls[$"chkWorld{worldId}Started"] as CheckBox)!;
             _form.UpdateUI(chk, (worldFlag & 0x1) == 0x1, "Checked");
 
-            chk = (tabPage.Controls[$"chkWorld{worldId}Key1"] as CheckBox)!;
+            chk = (tableFlags.Controls[$"chkWorld{worldId}Key1"] as CheckBox)!;
             _form.UpdateUI(chk, (worldFlag & 0x2) == 0x2, "Checked");
 
-            chk = (tabPage.Controls[$"chkWorld{worldId}Key3"] as CheckBox)!;
+            chk = (tableFlags.Controls[$"chkWorld{worldId}Key3"] as CheckBox)!;
             _form.UpdateUI(chk, (worldFlag & 0x4) == 0x4, "Checked");
 
-            chk = (tabPage.Controls[$"chkWorld{worldId}Key7"] as CheckBox)!;
+            chk = (tableFlags.Controls[$"chkWorld{worldId}Key7"] as CheckBox)!;
             _form.UpdateUI(chk, (worldFlag & 0x8) == 0x8, "Checked");
 
-            TextBox txt = (tabPage.Controls[$"txtWorld{worldId}KeysCollected"] as TextBox)!;
+            TableLayoutPanel tableFlagsInputs = tabPage.Controls[$"tabWorldState{worldId}FlagsInputsTable"] as TableLayoutPanel;
+
+            TextBox txt = (tableFlagsInputs.Controls[$"txtWorld{worldId}KeysCollected"] as TextBox)!;
             _form.UpdateUI(txt, ReadWorldKeysCollectedCount(worldId).ToString());
 
-            txt = (tabPage.Controls[$"txtWorld{worldId}SafesOpened"] as TextBox)!;
+            txt = (tableFlagsInputs.Controls[$"txtWorld{worldId}SafesOpened"] as TextBox)!;
             _form.UpdateUI(txt, ReadWorldSafesOpenedCount(worldId).ToString());
 
-            txt = (tabPage.Controls[$"txtWorld{worldId}SprintsCompleted"] as TextBox)!;
+            txt = (tableFlagsInputs.Controls[$"txtWorld{worldId}SprintsCompleted"] as TextBox)!;
             _form.UpdateUI(txt, ReadWorldSprintsCompletedCount(worldId).ToString());
 
             // Only read the values for the current map id
@@ -1033,51 +1149,53 @@ namespace SlyMultiTrainer
         private void UpdateWorldStateTabForCurrentLevel(int worldId, int mapId, TabPage tabPage)
         {
             TextBox txt;
+            TableLayoutPanel tableWorldSpecificInputs = tabPage.Controls[$"tabWorldState{worldId}SpecificFlagsInputsTable"] as TableLayoutPanel;
+
             if (mapId == 9)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}DepthsChestCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}DepthsChestCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadTreasureInTheDepthsChestCount().ToString());
             }
             else if (mapId == 16)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}DogTrackNitrosCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}DogTrackNitrosCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadRaceNitrosCount().ToString());
 
-                txt = (tabPage.Controls[$"txtWorld{worldId}DogTrackLapsCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}DogTrackLapsCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadRaceLapsCount().ToString());
             }
             else if (mapId == 25)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}PiranhaLakeFishCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}PiranhaLakeFishCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadPiranhaLakeFishCount().ToString());
 
-                txt = (tabPage.Controls[$"txtWorld{worldId}PiranhaLakeTorchCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}PiranhaLakeTorchCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadPiranhaLakeTorchDownHomeCookingChickenCount().ToString());
             }
             else if (mapId == 28)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}DownHomeCookingChickenCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}DownHomeCookingChickenCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadPiranhaLakeTorchDownHomeCookingChickenCount().ToString());
             }
             else if (mapId == 37)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}ADesperateRaceNitrosCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}ADesperateRaceNitrosCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadRaceNitrosCount().ToString());
 
-                txt = (tabPage.Controls[$"txtWorld{worldId}ADesperateRaceLapsCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}ADesperateRaceLapsCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadRaceLapsCount().ToString());
             }
             else if (mapId == 40)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}BurningRubberSlugsComputerCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}BurningRubberSlugsComputerCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadBurningRubberFireSlugsComputerCount().ToString());
 
-                txt = (tabPage.Controls[$"txtWorld{worldId}BurningRubberComputerCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}BurningRubberComputerCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadBurningRubberComputerCount().ToString());
             }
             else if (mapId == 42)
             {
-                txt = (tabPage.Controls[$"txtWorld{worldId}BentleyComesThroughChipCount"] as TextBox)!;
+                txt = (tableWorldSpecificInputs.Controls[$"txtWorld{worldId}BentleyComesThroughChipCount"] as TextBox)!;
                 _form.UpdateUI(txt, ReadBentleyComesThroughChipCount().ToString());
             }
         }
@@ -1104,17 +1222,16 @@ namespace SlyMultiTrainer
             }
         }
 
-        private void btnToggleToAll_Click(object sender, EventArgs e, int worldId, string type)
+        private void btnToggleToAll_Click(object sender, EventArgs e, TableLayoutPanel table, int worldId, string type)
         {
             Button btn = sender as Button;
-            TabPage tabWorldState = _form.tabControlWorldStates.SelectedTab;
 
             List<CheckBox> checkboxes = new();
-            for (int i = 0; i < tabWorldState.Controls.Count; i++)
+            for (int i = 0; i < table.Controls.Count; i++)
             {
-                if (tabWorldState.Controls[i].Name.EndsWith(type))
+                if (table.Controls[i].Name.EndsWith(type))
                 {
-                    checkboxes.Add(tabWorldState.Controls[i] as CheckBox);
+                    checkboxes.Add(table.Controls[i] as CheckBox);
                 }
             }
 
@@ -1522,7 +1639,12 @@ namespace SlyMultiTrainer
 
         public void SkipCurrentDialogue()
         {
-            _m.WriteMemory($"{DialoguePointer},2E8", "int", "0");
+            string offset = "2E8";
+            if (Region == "NTSC May 19")
+            {
+                offset = "2F8";
+            }
+            _m.WriteMemory($"{DialoguePointer},{offset}", "int", "0");
         }
 
         public int ReadLuckyCharms()
@@ -1616,6 +1738,46 @@ namespace SlyMultiTrainer
                     }
                 }
             }
+            else if (Region == "NTSC May 19")
+            {
+                if (worldId == 0)
+                {
+                    return 2; // paris
+                }
+
+                if (worldId == 2)
+                {
+                    return mapId + 3;
+                }
+
+                if (worldId == 3)
+                {
+                    if (mapId == 1)
+                    {
+                        return 14;
+                    }
+                    if (mapId == 2)
+                    {
+                        return 13;
+                    }
+                    else if (mapId == 4)
+                    {
+                        return 19;
+                    }
+                    else if (mapId == 5)
+                    {
+                        return 16;
+                    }
+                    else if (mapId == 6)
+                    {
+                        return 17;
+                    }
+                    else if (mapId == 7)
+                    {
+                        return 18;
+                    }
+                }
+            }
 
 
             if (worldId == 0)
@@ -1655,9 +1817,9 @@ namespace SlyMultiTrainer
         public override void LoadMap(int mapId)
         {
             string write = "";
-            if (Region == "NTSC Demo")
+            if (Region == "NTSC Demo" || Region == "NTSC May 19")
             {
-                int stringPointer = _m.ReadInt($"289A08,{mapId * 4:X}+4");
+                int stringPointer = _m.ReadInt($"{ReloadValuesAddress},{mapId * 4:X}+4");
                 write = stringPointer.ToString("X");
             }
             else
@@ -1687,6 +1849,18 @@ namespace SlyMultiTrainer
             {
                 offset1 = "2008";
                 offset2 = "2250";
+            }
+            else if (Region == "NTSC May 19")
+            {
+                offset1 = "2028";
+                offset2 = "2278";
+            }
+            else if (Region == "PAL (PS3 PSN)"
+                  || Region == "NTSC (PS3 PSN)"
+                  || Region == "NTSC-K (PS3 PSN)")
+            {
+                offset1 = "2218";
+                offset2 = "2488";
             }
 
             if (enableInfDbJump)
@@ -1722,7 +1896,7 @@ namespace SlyMultiTrainer
                 new Map_t("Splash",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
                 new Map_t("Paris",
@@ -1740,7 +1914,7 @@ namespace SlyMultiTrainer
                 new Map_t("Hideout",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
                 new Map_t("A Stealthy Approach",
@@ -1755,7 +1929,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-15700, -8000, 0)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Prowling The Grounds",
+                new Map_t($"{SubMapNamePrefix}Prowling The Grounds",
                     new()
                     {
                         new("Start", new(-15654, -12032, 700)),
@@ -1765,7 +1939,7 @@ namespace SlyMultiTrainer
                         new("Submarine", new(-10643, 2477, 400)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}High Class Heist",
+                new Map_t($"{SubMapNamePrefix}High Class Heist",
                     new()
                     {
                         new("Start", new(-12384, 2114, -100)),
@@ -1776,7 +1950,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(5800, -300, -400)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Into the Machine",
+                new Map_t($"{SubMapNamePrefix}Into the Machine",
                     new()
                     {
                         new("Start", new(2610, 6071, 400)),
@@ -1791,7 +1965,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(45300, 3800, -2000)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Cunning Disguise",
+                new Map_t($"{SubMapNamePrefix}A Cunning Disguise",
                     new()
                     {
                         new("Start", new(-9660, 1020, -3500)),
@@ -1799,7 +1973,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-1550, -500, -3700)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The Fire Down Below",
+                new Map_t($"{SubMapNamePrefix}The Fire Down Below",
                     new()
                     {
                         new("Start", new(-4237, -5634, 0)),
@@ -1809,13 +1983,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(-1710, 10850, 1300)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Treasure in the Depths",
+                new Map_t($"{SubMapNamePrefix}Treasure in the Depths",
                     new()
                     {
                         new("Start", new(-1873, 10, 349)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The Gunboat Graveyard",
+                new Map_t($"{SubMapNamePrefix}The Gunboat Graveyard",
                     new()
                     {
                         new("Start", new(810, 3560, 150)),
@@ -1824,7 +1998,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-4400, -8300, 400)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The Eye of the Storm",
+                new Map_t($"{SubMapNamePrefix}The Eye of the Storm",
                     new()
                     {
                         new("Start", new(-1200, 0, 100)),
@@ -1842,7 +2016,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(18000, -11700, 2000)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Muggshot's Turf",
+                new Map_t($"{SubMapNamePrefix}Muggshot's Turf",
                     new()
                     {
                         new("Start", new(-6245, 3136, 400)),
@@ -1850,7 +2024,7 @@ namespace SlyMultiTrainer
                         new("Casino", new(4700, 0, 600)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Boneyard Casino",
+                new Map_t($"{SubMapNamePrefix}Boneyard Casino",
                     new()
                     {
                         new("Start", new(3629, -1391, -400)),
@@ -1860,19 +2034,19 @@ namespace SlyMultiTrainer
                         new("Safe", new(-17000, -4200, -300)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Murray's Big Gamble",
+                new Map_t($"{SubMapNamePrefix}Murray's Big Gamble",
                     new()
                     {
                         new("Start", new(4685, 651, 1457)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}At the Dog Track",
+                new Map_t($"{SubMapNamePrefix}At the Dog Track",
                     new()
                     {
                         new("Start", new(-10452, 5939, 178)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Two to Tango",
+                new Map_t($"{SubMapNamePrefix}Two to Tango",
                     new()
                     {
                         new("Start", new(-8700, -200, 1200)),
@@ -1881,14 +2055,14 @@ namespace SlyMultiTrainer
                         new("Chase end", new(-11300, 11500, 3100)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Straight to the Top",
+                new Map_t($"{SubMapNamePrefix}Straight to the Top",
                     new()
                     {
                         new("Start", new(342, -331, -200)),
                         new("Safe", new(6100, -500, 2200)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Back Alley Heist",
+                new Map_t($"{SubMapNamePrefix}Back Alley Heist",
                     new()
                     {
                         new("Start", new(-4589, -1750, -300)),
@@ -1896,7 +2070,7 @@ namespace SlyMultiTrainer
                         new("Safe", new(-3000, -2900, 2000)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Last Call",
+                new Map_t($"{SubMapNamePrefix}Last Call",
                     new()
                     {
                         new("Start", new(-132, -801, 200)),
@@ -1912,7 +2086,7 @@ namespace SlyMultiTrainer
                         new("Tents", new(0, -2400, 500)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The Swamp's Dark Centre",
+                new Map_t($"{SubMapNamePrefix}The Swamp's Dark Centre",
                     new()
                     {
                         new("Start", new(-8313, 319, -1400)),
@@ -1920,7 +2094,7 @@ namespace SlyMultiTrainer
                         new("W3 boss fight trigger", new(531, -358, 438)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The Lair of the Beast",
+                new Map_t($"{SubMapNamePrefix}The Lair of the Beast",
                     new()
                     {
                         new("Start", new(-832, -6506, 300)),
@@ -1929,7 +2103,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(5000, -6400, 800)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Grave Undertaking",
+                new Map_t($"{SubMapNamePrefix}A Grave Undertaking",
                     new()
                     {
                         new("Start", new(-6551, 1459, 1300)),
@@ -1938,14 +2112,14 @@ namespace SlyMultiTrainer
                         new("Exit", new(-600, 3400, 1800)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Piranha Lake",
+                new Map_t($"{SubMapNamePrefix}Piranha Lake",
                     new()
                     {
                         new("Start", new(-700, 0, 0)),
                         new("Exit", new(3100, 0, 400)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Descent into Danger",
+                new Map_t($"{SubMapNamePrefix}Descent into Danger",
                     new()
                     {
                         new("Start", new(-9772, 6418, -516)),
@@ -1955,7 +2129,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-2300, 5200, -1100)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Ghastly Voyage",
+                new Map_t($"{SubMapNamePrefix}A Ghastly Voyage",
                     new()
                     {
                         new("Start", new(-8440, -9864, 600)),
@@ -1964,13 +2138,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(5800, -13500, 1300)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Down Home Cooking",
+                new Map_t($"{SubMapNamePrefix}Down Home Cooking",
                     new()
                     {
                         new("Start", new(3, 1625, 200)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Deadly Dance",
+                new Map_t($"{SubMapNamePrefix}A Deadly Dance",
                     new()
                     {
                         new("Phase 1 start", new(-5533, 131, 100)),
@@ -1995,14 +2169,14 @@ namespace SlyMultiTrainer
                         new("Key", new(7500, 4900, 100)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Inside the Stronghold",
+                new Map_t($"{SubMapNamePrefix}Inside the Stronghold",
                     new()
                     {
                         new("Start", new(-3428, -556, -3300)),
                         new("Hub", new(-1527, 476, -2101)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Flaming Temple of Flame",
+                new Map_t($"{SubMapNamePrefix}Flaming Temple of Flame",
                     new()
                     {
                         new("Start", new(-2159, 550, 100)),
@@ -2012,7 +2186,7 @@ namespace SlyMultiTrainer
                         new("Laser floor", new(12500, 0, 2700)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The Unseen Foe",
+                new Map_t($"{SubMapNamePrefix}The Unseen Foe",
                     new()
                     {
                         new("Start", new(-14526, -5006, -200)),
@@ -2023,13 +2197,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(-8970, -9450, -100)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}The King of the Hill",
+                new Map_t($"{SubMapNamePrefix}The King of the Hill",
                     new()
                     {
                         new("Start", new(-3124, 39, 737)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Rapid Fire Assault",
+                new Map_t($"{SubMapNamePrefix}Rapid Fire Assault",
                     new()
                     {
                         new("Start", new(-1062, 3691, 100)),
@@ -2038,7 +2212,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(2900, 500, -1200)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Duel by the Dragon",
+                new Map_t($"{SubMapNamePrefix}Duel by the Dragon",
                     new()
                     {
                         new("Start", new(-10617, -3961, -2500)),
@@ -2049,13 +2223,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(-1900, -2600, -800)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Desperate Race",
+                new Map_t($"{SubMapNamePrefix}A Desperate Race",
                     new()
                     {
                         new("Start", new(8306, -2161, 1100)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Flame Fu!",
+                new Map_t($"{SubMapNamePrefix}Flame Fu!",
                     new()
                     {
                         new("Arena", new(-2687, 0, -100)),
@@ -2067,37 +2241,37 @@ namespace SlyMultiTrainer
                         new("Start", new(8570, -28669, 600)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Burning Rubber",
+                new Map_t($"{SubMapNamePrefix}Burning Rubber",
                     new()
                     {
                         new("Start", new(-5368, 1446, 300)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Daring Rescue",
+                new Map_t($"{SubMapNamePrefix}A Daring Rescue",
                     new()
                     {
                         new("Start", new(429, 2111, 400)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Bentley Comes Through",
+                new Map_t($"{SubMapNamePrefix}Bentley Comes Through",
                     new()
                     {
                         new("Start", new(-1191, 0, 63)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Temporary Truce",
+                new Map_t($"{SubMapNamePrefix}A Temporary Truce",
                     new()
                     {
                         new("Start", new(279, -201, 1025)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}Sinking Peril",
+                new Map_t($"{SubMapNamePrefix}Sinking Peril",
                     new()
                     {
                         new("Start", new(-291, -880, 292)),
                     }
                 ),
-                new Map_t($"{StringBeforeSubMapName}A Strange Reunion",
+                new Map_t($"{SubMapNamePrefix}A Strange Reunion",
                     new()
                     {
                         new("Start", new(-3728, -5855, 743)),

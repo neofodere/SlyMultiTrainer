@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using static SlyMultiTrainer.Util;
 
 namespace SlyMultiTrainer
@@ -17,32 +18,33 @@ namespace SlyMultiTrainer
         public DAG_t DAG;
 
         private string _offsetTransformation1 = "44";
-        private string _offsetTransformation2 = "48";
-        private string _offsetTransformation3 = "4C";
+        private string _offsetTransformation2 = "";
+        private string _offsetTransformation3 = "";
         private string _offsetHealth = "16C";
         private string _offsetGadgetPower = "174";
         private string _offsetController = "134";
+        private string _offsetControllerBinds = "18";
         private string _offsetInfiniteDbJump = "33C";
         private string _offsetSpeedMultiplier = "354";
         private string _offsetInvulnerable = "180";
         private string _offsetUndetectable = "1160";
 
         private Memory.Mem _m;
-        private Form1 _form;
+        private Encoding _encoding;
 
         public Sly3Handler(Memory.Mem m, Form1 form, string region) : base(m, form, region)
         {
             _m = m;
-            _form = form;
             DAG = new(m);
             DAG.SetVersion(DAG_VERSION.V3);
+            _encoding = Encoding.Unicode;
 
             DAG.OffsetId = "18";
             DAG.OffsetNextNodePointer = "20";
             DAG.OffsetState = "44";
             DAG.OffsetGoalDescription = "4C";
-            DAG.OffsetFocusCount1 = "54";
-            DAG.OffsetFocusCount2 = "58";
+            DAG.OffsetFocusCount = "54";
+            DAG.OffsetCompleteCount = "58";
             DAG.OffsetMissionName = "60";
             DAG.OffsetMissionDescription = "64";
             DAG.OffsetClusterPointer = "6C";
@@ -54,7 +56,7 @@ namespace SlyMultiTrainer
             DAG.GetStringFromId = GetStringFromId;
             DAG.LoadMap = LoadMap;
             DAG.WriteActCharId = WriteActCharId;
-
+            
             if (region == "NTSC")
             {
                 ReloadAddress = "4797C4";
@@ -68,7 +70,7 @@ namespace SlyMultiTrainer
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},2F4";
                 MapIdAddress = "47989C";
-                DeathBarriersAddress = "370A80";
+                DeathBarriersAddress = "478BF4,2C";
                 GuardAIAddress = "370A8C";
                 ActiveCharacterPointer = "36F84C";
                 ActiveCharacterIdAddress = "36C710";
@@ -96,7 +98,7 @@ namespace SlyMultiTrainer
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},2F4";
                 MapIdAddress = "47AF1C";
-                DeathBarriersAddress = "371500";
+                DeathBarriersAddress = "47A274,2C";
                 GuardAIAddress = "37150C";
                 ActiveCharacterPointer = "3702CC";
                 ActiveCharacterIdAddress = "36D190";
@@ -124,7 +126,7 @@ namespace SlyMultiTrainer
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},2F4";
                 MapIdAddress = "47B99C";
-                DeathBarriersAddress = "371F80";
+                DeathBarriersAddress = "47ACF4,2C";
                 GuardAIAddress = "371F8C";
                 ActiveCharacterPointer = "370D4C";
                 ActiveCharacterIdAddress = "36DC10";
@@ -141,8 +143,9 @@ namespace SlyMultiTrainer
             }
             else if (region == "NTSC July 16")
             {
-                // undetectability
+                _offsetUndetectable = "1180";
                 _offsetSpeedMultiplier = "358";
+                _offsetInfiniteDbJump = "348";
                 ReloadAddress = "46BB24";
                 ReloadValuesAddress = "2DEB08";
                 FKXListCount = "46BE0C";
@@ -154,7 +157,7 @@ namespace SlyMultiTrainer
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},324";
                 MapIdAddress = "46BBFC";
-                DeathBarriersAddress = "361D90";
+                DeathBarriersAddress = "46AE74,2C";
                 GuardAIAddress = "362F1C";
                 ActiveCharacterPointer = "361D5C";
                 ActiveCharacterIdAddress = "45AFC4";
@@ -179,7 +182,7 @@ namespace SlyMultiTrainer
             else if (region == "NTSC E3 Demo")
             {
                 _offsetSpeedMultiplier = "328";
-                _offsetInfiniteDbJump = "30C";
+                _offsetInfiniteDbJump = "318";
                 DAG.SetVersion(DAG_VERSION.V2);
                 ReloadAddress = "460C60";
                 ReloadValuesAddress = "461900,0"; // pointer
@@ -235,6 +238,60 @@ namespace SlyMultiTrainer
                 Maps[18].IsVisible = false;
                 Maps.RemoveRange(20, 18);
             }
+            else if (region == "NTSC Regular Demo")
+            {
+                _offsetSpeedMultiplier = "358";
+                _offsetInfiniteDbJump = "348";
+                _offsetUndetectable = "1180";
+                ReloadAddress = "46E97C";
+                ReloadValuesAddress = "2D83A0";
+                FKXListCount = "46EC60";
+                ClockAddress = "37A460";
+                CoinsAddress = "45DF34";
+                GadgetAddress = "45DF28";
+                CameraPointer = "46E42C";
+                DrawDistanceAddress = $"{CameraPointer},114";
+                FOVAddress = $"{CameraPointer},11C";
+                ResetCameraAddress = $"{CameraPointer},324";
+                MapIdAddress = "46EA54";
+                DeathBarriersAddress = "46DCF0,2C";
+                GuardAIAddress = "37CB5C";
+                ActiveCharacterPointer = "37CB1C";
+                ActiveCharacterIdAddress = "45DE50";
+                StringTableCountAddress = "46F484";
+                IsLoadingAddress = "45CC00";
+
+                DAG.RootNodePointer = "46DD74";
+                DAG.CurrentCheckpointNodePointer = "46E5B8";
+                DAG.TaskStringTablePointer = "46E598";
+                DAG.ClusterIdAddress = "37AE90";
+                DAG.SavefileStartAddress = "45DE40";
+                DAG.SavefileValuesOffsetsTablePointer = "46E4BC";
+                DAG.Sly3Time = "37A4E0";
+                DAG.Sly3Flag = "46E918";
+                DAG.OffsetMissionName = "58";
+                DAG.OffsetSuckPointer = "A4";
+                DAG.OffsetAttributesForCluster = "C8";
+
+                Maps[0].IsVisible = false;
+                Maps[1].IsVisible = true;
+                Maps[2].IsVisible = false;
+                Maps[4].IsVisible = false;
+                Maps[5].IsVisible = false;
+                Maps[7].IsVisible = false;
+                Maps[9].IsVisible = false;
+                Maps[10].IsVisible = false;
+                Maps[11].IsVisible = false;
+                Maps[12].IsVisible = false;
+                Maps[14].IsVisible = false;
+                Maps[15].IsVisible = false;
+                Maps[16].IsVisible = false;
+                Maps[17].IsVisible = false;
+                Maps[18].IsVisible = false;
+                Maps[19].IsVisible = false;
+                Maps[20].IsVisible = false;
+                Maps.RemoveRange(22, 18);
+            }
             else if (region == "PAL Demo")
             {
                 ReloadAddress = "485744";
@@ -242,13 +299,13 @@ namespace SlyMultiTrainer
                 FKXListCount = "485A2C";
                 ClockAddress = "38F660";
                 CoinsAddress = "474D7C";
-                GadgetAddress = "474D74";
+                GadgetAddress = "474D6C";
                 CameraPointer = "4852BC";
                 DrawDistanceAddress = $"{CameraPointer},114";
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},2F4";
                 MapIdAddress = "474CD8";
-                DeathBarriersAddress = "393380";
+                DeathBarriersAddress = "484B74,2C";
                 GuardAIAddress = "39338C";
                 ActiveCharacterPointer = "39330C";
                 ActiveCharacterIdAddress = "3901D0";
@@ -302,7 +359,7 @@ namespace SlyMultiTrainer
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},324";
                 MapIdAddress = "4AF8A4";
-                DeathBarriersAddress = "38EE98";
+                DeathBarriersAddress = "4AEBF4,2C";
                 GuardAIAddress = "38EEA4";
                 ActiveCharacterPointer = "38EE5C";
                 ActiveCharacterIdAddress = "38BD40";
@@ -337,7 +394,7 @@ namespace SlyMultiTrainer
                 FOVAddress = $"{CameraPointer},11C";
                 ResetCameraAddress = $"{CameraPointer},2F4";
                 MapIdAddress = "4BEA9C";
-                DeathBarriersAddress = "39DF48";
+                DeathBarriersAddress = "4BDDF4,2C";
                 GuardAIAddress = "39DF54";
                 ActiveCharacterPointer = "39DECC";
                 ActiveCharacterIdAddress = "39AD40";
@@ -352,10 +409,58 @@ namespace SlyMultiTrainer
                 StringTableCountAddress = "4BF4D4";
                 IsLoadingAddress = "4AC680";
             }
+            else if (region == "NTSC (PS3 PSN)"
+                  || region == "PAL (PS3 PSN)"
+                  || region == "NTSC-K (PS3 PSN)")
+            {
+                _encoding = Encoding.BigEndianUnicode;
+                _offsetHealth = "168";
+                _offsetGadgetPower = "170";
+                _offsetController = "130";
+                _offsetControllerBinds = "1E";
+                _offsetInfiniteDbJump = "32C";
+                _offsetSpeedMultiplier = "344";
+                _offsetInvulnerable = "17C";
+                _offsetUndetectable = "1150";
 
-            _form.UpdateUI(_form.cmbMaps, Maps.Where(x => x.IsVisible).ToList());
-            _form.UpdateUI(_form.cmbMaps, Maps, "Tag");
-            _form.UpdateUI(_form.cmbActChar, Characters);
+                ReloadAddress = "78D2C0";
+                ReloadValuesAddress = "508650";
+                if (region == "NTSC (PS3 PSN)")
+                {
+                    ReloadValuesAddress = "508630";
+                }
+                else if (region == "NTSC-K (PS3 PSN)")
+                {
+                    ReloadValuesAddress = "508610";
+                }
+
+                FKXListCount = "78D5A8";
+                ClockAddress = "5898B8";
+                CoinsAddress = "6CC808";
+                GadgetAddress = "6CC7F8";
+                CameraPointer = "78CE2C";
+                DrawDistanceAddress = $"{CameraPointer},114";
+                FOVAddress = $"{CameraPointer},11C";
+                ResetCameraAddress = $"{CameraPointer},304";
+                MapIdAddress = "78D398";
+                DeathBarriersAddress = "78C6E4,2C";
+                GuardAIAddress = "5EC6CC";
+                ActiveCharacterPointer = "5EC64C";
+                ActiveCharacterIdAddress = "5EA000";
+                DAG.RootNodePointer = "78C77C";
+                DAG.CurrentCheckpointNodePointer = "78CFBC";
+                DAG.TaskStringTablePointer = "78CF98";
+                DAG.ClusterIdAddress = "5EB488";
+                DAG.SavefileStartAddress = "6CC750";
+                DAG.SavefileValuesOffsetsTablePointer = "78CEBC";
+                DAG.Sly3Time = "589930";
+                DAG.Sly3Flag = "78D250";
+                StringTableCountAddress = "78DDD4";
+                IsLoadingAddress = "6CB600";
+            }
+
+            _offsetTransformation2 = $"{_offsetTransformation1}+4";
+            _offsetTransformation3 = $"{_offsetTransformation1}+8";
         }
 
         public override void CustomTick()
@@ -365,19 +470,7 @@ namespace SlyMultiTrainer
 
         public override void OnMapChange(int mapId)
         {
-            _form.UpdateUI(() =>
-            {
-                _form.trvFKXList.Nodes.Clear();
-                if (DAG != null)
-                {
-                    DAG.Viewer.Enabled = false;
-                }
-            });
 
-            if (DAG != null)
-            {
-                DAG.Graph = null;
-            }
         }
 
         public override bool IsActCharAvailable()
@@ -392,11 +485,11 @@ namespace SlyMultiTrainer
 
         public override void WriteActCharPosition(Vector3 value)
         {
-            int q = _m.ReadInt($"{ActiveCharacterPointer},D4");
-            _m.WriteMemory($"{ActiveCharacterPointer},D4", "int", "0");
+            //int tmp = _m.ReadInt($"{ActiveCharacterPointer},D4");
+            //_m.WriteMemory($"{ActiveCharacterPointer},D4", "int", "0");
             WritePositionFromPointerToEntity(ActiveCharacterPointer, value);
             Thread.Sleep(10);
-            _m.WriteMemory($"{ActiveCharacterPointer},D4", "int", q.ToString());
+            //_m.WriteMemory($"{ActiveCharacterPointer},D4", "int", tmp.ToString());
         }
 
         public override void FreezeActCharPositionX(string value = "")
@@ -498,7 +591,7 @@ namespace SlyMultiTrainer
 
         public override Controller_t GetController()
         {
-            return new(_m, $"{ActiveCharacterPointer},{_offsetController},18");
+            return new(_m, $"{ActiveCharacterPointer},{_offsetController},{_offsetControllerBinds}");
         }
 
         public override void ToggleInvulnerable(bool enableInvulnerable)
@@ -531,15 +624,15 @@ namespace SlyMultiTrainer
 
         public override void ToggleInfiniteDbJump(bool enableInfDbJump)
         {
-            if (Region == "NTSC July 16" || Region == "NTSC E3 Demo")
+            if (Region == "NTSC July 16" || Region == "NTSC E3 Demo" || Region == "NTSC Regular Demo")
             {
                 if (enableInfDbJump)
                 {
-                    _m.FreezeValue($"{ActiveCharacterPointer},{_offsetInfiniteDbJump}+C", "int", "1");
+                    _m.FreezeValue($"{ActiveCharacterPointer},{_offsetInfiniteDbJump}", "int", "1");
                 }
                 else
                 {
-                    _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetInfiniteDbJump}+C");
+                    _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetInfiniteDbJump}");
                 }
                 return;
             }
@@ -624,12 +717,6 @@ namespace SlyMultiTrainer
 
         public override void LoadMap(int mapId)
         {
-            // current map
-            if (mapId == -1)
-            {
-                mapId = GetMapId();
-            }
-
             byte[] data = _m.ReadBytes($"{ReloadValuesAddress}+{mapId * 0x40:X8}", 0x40);
             _m.WriteBytes($"{ReloadAddress}+8", data);
             ReloadMap();
@@ -662,12 +749,12 @@ namespace SlyMultiTrainer
         {
             if (removeDeathBarriers)
             {
-                _m.FreezeValue(DeathBarriersAddress, "int", "1");
+                _m.FreezeValue(DeathBarriersAddress, "int", "0");
             }
             else
             {
                 _m.UnfreezeValue(DeathBarriersAddress);
-                _m.WriteMemory(DeathBarriersAddress, "int", "0");
+                _m.WriteMemory(DeathBarriersAddress, "int", "0x0901F0FF");
             }
         }
 
@@ -841,7 +928,7 @@ namespace SlyMultiTrainer
                 if (id == stringId)
                 {
                     int stringPointer = _m.ReadInt($"{address}+{i * 8 + 4:X}");
-                    string descriptionName = _m.ReadNullTerminatedString(stringPointer.ToString("X"), System.Text.Encoding.Unicode);
+                    string descriptionName = _m.ReadNullTerminatedString(stringPointer.ToString("X"), _encoding);
                     // "Carmelita's Gunner"
                     descriptionName = descriptionName.Replace('\ufffd', '\'');
                     return descriptionName;
@@ -855,9 +942,15 @@ namespace SlyMultiTrainer
         {
             return new List<Character_t>
             {
-                new("Sly", 24),
-                new("Bentley", 25),
-                new("Murray", 26),
+                new("Sly", 24, "jt"),
+                new("Bentley", 25, "bentley"),
+                new("Murray", 26, "murray"),
+                new("Guru", 29, "shaman"),
+                new("Panda King", 30, "panda_king"),
+                new("Penelope", 31, "penelope"),
+                //new("Dimitri", 0x7443, "dimitri"),
+                new("Dimitri swimmer", 0x3DDF, "dmitri_swimmer"), // 0x6C12 0x7440
+                new("RC car", 0x9692, "c_rccar"), // 0x3AD7
             };
         }
 
@@ -868,357 +961,358 @@ namespace SlyMultiTrainer
                 new("DVD Menu",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
                 new("sampler_menu",
-                    new(),
+                    new()
+                    {
+                        new(),
+                    },
                     false
                 ),
                 new("Hazard Room",
                     new()
                     {
-                        new("Center", new(3550, 440, 100)),
-                        new("Top", new(3580, 630, 3440)),
-                        new("Safehouse", new(6640, 680, 90)),
+                        new("Center", new(3550, 440, 150)),
+                        new("Top", new(3580, 630, 3600)),
+                        new("Safehouse", new(6640, 680, 150)),
                     }
                 ),
                 new("Venice Hub",
                     new()
                     {
-                        new("Safehouse", new(200, -2090, 173)),
-                        new("Safehouse (Top)", new(863, -1420, 1266)),
-                        new("Police HQ", new(-7570, 1670, 1962)),
-                        new("Ferris Wheel", new(6900, 1480, 160)),
-                        new("Stage", new(6250, 8210, 260)),
-                        new("Fountain", new(-6670, 8550, 700)),
-                        new("Aquarium", new(8040, -4365, 160)),
+                        new("Safehouse", new(200, -2090, 273)),
+                        new("Safehouse (Top)", new(863, -1420, 1366)),
+                        new("Police HQ", new(-7570, 1670, 2062)),
+                        new("Ferris Wheel", new(6900, 1480, 260)),
+                        new("Stage", new(6250, 8210, 360)),
+                        new("Fountain", new(-6670, 8550, 800)),
+                        new("Aquarium", new(8040, -4365, 260)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Canal Chase",
+                new($"{SubMapNamePrefix}Canal Chase",
                     new()
                     {
-                        new("Boat", new(0, 0, 130)),
-                        new("Intersection 1", new(665, -12555, 140)),
-                        new("Intersection 2", new(27250, 28580, 140)),
+                        new("Boat", new(0, 0, 230)),
+                        new("Intersection 1", new(665, -12555, 240)),
+                        new("Intersection 2", new(27250, 28580, 240)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Coffeehouses",
+                new($"{SubMapNamePrefix}Coffeehouses",
                     new()
                     {
-                        new("Entrance 1", new(710, -5000, 125)),
-                        new("Entrance 2", new(1070, 100, 125)),
-                        new("Entrance 3", new(1160, 5000, 125)),
-                        new("Safe 1", new(-1710, -4990, 125)),
-                        new("Safe 2", new(-1750, 10, 125)),
-                        new("Safe 3", new(-3245, 4990, 125)),
-                        new("Roof", new(-1780, -4540, 1175)),
+                        new("Entrance 1", new(710, -5000, 225)),
+                        new("Entrance 2", new(1070, 100, 225)),
+                        new("Entrance 3", new(1160, 5000, 225)),
+                        new("Safe 1", new(-1710, -4990, 225)),
+                        new("Safe 2", new(-1750, 10, 225)),
+                        new("Safe 3", new(-3245, 4990, 225)),
+                        new("Roof", new(-1780, -4540, 1275)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Gauntlet / Opera House",
+                new($"{SubMapNamePrefix}Gauntlet / Opera House",
                     new()
                     {
-                        new("Main Entrance", new(-7130, -11340, 1030)),
-                        new("Basement Entrance", new(14440, -4000, 1015)),
-                        new("Pump Room", new(-885, -2230, 180)),
-                        new("Worlitzer-700", new(-2100, 4890, 630)),
-                        new("Underground Canal", new(8720, -6490, 75)),
-                        new("Overlook", new(8770, -5830, 1650)),
+                        new("Main Entrance", new(-7130, -11340, 1130)),
+                        new("Basement Entrance", new(14440, -4000, 1115)),
+                        new("Pump Room", new(-885, -2230, 280)),
+                        new("Worlitzer-700", new(-2100, 4890, 730)),
+                        new("Underground Canal", new(8720, -6490, 175)),
+                        new("Overlook", new(8770, -5830, 1750)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Police Station",
+                new($"{SubMapNamePrefix}Police Station",
                     new()
                     {
-                        new("Dimitri's Cell", new(-60, 7600, 120)),
-                        new("Cell Key", new(-685, 3250, 125)),
+                        new("Dimitri's Cell", new(-60, 7600, 220)),
+                        new("Cell Key", new(-685, 3250, 225)),
                     }
                 ),
                 new("Outback Hub",
                     new()
                     {
-                        new("Safehouse", new(-4570, -7190, 1525)),
-                        new("Safehouse (Top)", new(-4590, -7820, 2650)),
-                        new("Crane", new(-700, -1290, 4320)),
-                        new("Truck", new(9820, -550, 1240)),
-                        new("Guru's Hut", new(-8230, 4365, 2760)),
-                        new("Guru's Cell", new(8665, 5620, 2820)),
-                        new("Treeline", new(-8360, -3400, 5060)),
-                        new("Plateau", new(6360, 7645, 6930)),
+                        new("Safehouse", new(-4570, -7190, 1625)),
+                        new("Safehouse (Top)", new(-4590, -7820, 2750)),
+                        new("Crane", new(-700, -1290, 4420)),
+                        new("Truck", new(9820, -550, 1340)),
+                        new("Guru's Hut", new(-8230, 4365, 2860)),
+                        new("Guru's Cell", new(8665, 5620, 2920)),
+                        new("Treeline", new(-8360, -3400, 5160)),
+                        new("Plateau", new(6360, 7645, 7030)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Quarry / Ayers Rock",
+                new($"{SubMapNamePrefix}Quarry / Ayers Rock",
                     new()
                     {
-                        new("Drill Controls", new(270, 160, 240)),
-                        new("Drill Controls (Top)", new(420, 15, 2190)),
-                        new("Truck Spawn", new(-16350, 8310, 4230)),
-                        new("Mine Entrance", new(3830, 13920, 70)),
-                        new("Clifftop", new(16260, 12890, 12660)),
+                        new("Drill Controls", new(270, 160, 340)),
+                        new("Drill Controls (Top)", new(420, 15, 2290)),
+                        new("Truck Spawn", new(-16350, 8310, 4330)),
+                        new("Mine Entrance", new(3830, 13920, 170)),
+                        new("Clifftop", new(16260, 12890, 12760)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Oil Field",
+                new($"{SubMapNamePrefix}Oil Field",
                     new()
                     {
-                        new("The Claw", new(320, 10000, 70)),
-                        new("Catapult", new(4820, -4470, 70)),
-                        new("Drill Platform", new(-360, 620, 1235)),
+                        new("The Claw", new(320, 10000, 170)),
+                        new("Catapult", new(4820, -4470, 170)),
+                        new("Drill Platform", new(-360, 620, 1335)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Cave 1 (Sly)",
+                new($"{SubMapNamePrefix}Cave 1 (Sly)",
                     new()
                     {
-                        new("Entrance", new(-9345, 330, 20)),
-                        new("Safe", new(6545, 125, 1111)),
-                        new("Drills", new(-780, -3420, 1120)),
+                        new("Entrance", new(-9345, 330, 120)),
+                        new("Safe", new(6545, 125, 1211)),
+                        new("Drills", new(-780, -3420, 1220)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Cave 2 (Guru)",
+                new($"{SubMapNamePrefix}Cave 2 (Guru)",
                     new()
                     {
-                        new("Entrance", new(-8945, 370, -1860)),
-                        new("Safe", new(-100, -4960, -610)),
-                        new("Hook Conveyor Belt", new(-5970, -1800, -1335)),
+                        new("Entrance", new(-8945, 370, -1760)),
+                        new("Safe", new(-100, -4960, -510)),
+                        new("Hook Conveyor Belt", new(-5970, -1800, -1235)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Bar",
+                new($"{SubMapNamePrefix}Bar",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Cave 3 (Murray)",
+                new($"{SubMapNamePrefix}Cave 3 (Murray)",
                     new()
                     {
-                        new("Entrance", new(-10230, -1445, -1140)),
-                        new("Piston", new(3380, -1870, -1020)),
-                        new("Triple Piston", new(-2300, -8000, 150)),
-                        new("Drilling Area", new(200, -9200, 320)),
+                        new("Entrance", new(-10230, -1445, -1040)),
+                        new("Piston", new(3380, -1870, -920)),
+                        new("Triple Piston", new(-2300, -8000, 250)),
                     }
                 ),
                 new("Holland Hub",
                     new()
                     {
-                        new("Safehouse", new(12180, -540, 1180)),
-                        new("Baron's Hangar", new(-6075, 6950, 2855)),
-                        new("Forest", new(-2770, 3020, 430)),
-                        new("Ramp", new(-4645, -9100, 1680)),
-                        new("Barn", new(3680, -6000, 600)),
-                        new("Well", new(4330, 3490, 120)),
+                        new("Safehouse", new(12180, -540, 1280)),
+                        new("Baron's Hangar", new(-6075, 6950, 2955)),
+                        new("Forest", new(-2770, 3020, 530)),
+                        new("Ramp", new(-4645, -9100, 1780)),
+                        new("Barn", new(3680, -6000, 700)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Hotel",
+                new($"{SubMapNamePrefix}Hotel",
                     new()
                     {
-                        new("Safehouse Entrance", new(2620, 280, 600)),
-                        new("Ham", new(-535, 420, 0)),
-                        new("Viking Helmet", new(830, 2950, 590)),
-                        new("Outside", new(60, -6590, -545)),
+                        new("Safehouse Entrance", new(2620, 280, 700)),
+                        new("Ham", new(-535, 420, 100)),
+                        new("Viking Helmet", new(830, 2950, 690)),
+                        new("Outside", new(60, -6590, -445)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Hangar (team Belgium)",
+                new($"{SubMapNamePrefix}Hangar (team Belgium)",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Hangar (team Black Baron)",
+                new($"{SubMapNamePrefix}Hangar (team Black Baron)",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Hangar (team Cooper)",
+                new($"{SubMapNamePrefix}Hangar (team Cooper)",
                     new()
                     {
-                        new("Center", new(-180, -125, 75)),
-                        new("Control Room", new(-1890, -130, 75)),
-                        new("Truck", new(-340, 2220, 1030)),
+                        new("Center", new(-180, -125, 175)),
+                        new("Control Room", new(-1890, -130, 175)),
+                        new("Truck", new(-340, 2220, 1130)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Sewers",
+                new($"{SubMapNamePrefix}Sewers",
                     new()
                     {
-                        new("Entrance", new(20150, -9850, 210)),
-                        new("Iceland Hotel Path", new(16490, 7280, 210)),
-                        new("Exit to Surface", new(7960, -12750, 210)),
-                        new("Iceland Hotel Entrance", new(7425, 9500, 210)),
+                        new("Entrance", new(20150, -9850, 310)),
+                        new("Iceland Hotel Path", new(16490, 7280, 310)),
+                        new("Exit to Surface", new(7960, -12750, 310)),
+                        new("Iceland Hotel Entrance", new(7425, 9500, 310)),
                         new("Platform", new(200, 0, 200)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Dogfight / Biplane Battlefield",
+                new($"{SubMapNamePrefix}Dogfight / Biplane Battlefield",
                     new()
                     {
-                        new("Barn", new(-1890, 380, 870)),
-                        new("Crop Squares", new(17800, 3210, 900)),
-                        new("Bridge 1", new(-140, -14670, 620)),
-                        new("Bridge 2", new(-4444, 16170, 450)),
-                        new("Bridge 3", new(10460, 13260, 500)),
-                        new("Plane", new(251764, -186, 0)),
+                        new("Barn", new(-1890, 380, 970)),
+                        new("Crop Squares", new(17800, 3210, 1000)),
+                        new("Bridge 1", new(-140, -14670, 720)),
+                        new("Bridge 2", new(-4444, 16170, 550)),
+                        new("Bridge 3", new(10460, 13260, 600)),
+                        new("Plane", new(251764, -186, 100)),
                     }
                 ),
                 new("Two Player Hackathon",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
                 new("China Hub",
                     new()
                     {
-                        new("Safehouse", new(-5440, -7500, 2020)),
-                        new("Turret Tower", new(-5330, -8415, 3500)),
-                        new("Walk Across the Heavens", new(7310, -8370, 4980)),
-                        new("Graveyard", new(8570, 10150, 5840)),
-                        new("Statue", new(795, -2980, 1915)),
-                        new("Palace", new(940, 2255, 4790)),
+                        new("Safehouse", new(-5440, -7500, 2120)),
+                        new("Turret Tower", new(-5330, -8415, 3600)),
+                        new("Walk Across the Heavens", new(7310, -8370, 5080)),
+                        new("Graveyard", new(8570, 10150, 5940)),
+                        new("Statue", new(795, -2980, 2015)),
+                        new("Palace", new(940, 2255, 4890)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Intro",
+                new($"{SubMapNamePrefix}Intro",
                     new()
                     {
-                        new("Entrance", new(-2085, -54630, 850)),
-                        new("Panda King's Perch", new(400, -50485, 1888)),
-                        new("House", new(3470, -51845, 820)),
-                        new("Clifftop", new(-2820, -57675, 5420)),
+                        new("Entrance", new(-2085, -54630, 950)),
+                        new("Panda King's Perch", new(400, -50485, 1988)),
+                        new("House", new(3470, -51845, 920)),
+                        new("Clifftop", new(-2820, -57675, 5520)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Panda King's Flashback",
+                new($"{SubMapNamePrefix}Panda King's Flashback",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Tsao's Battleground",
+                new($"{SubMapNamePrefix}Tsao's Battleground",
                     new()
                     {
                         new("Top", new(-50, 3060, 840)),
-                        new("Bottom", new(130, 30410, -50)),
-                        new("Overlook", new(-4545, 35970, 4675)),
+                        new("Bottom", new(130, 30410, 150)),
+                        new("Overlook", new(-4545, 35970, 4775)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Panda King's House",
+                new($"{SubMapNamePrefix}Panda King's House",
                     new()
                     {
-                        new("Yang", new(-240, -100, 19995)),
-                        new("Yin", new(-1855, -100, 19995)),
+                        new("Yang", new(-240, -100, 20095)),
+                        new("Yin", new(-1855, -100, 20095)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Tsao's Business Center",
+                new($"{SubMapNamePrefix}Tsao's Business Center",
                     new()
                     {
-                        new("Laser Wall", new(-2930, 0, -50)),
-                        new("Second Floor", new(1050, 1580, 645)),
-                        new("Computer", new(1075, -1515, 645)),
-                        new("Outside", new(-4210, -140, -185)),
-                        new("Overlook", new(-10480, -4100, 2760)),
+                        new("Entrance", new(-3200, 0, 100)),
+                        new("Second Floor", new(1050, 1580, 800)),
+                        new("Computer", new(1075, -1515, 800)),
+                        new("Outside", new(-4210, -140, 0)),
+                        new("Overlook", new(-10480, -4100, 2900)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Palace",
+                new($"{SubMapNamePrefix}Palace",
                     new()
                     {
-                        new("Vases", new(-5270, -60, -190)),
-                        new("Computer", new(-2250, 1445, 0)),
-                        new("Jing King's Room", new(470, -1500, 0)),
-                        new("Drill Site", new(2075, 15000, 545)),
+                        new("Vases", new(-5270, -60, -50)),
+                        new("Computer", new(-2250, 1445, 150)),
+                        new("Jing King's Room", new(470, -1500, 150)),
+                        new("Drill Site", new(2075, 15000, 700)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Treasure Temple",
+                new($"{SubMapNamePrefix}Treasure Temple",
                     new()
                     {
-                        new("Entrance", new(-6300, -130, 330)),
-                        new("Treasure Area", new(1725, 730, -330)),
+                        new("Entrance", new(-6300, -130, 500)),
+                        new("Treasure Area", new(1725, 730, -200)),
                         new("Crawlspace", new(-560, 140, 1800)),
                     }
                 ),
                 new("Pirate Hub",
                     new()
                     {
-                        new("Safehouse", new(4900, 1345, 1125)),
-                        new("Safehouse (Top)", new(5590, 2310, 2680)),
-                        new("Skull Keep (Top)", new(-9600, -1880, 4410)),
-                        new("Waterfall (Top)", new(3625, 16360, 4435)),
-                        new("Fireplace", new(-530, 7030, 1970)),
-                        new("Monkeys?", new(-7415, 11565, 1520)),
-                        new("Cooper Gang Ship", new(11390, -9290, 1550)),
-                        new("Archipelago", new(-26550, -19930, 2100)),
+                        new("Safehouse", new(4900, 1345, 1225)),
+                        new("Safehouse (Top)", new(5590, 2310, 2780)),
+                        new("Skull Keep (Top)", new(-9600, -1880, 4510)),
+                        new("Waterfall (Top)", new(3625, 16360, 4535)),
+                        new("Fireplace", new(-530, 7030, 2070)),
+                        new("Monkeys?", new(-7415, 11565, 1620)),
+                        new("Cooper Gang Ship", new(11390, -9290, 1650)),
+                        new("Archipelago", new(-26550, -19930, 2200)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Sailing Map",
+                new($"{SubMapNamePrefix}Sailing Map",
                     new()
                     {
-                        new("None", new(0, 0, 0)),
+                        new(),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Underwater Shipwreck",
+                new($"{SubMapNamePrefix}Underwater Shipwreck",
                     new()
                     {
-                        new("Spawn", new(28980, -100, 2600)),
+                        new("Spawn", new(28980, -100, 2800)),
                         new("Ship (Top)", new(21020, 14180, 6030)),
-                        new("Shipwreck", new(22460, 12380, -3480)),
-                        new("Depths", new(21910, 8690, -7285)),
-                        new("Ocean Current", new(20860, 22410, -7120)),
+                        new("Shipwreck", new(22460, 12380, -3280)),
+                        new("Depths", new(21910, 8690, -7085)),
+                        new("Ocean Current", new(20860, 22410, -6920)),
 
                     }
                 ),
-                new($"{StringBeforeSubMapName}Dagger Island",
+                new($"{SubMapNamePrefix}Dagger Island",
                     new()
                     {
                         new("Cooper Gang Ship", new(-16760, 2940, 1000)),
-                        new("Palm Tree Circle", new(-8040, -970, 1100)),
-                        new("Flipped Ship", new(1620, -5250, 1140)),
-                        new("Pirate Ship", new(15680, 5290, 770)),
-                        new("Mountain Peak", new(2215, 10860, 7940)),
+                        new("Palm Tree Circle", new(-8040, -970, 1200)),
+                        new("Flipped Ship", new(1620, -5250, 1240)),
+                        new("Pirate Ship", new(15680, 5290, 870)),
+                        new("Mountain Peak", new(2215, 10860, 8040)),
                     }
                 ),
                 new("Kaine Island",
                     new()
                     {
-                        new("Spawn", new(-6715, -14380, -2900)),
-                        new("Wall Sneak (Top)", new(-6285, -2220, -2180)),
-                        new("Ventilation Shaft", new(-1870, 4765, -3855)),
-                        new("Vault Entrance", new(-1085, -100, 2360)),
-                        new("Ship Dock", new(7855, -24360, -3770)),
-                        new("RC Car Track", new(-13650, -14110, -2190)),
-                        new("Random Rope", new(-16480, 1520, -2830)),
-                        new("Rock Formation", new(13730, 20650, 2100)),
+                        new("Spawn", new(-6715, -14380, -2800)),
+                        new("Wall Sneak (Top)", new(-6285, -2220, -2080)),
+                        new("Ventilation Shaft", new(-1870, 4765, -3755)),
+                        new("Vault Entrance", new(-1085, -100, 2460)),
+                        new("Ship Dock", new(7855, -24360, -3670)),
+                        new("RC Car Track", new(-13650, -14110, -2090)),
+                        new("Random Rope", new(-16480, 1520, -2730)),
+                        new("Rock Formation", new(13730, 20650, 2200)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Underwater",
+                new($"{SubMapNamePrefix}Underwater",
                     new()
                     {
                         new("Spawn", new(51570, 23850, -5745)),
-                        new("Water Tube", new(745, -34265, -820)),
+                        new("Water Tube", new(745, -34265, -720)),
                         new("Boss Area", new(10200, -59780, 0)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Cooper Vault (entrance)",
+                new($"{SubMapNamePrefix}Cooper Vault (entrance)",
                     new()
                     {
-                        new("Center", new(0, 0, 40)),
-                        new("Entrance Door", new(4350, -45, 460)),
+                        new("Center", new(0, 0, 140)),
+                        new("Entrance Door", new(4350, -45, 560)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Cooper Vault (gauntlet)",
+                new($"{SubMapNamePrefix}Cooper Vault (gauntlet)",
                     new()
                     {
-                        new("Slytunkhamen II", new(-28690, 21665, -2175)),
-                        new("Sir Galleth Cooper", new(-24715, 13995, -2260)),
-                        new("Salim Al-Kupar", new(-13760, 12485, -2200)),
-                        new("Slaigh MacCooper", new(-15325, 24680, -2190)),
-                        new("Rioichi Cooper", new(-21130, 19955, -180)),
-                        new("Henriette Cooper", new(-10530, 13200, 120)),
-                        new("Tennesee 'Kid' Cooper", new(2010, 13275, -2280)),
-                        new("Thaddeus Winslow Cooper III", new(9360, 1820, -2185)),
-                        new("Otto Van Cooper", new(-2050, 2740, 0)),
-                        new("Conner Cooper", new(7515, 5030, 150)),
-                        new("Inner Sanctum Entrance", new(16645, -2260, 120)),
+                        new("Slytunkhamen II", new(-28690, 21665, -2075)),
+                        new("Sir Galleth Cooper", new(-24715, 13995, -2160)),
+                        new("Salim Al-Kupar", new(-13760, 12485, -2100)),
+                        new("Slaigh MacCooper", new(-15325, 24680, -2090)),
+                        new("Rioichi Cooper", new(-21130, 19955, -80)),
+                        new("Henriette Cooper", new(-10530, 13200, 220)),
+                        new("Tennesee 'Kid' Cooper", new(2010, 13275, -2180)),
+                        new("Thaddeus Winslow Cooper III", new(9360, 1820, -2085)),
+                        new("Otto Van Cooper", new(-2050, 2740, 100)),
+                        new("Conner Cooper", new(7515, 5030, 250)),
+                        new("Inner Sanctum Entrance", new(16645, -2260, 220)),
                     }
                 ),
-                new($"{StringBeforeSubMapName}Dr. M's Arena",
+                new($"{SubMapNamePrefix}Dr. M's Arena",
                     new()
                     {
-                        new("Center", new(0, 0, 30)),
-                        new("Top Platform", new(-3840, 1600, 2970)),
+                        new("Center", new(0, 0, 130)),
+                        new("Top", new(-3840, 1600, 2970)),
                     }
                 ),
             };
