@@ -8,7 +8,7 @@ namespace SlyMultiTrainer
         public string GameStatePointer = "";
         public string ReloadAddress = "";
         public string ReloadValuesAddress = "";
-        public int ReloadValuesStructSize; // 0x20 for each language + 0xC. Ntsc has 1, PAL has 5, jap has 2
+        public int ReloadValuesStructSize; // 0x20 for each language + 0xC. Ntsc has 1, PAL has 5 (english, french, german, spanish, italian), jap has 2
         public string IsLoadingAddress = "";
         public string LanguageAddress = "";
         public string LivesAddress = "";
@@ -25,19 +25,17 @@ namespace SlyMultiTrainer
         public string RaceNitrosCountPointer = "";
         public string PiranhaLakeFishCountPointer = "";
         public string PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
-        //public string TimerAddress = "";
         public string BurningRubberFireSlugsComputerCountPointer = "";
         public string BurningRubberComputerCountPointer = "";
         public string BentleyComesThroughChipCountPointer = "";
 
-        private string _offsetTransformationPosition = "10"; // D0 + 30 = 100. We add the last digit later
-        private string _offsetTransformationVelocityZ = "15";
+        private string _offsetTransformation = "D0";
+        private string _offsetVelocity = "";
         private string _offsetCollider = "3F8";
-        private string _offsetSpeedMultiplier = "700";
+        private string _offsetSpeedMultiplier = "226C";
 
         private Memory.Mem _m;
         private Form1 _form;
-
         string[] tabWorldStateHeaderLabels = { "Levels", "Unlocked", "Key", "Safe", "Sprint" };
 
         public Sly1Handler(Memory.Mem m, Form1 form, string region) : base(m, form, region)
@@ -57,8 +55,8 @@ namespace SlyMultiTrainer
                 ReloadAddress = "275F84";
                 ReloadValuesAddress = "247AF0";
                 ReloadValuesStructSize = 0x2C;
-                LanguageAddress = "";
                 IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "";
                 ClockAddress = "261854";
                 CameraPointer = "261990";
                 DrawDistanceAddress = $"{CameraPointer},B0";
@@ -74,7 +72,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "26DAAC";
                 PiranhaLakeFishCountPointer = "26E744";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "26D5AC";
-                //TimerAddress = "26E9C8";
                 BurningRubberFireSlugsComputerCountPointer = "272914";
                 BurningRubberComputerCountPointer = "272694";
                 BentleyComesThroughChipCountPointer = "26DFAC";
@@ -108,7 +105,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "27075C";
                 PiranhaLakeFishCountPointer = "272344";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "26FC3C";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "279EC4";
                 BurningRubberComputerCountPointer = "279934";
                 BentleyComesThroughChipCountPointer = "27127C";
@@ -142,7 +138,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "26FA1C";
                 PiranhaLakeFishCountPointer = "271604";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "26EEFC";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "278D64";
                 BurningRubberComputerCountPointer = "2787D4";
                 BentleyComesThroughChipCountPointer = "27053C";
@@ -176,7 +171,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "26FCFC";
                 PiranhaLakeFishCountPointer = "2718E4";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "26F1DC";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "279044";
                 BurningRubberComputerCountPointer = "278AB4";
                 BentleyComesThroughChipCountPointer = "27081C";
@@ -184,6 +178,8 @@ namespace SlyMultiTrainer
             else if (region == "NTSC Demo")
             {
                 _offsetCollider = "408";
+                _offsetSpeedMultiplier = "2044";
+
                 GameStatePointer = "280C10";
                 WorldIdAddress = $"{GameStatePointer},1040";
                 MapIdAddress = $"{GameStatePointer},1044";
@@ -211,7 +207,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "";
                 PiranhaLakeFishCountPointer = "";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "";
                 BurningRubberComputerCountPointer = "";
                 BentleyComesThroughChipCountPointer = "";
@@ -238,7 +233,6 @@ namespace SlyMultiTrainer
                 LuckyCharmsAddress = $"{GameStatePointer},19E4";
                 CoinsAddress = $"{GameStatePointer},19E8";
                 GadgetAddress = $"{GameStatePointer},19F0";
-
                 ReloadAddress = "275A84";
                 ReloadValuesAddress = "2451F0";
                 ReloadValuesStructSize = 0xAC;
@@ -259,7 +253,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "";
                 PiranhaLakeFishCountPointer = "";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "";
                 BurningRubberComputerCountPointer = "";
                 BentleyComesThroughChipCountPointer = "";
@@ -268,30 +261,32 @@ namespace SlyMultiTrainer
                 Maps[6].IsVisible = false; // itm
                 Maps.Skip(8).ToList().ForEach(m => m.IsVisible = false);
             }
-            else if (region == "NTSC-J Demo" || region == "NTSC-K Demo")
+            else if (region == "NTSC-J Demo"
+                  || region == "NTSC-K Demo")
             {
                 if (region == "NTSC-J Demo")
                 {
                     GameStatePointer = "26704C";
                     ReloadValuesAddress = "24E0B0";
                     ReloadValuesStructSize = 0x4C;
+                    LanguageAddress = "26706C"; // You can't set it to english?
                 }
                 else
                 {
                     GameStatePointer = "267048";
                     ReloadValuesAddress = "24E670";
                     ReloadValuesStructSize = 0x2C;
+                    LanguageAddress = "";
                 }
+
                 WorldIdAddress = $"{GameStatePointer},19D8";
                 MapIdAddress = $"{GameStatePointer},19DC";
                 LivesAddress = $"{GameStatePointer},19E0";
                 LuckyCharmsAddress = $"{GameStatePointer},19E4";
                 CoinsAddress = $"{GameStatePointer},19E8";
                 GadgetAddress = $"{GameStatePointer},19F0";
-
                 ReloadAddress = "27D504";
                 IsLoadingAddress = $"{ReloadAddress}";
-                LanguageAddress = ""; // You can't set it to english? 26706C
                 ClockAddress = "2664C4";
                 CameraPointer = "266600";
                 DrawDistanceAddress = $"{CameraPointer},B0";
@@ -307,7 +302,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "";
                 PiranhaLakeFishCountPointer = "";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "";
                 BurningRubberComputerCountPointer = "";
                 BentleyComesThroughChipCountPointer = "";
@@ -319,9 +313,10 @@ namespace SlyMultiTrainer
             }
             else if (region == "NTSC May 19")
             {
-                _offsetTransformationPosition = "11";
-                _offsetTransformationVelocityZ = "16";
+                _offsetTransformation = "E0";
+                _offsetVelocity = "160";
                 _offsetCollider = "398";
+                _offsetSpeedMultiplier = "2068";
                 GameStatePointer = "276220";
                 WorldIdAddress = $"{GameStatePointer},1078";
                 MapIdAddress = $"{GameStatePointer},107C";
@@ -332,8 +327,8 @@ namespace SlyMultiTrainer
                 ReloadAddress = "28B40C";
                 ReloadValuesAddress = "28A78C";
                 ReloadValuesStructSize = 0x2C;
-                LanguageAddress = "";
                 IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "";
                 ClockAddress = "274B04";
                 CameraPointer = "274C8C";
                 DrawDistanceAddress = $"{CameraPointer},B0";
@@ -349,7 +344,6 @@ namespace SlyMultiTrainer
                 RaceNitrosCountPointer = "";
                 PiranhaLakeFishCountPointer = "";
                 PiranhaLakeTorchDownHomeCookingChickenCountPointer = "";
-                //TimerAddress = "";
                 BurningRubberFireSlugsComputerCountPointer = "";
                 BurningRubberComputerCountPointer = "";
                 BentleyComesThroughChipCountPointer = "";
@@ -365,8 +359,145 @@ namespace SlyMultiTrainer
                 Maps.RemoveAt(2); // hideout
                 Maps.Insert(1, new("attract", new(), false));
             }
+            else if (region == "NTSC (PS3)")
+            {
+                _offsetSpeedMultiplier = "225C";
+                GameStatePointer = "3426E0";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E01D64";
+                ReloadValuesAddress = "352BBC";
+                ReloadValuesStructSize = 0x6C;
+                IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "385690"; // english, french and spanish
+                ClockAddress = "339A98";
+                CameraPointer = "3839C0";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "3C627C";
+                DialoguePointer = "DE0B30";
+                SlyEntityPointer = "3C6384";
+                ActiveCharacterVehiclePointer = "DDEA10";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "DE36F4";
+                RaceLapsCountPointer = "DE420C";
+                RaceNitrosCountPointer = "DE4798";
+                PiranhaLakeFishCountPointer = "DE6370";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "DE3C80";
+                BurningRubberFireSlugsComputerCountPointer = "DEC4DC";
+                BurningRubberComputerCountPointer = "DEBF4C";
+                BentleyComesThroughChipCountPointer = "DE52B0";
+            }
+            else if (region == "PAL (PS3)")
+            {
+                _offsetSpeedMultiplier = "225C";
+                GameStatePointer = "342890";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E02FE4";
+                ReloadValuesAddress = "352DDC";
+                ReloadValuesStructSize = 0xAC;
+                IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "386418";
+                ClockAddress = "339C68";
+                CameraPointer = "384740";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "3C701C";
+                DialoguePointer = "DE1930";
+                SlyEntityPointer = "3C7124";
+                ActiveCharacterVehiclePointer = "DDF810";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "DE44F4";
+                RaceLapsCountPointer = "DE500C";
+                RaceNitrosCountPointer = "DE5598";
+                PiranhaLakeFishCountPointer = "DE7170";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "DE4A80";
+                BurningRubberFireSlugsComputerCountPointer = "DED6FC";
+                BurningRubberComputerCountPointer = "DED16C";
+                BentleyComesThroughChipCountPointer = "DE60B0";
+            }
+            else if (region == "UK (PS3)")
+            {
+                _offsetSpeedMultiplier = "225C";
+                GameStatePointer = "3426A0";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E015A4";
+                ReloadValuesAddress = "352AFC";
+                ReloadValuesStructSize = 0x2C;
+                IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "";
+                ClockAddress = "339A88";
+                CameraPointer = "382DC0";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "3C567C";
+                DialoguePointer = "DDFF30";
+                SlyEntityPointer = "3C5784";
+                ActiveCharacterVehiclePointer = "DDDE10";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "DE2AF4";
+                RaceLapsCountPointer = "DE360C";
+                RaceNitrosCountPointer = "DE3B98";
+                PiranhaLakeFishCountPointer = "DE5770";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "DE3080";
+                BurningRubberFireSlugsComputerCountPointer = "DEBCFC";
+                BurningRubberComputerCountPointer = "DEB76C";
+                BentleyComesThroughChipCountPointer = "DE46B0";
+            }
+            else if (region == "NTSC-J (PS3)")
+            {
+                _offsetSpeedMultiplier = "225C";
+                GameStatePointer = "3426E0";
+                WorldIdAddress = $"{GameStatePointer},19D8";
+                MapIdAddress = $"{GameStatePointer},19DC";
+                LivesAddress = $"{GameStatePointer},19E0";
+                LuckyCharmsAddress = $"{GameStatePointer},19E4";
+                CoinsAddress = $"{GameStatePointer},19E8";
+                GadgetAddress = $"{GameStatePointer},19F4";
+                ReloadAddress = "E01164";
+                ReloadValuesAddress = "352B3C";
+                ReloadValuesStructSize = 0x2C;
+                IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "";
+                ClockAddress = "339AA4";
+                CameraPointer = "382DC0";
+                DrawDistanceAddress = $"{CameraPointer},B0";
+                FOVAddress = $"{CameraPointer},1C8";
+                ResetCameraAddress = $"{CameraPointer},220";
+                ControllerAddress = "3C567C";
+                DialoguePointer = "DDFF30";
+                SlyEntityPointer = "3C5784";
+                ActiveCharacterVehiclePointer = "DDDE10";
+                ActiveCharacterPointer = $"{SlyEntityPointer}";
+                TreasureInTheDepthsChestCountPointer = "DE2AF4";
+                RaceLapsCountPointer = "DE360C";
+                RaceNitrosCountPointer = "DE3B98";
+                PiranhaLakeFishCountPointer = "DE5770";
+                PiranhaLakeTorchDownHomeCookingChickenCountPointer = "DE3080";
+                BurningRubberFireSlugsComputerCountPointer = "DEB8DC";
+                BurningRubberComputerCountPointer = "DEB34C";
+                BentleyComesThroughChipCountPointer = "DE46B0";
+            }
             else if (region == "NTSC (PS3 PSN)")
             {
+                _offsetSpeedMultiplier = "225C";
                 GameStatePointer = "3A4FC0";
                 WorldIdAddress = $"{GameStatePointer},19D8";
                 MapIdAddress = $"{GameStatePointer},19DC";
@@ -377,8 +508,8 @@ namespace SlyMultiTrainer
                 ReloadAddress = "E62AC4";
                 ReloadValuesAddress = "3B54FC";
                 ReloadValuesStructSize = 0x6C;
-                //LanguageAddress = "";
                 IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "3E8010"; // english, french and spanish
                 ClockAddress = "39C314";
                 CameraPointer = "3E6340";
                 DrawDistanceAddress = $"{CameraPointer},B0";
@@ -400,6 +531,7 @@ namespace SlyMultiTrainer
             }
             else if (region == "PAL (PS3 PSN)")
             {
+                _offsetSpeedMultiplier = "225C";
                 GameStatePointer = "3A4FE0";
                 WorldIdAddress = $"{GameStatePointer},19D8";
                 MapIdAddress = $"{GameStatePointer},19DC";
@@ -410,8 +542,8 @@ namespace SlyMultiTrainer
                 ReloadAddress = "E63B04";
                 ReloadValuesAddress = "3B559C";
                 ReloadValuesStructSize = 0xAC;
-                //LanguageAddress = "";
                 IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "3E8C10";
                 ClockAddress = "39C334";
                 CameraPointer = "3E6F40";
                 DrawDistanceAddress = $"{CameraPointer},B0";
@@ -433,6 +565,7 @@ namespace SlyMultiTrainer
             }
             else if (region == "NTSC-K (PS3 PSN)")
             {
+                _offsetSpeedMultiplier = "225C";
                 GameStatePointer = "3A4F90";
                 WorldIdAddress = $"{GameStatePointer},19D8";
                 MapIdAddress = $"{GameStatePointer},19DC";
@@ -443,8 +576,8 @@ namespace SlyMultiTrainer
                 ReloadAddress = "E61E44";
                 ReloadValuesAddress = "3B545C";
                 ReloadValuesStructSize = 0x2C;
-                //LanguageAddress = "";
                 IsLoadingAddress = $"{ReloadAddress}";
+                LanguageAddress = "";
                 ClockAddress = "39C2F4";
                 CameraPointer = "3E56C0";
                 DrawDistanceAddress = $"{CameraPointer},B0";
@@ -464,11 +597,14 @@ namespace SlyMultiTrainer
                 BurningRubberComputerCountPointer = "E4C04C";
                 BentleyComesThroughChipCountPointer = "E453B0";
             }
+
+            _offsetVelocity = $"{_offsetTransformation}+80";
         }
 
         public override void CustomTick()
         {
             SetActiveCharacterPointer();
+
             _form.UpdateUI(() =>
             {
                 if (!_form.cmbLuckyCharms.DroppedDown)
@@ -492,6 +628,7 @@ namespace SlyMultiTrainer
                     tabPage = _form.tabControlWorldStates.SelectedTab!;
                     tabName2 = tabPage.Name;
                 });
+
                 int worldId = Convert.ToInt32(tabName2.Last().ToString());
 
                 // If it's the first time we switched to the world state tab, fill them with the right controls
@@ -556,11 +693,53 @@ namespace SlyMultiTrainer
             }
         }
 
-        public override void OnMapChange(int mapId)
+        public override bool IsLoading()
         {
-
+            if (_m.ReadInt(IsLoadingAddress) != 0)
+            {
+                return true;
+            }
+            return false;
         }
 
+        #region Gadgets
+        public override long ReadGadgets()
+        {
+            return _m.ReadInt(GadgetAddress);
+        }
+
+        public int ReadActCharGadgetPower()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void UnfreezeActCharGadgetPower()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void FreezeActCharGadgetPower(int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteActCharGadgetPower(int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int ReadActCharGadgetId(GADGET_BIND bind)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void WriteActCharGadgetId(GADGET_BIND bind, int value)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
+        #region World state
         private void FillTabWorldState(int worldId, int mapIdStart)
         {
             TabPage tabWorldState = _form.tabControlWorldStates.TabPages[$"tabWorldState{worldId}"]!;
@@ -1421,16 +1600,6 @@ namespace SlyMultiTrainer
             _m.WriteMemory($"{PiranhaLakeTorchDownHomeCookingChickenCountPointer},0", "int", value.ToString());
         }
 
-        //public float ReadTimer()
-        //{
-        //    return _m.ReadFloat($"{TimerAddress}");
-        //}
-
-        //public void WriteTimer(float value)
-        //{
-        //    _m.WriteMemory($"{TimerAddress}", "float", value.ToString());
-        //}
-
         public int ReadBurningRubberFireSlugsComputerCount()
         {
             return _m.ReadInt($"{BurningRubberFireSlugsComputerCountPointer},0");
@@ -1471,6 +1640,129 @@ namespace SlyMultiTrainer
 
             return 9;
         }
+        #endregion
+
+        #region Entities
+        public override bool EntityHasTransformation(string pointerToEntity)
+        {
+            return true;
+        }
+
+        #region Origin
+        public override Matrix4x4 ReadEntityOriginTransformation(string pointerToEntity)
+        {
+            return Matrix4x4.Identity;
+        }
+        #endregion
+
+        #region Local
+        public override Matrix4x4 ReadEntityLocalTransformation(string pointerToEntity)
+        {
+            return _m.ReadMatrix4($"{pointerToEntity},{_offsetTransformation}");
+        }
+
+        public override Vector3 ReadEntityLocalTranslation(string pointerToEntity)
+        {
+            return ReadEntityLocalTransformation(pointerToEntity).Translation;
+        }
+
+        public override void WriteEntityLocalTranslation(string pointerToEntity, Vector3 value)
+        {
+            int tmp = _m.ReadInt($"{pointerToEntity},{_offsetCollider}");
+            _m.WriteMemory($"{pointerToEntity},{_offsetCollider}", "int", "0");
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation}+30", "vec3", value.ToString());
+            Thread.Sleep(10);
+            _m.WriteMemory($"{pointerToEntity},{_offsetCollider}", "int", tmp.ToString());
+        }
+
+        public override void FreezeEntityLocalTranslationX(string pointerToEntity, string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadEntityLocalTranslation(pointerToEntity);
+                value = trans.X.ToString();
+            }
+
+            _m.FreezeValue($"{pointerToEntity},{_offsetTransformation}+30", "float", value);
+        }
+
+        public override void FreezeEntityLocalTranslationY(string pointerToEntity, string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadEntityLocalTranslation(pointerToEntity);
+                value = trans.Y.ToString();
+            }
+
+            _m.FreezeValue($"{pointerToEntity},{_offsetTransformation}+34", "float", value);
+        }
+
+        public override void FreezeEntityLocalTranslationZ(string pointerToEntity, string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadEntityLocalTranslation(pointerToEntity);
+                value = trans.Z.ToString();
+            }
+
+            _m.FreezeValue($"{pointerToEntity},{_offsetTransformation}+38", "float", value);
+        }
+
+        public override void UnfreezeEntityLocalTranslationX(string pointerToEntity)
+        {
+            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformation}+30");
+        }
+
+        public override void UnfreezeEntityLocalTranslationY(string pointerToEntity)
+        {
+            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformation}+34");
+        }
+
+        public override void UnfreezeEntityLocalTranslationZ(string pointerToEntity)
+        {
+            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformation}+38");
+        }
+
+        public override float ReadEntityLocalScale(string pointerToEntity)
+        {
+            return _m.ReadFloat($"{pointerToEntity},{_offsetTransformation}");
+        }
+
+        public override void WriteEntityLocalScale(string pointerToEntity, float scale)
+        {
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation}+0", "float", scale.ToString());
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation}+14", "float", scale.ToString());
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation}+28", "float", scale.ToString());
+        }
+        #endregion
+
+        #region World
+        // Same as local
+        public override Matrix4x4 ReadEntityWorldTransformation(string pointerToEntity)
+        {
+            return ReadEntityLocalTransformation(pointerToEntity);
+        }
+
+        public override void WriteEntityWorldTransformation(string pointerToEntity, Matrix4x4 value)
+        {
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation}", "mat4", value.ToString());
+        }
+        #endregion
+
+        #region Final
+        public override Vector3 ReadEntityFinalTranslation(string pointerToEntity)
+        {
+            return ReadEntityLocalTranslation(pointerToEntity);
+        }
+        #endregion
+
+        #endregion
+
+        #region Active character
+        public override bool IsActCharAvailable()
+        {
+            return _m.ReadInt(ActiveCharacterPointer) != 0;
+        }
 
         private void SetActiveCharacterPointer()
         {
@@ -1492,111 +1784,36 @@ namespace SlyMultiTrainer
             ActiveCharacterPointer = SlyEntityPointer;
         }
 
-        public override Vector3 ReadActCharPosition()
+
+        public override string GetActCharPointer()
         {
-            return _m.ReadVector3($"{ActiveCharacterPointer},{_offsetTransformationPosition}0");
+            return ActiveCharacterPointer;
         }
 
-        public override void WriteActCharPosition(Vector3 value)
+        public override int ReadActCharId()
         {
-            int tmp = _m.ReadInt($"{ActiveCharacterPointer},{_offsetCollider}");
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetCollider}", "int", "0");
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetTransformationPosition}0", "vec3", value.ToString());
-            Thread.Sleep(10);
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetCollider}", "int", tmp.ToString());
+            return Characters.FirstOrDefault().Id;
         }
 
-        public override void FreezeActCharPositionX(string value = "")
+        public override void WriteActCharId(int id)
         {
-            if (value == "")
-            {
-                Vector3 trans = ReadActCharPosition();
-                value = trans.X.ToString();
-            }
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetTransformationPosition}0", "float", value);
+            // Only sly is playable
+            throw new NotImplementedException();
         }
 
-        public override void FreezeActCharPositionY(string value = "")
+        public override void FreezeActCharId(string value)
         {
-            if (value == "")
-            {
-                Vector3 trans = ReadActCharPosition();
-                value = trans.Y.ToString();
-            }
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetTransformationPosition}4", "float", value);
+            throw new NotImplementedException();
         }
 
-        public override void FreezeActCharPositionZ(string value = "")
+        public override void UnfreezeActCharId()
         {
-            if (value == "")
-            {
-                Vector3 trans = ReadActCharPosition();
-                value = trans.Z.ToString();
-            }
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetTransformationPosition}8", "float", value);
-        }
-
-        public override void UnfreezeActCharPositionX()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetTransformationPosition}0");
-        }
-
-        public override void UnfreezeActCharPositionY()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetTransformationPosition}4");
-        }
-
-        public override void UnfreezeActCharPositionZ()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetTransformationPosition}8");
-        }
-
-        public override void FreezeActCharVelocityZ(string value = "")
-        {
-            if (value == "")
-            {
-                Vector3 trans = ReadActCharVelocity();
-                value = trans.Z.ToString();
-            }
-
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetTransformationVelocityZ}8", "float", value);
-        }
-
-        public override void UnfreezeActCharVelocityZ()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetTransformationVelocityZ}8");
-        }
-
-        public override float ReadSpeedMultiplier()
-        {
-            var value = _m.ReadFloat($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
-            return value;
-        }
-
-        public override void WriteSpeedMultiplier(float value)
-        {
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
-        }
-
-        public override void FreezeSpeedMultiplier(float value)
-        {
-            if (value == 0)
-            {
-                value = ReadSpeedMultiplier();
-            }
-
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
-        }
-
-        public override void UnfreezeSpeedMultiplier()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
+            throw new NotImplementedException();
         }
 
         public override int ReadActCharHealth()
         {
-            int health = _m.ReadInt(LivesAddress);
-            return health;
+            return _m.ReadInt(LivesAddress);
         }
 
         public override void WriteActCharHealth(int value)
@@ -1604,12 +1821,13 @@ namespace SlyMultiTrainer
             _m.WriteMemory(LivesAddress, "int", value.ToString());
         }
 
-        public override void FreezeActCharHealth(int value = 0)
+        public override void FreezeActCharHealth(int value)
         {
             if (value == 0)
             {
                 value = ReadActCharHealth();
             }
+
             _m.FreezeValue(LivesAddress, "int", value.ToString());
         }
 
@@ -1618,39 +1836,9 @@ namespace SlyMultiTrainer
             _m.UnfreezeValue(LivesAddress);
         }
 
-        public override Controller_t GetController()
-        {
-            return new(_m, ControllerAddress);
-        }
-
-        public override bool IsActCharAvailable()
-        {
-            return _m.ReadInt(ActiveCharacterPointer) != 0;
-        }
-
-        public override bool IsLoading()
-        {
-            if (_m.ReadInt(IsLoadingAddress) != 0)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public void SkipCurrentDialogue()
-        {
-            string offset = "2E8";
-            if (Region == "NTSC May 19")
-            {
-                offset = "2F8";
-            }
-            _m.WriteMemory($"{DialoguePointer},{offset}", "int", "0");
-        }
-
         public int ReadLuckyCharms()
         {
-            int tmp = _m.ReadInt(LuckyCharmsAddress);
-            return tmp;
+            return _m.ReadInt(LuckyCharmsAddress);
         }
 
         public void WriteLuckyCharms(int value)
@@ -1673,15 +1861,188 @@ namespace SlyMultiTrainer
             _m.UnfreezeValue(LuckyCharmsAddress);
         }
 
+        public override Matrix4x4 ReadActCharOriginTransformation()
+        {
+            return ReadEntityOriginTransformation(ActiveCharacterPointer);
+        }
+
+        public override Vector3 ReadActCharLocalTranslation()
+        {
+            return ReadEntityLocalTranslation(ActiveCharacterPointer);
+        }
+
+        public override void WriteActCharLocalTranslation(Vector3 value)
+        {
+            WriteEntityLocalTranslation(ActiveCharacterPointer, value);
+        }
+
+        public override void FreezeActCharLocalTranslationX(string value)
+        {
+            FreezeEntityLocalTranslationX(ActiveCharacterPointer, value);
+        }
+
+        public override void FreezeActCharLocalTranslationY(string value = "")
+        {
+            FreezeEntityLocalTranslationY(ActiveCharacterPointer, value);
+        }
+
+        public override void FreezeActCharLocalTranslationZ(string value = "")
+        {
+            FreezeEntityLocalTranslationZ(ActiveCharacterPointer, value);
+        }
+
+        public override void UnfreezeActCharLocalTranslationX()
+        {
+            UnfreezeEntityLocalTranslationX(ActiveCharacterPointer);
+        }
+
+        public override void UnfreezeActCharLocalTranslationY()
+        {
+            UnfreezeEntityLocalTranslationY(ActiveCharacterPointer);
+        }
+
+        public override void UnfreezeActCharLocalTranslationZ()
+        {
+            UnfreezeEntityLocalTranslationZ(ActiveCharacterPointer);
+        }
+
+        public override void FreezeActCharVelocityZ(string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadActCharVelocity();
+                value = trans.Z.ToString();
+            }
+
+            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetVelocity}+8", "float", value);
+        }
+
+        public override void UnfreezeActCharVelocityZ()
+        {
+            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetVelocity}+8");
+        }
+
+        public override float ReadActCharSpeedMultiplier()
+        {
+            return _m.ReadFloat($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
+        }
+
+        public override void WriteActCharSpeedMultiplier(float value)
+        {
+            value = value * 500;
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
+        }
+
+        public override void FreezeActCharSpeedMultiplier(float value)
+        {
+            if (value == 0)
+            {
+                value = ReadActCharSpeedMultiplier();
+            }
+
+            value = value * 400;
+            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
+        }
+
+        public override void UnfreezeActCharSpeedMultiplier()
+        {
+            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
+        }
+
         public Vector3 ReadActCharVelocity()
         {
-            Vector3 trans = _m.ReadVector3($"{ActiveCharacterPointer},{_offsetTransformationVelocityZ}0");
-            return trans;
+            return _m.ReadVector3($"{ActiveCharacterPointer},{_offsetVelocity}");
         }
 
         public void WriteActCharVelocity(Vector3 value)
         {
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetTransformationVelocityZ}0", "vec3", value.ToString());
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetVelocity}", "vec3", value.ToString());
+        }
+
+        #endregion
+
+        #region Toggles
+        public override void ToggleUndetectable(bool enableUndetectable)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ToggleInvulnerable(bool enableInvulnerable)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ToggleInfiniteDbJump(bool enableInfDbJump)
+        {
+            string offset1 = "2228";
+            string offset2 = "2498";
+            if (Region == "NTSC Demo")
+            {
+                offset1 = "2008";
+                offset2 = "2250";
+            }
+            else if (Region == "NTSC May 19")
+            {
+                offset1 = "2028";
+                offset2 = "2278";
+            }
+            else if (Region == "PAL (PS3 PSN)"
+                  || Region == "NTSC (PS3 PSN)"
+                  || Region == "NTSC-K (PS3 PSN)"
+                  || Region == "NTSC (PS3)"
+                  || Region == "PAL (PS3)"
+                  || Region == "UK (PS3)"
+                  || Region == "NTSC-J (PS3)")
+            {
+                offset1 = "2218";
+                offset2 = "2488";
+            }
+
+            if (enableInfDbJump)
+            {
+                _m.FreezeValue($"{ActiveCharacterPointer},{offset1}", "int", "-1");
+                _m.FreezeValue($"{ActiveCharacterPointer},{offset2}", "int", "1");
+            }
+            else
+            {
+                _m.UnfreezeValue($"{ActiveCharacterPointer},{offset1}");
+                _m.UnfreezeValue($"{ActiveCharacterPointer},{offset2}");
+            }
+        }
+        #endregion
+
+        #region Maps
+        public override void LoadMap(int mapId)
+        {
+            string write = "";
+            if (Region == "NTSC Demo" || Region == "NTSC May 19")
+            {
+                int stringPointer = _m.ReadInt($"{ReloadValuesAddress},{mapId * 4:X}+4");
+                write = stringPointer.ToString("X");
+            }
+            else
+            {
+                int tmp = Convert.ToInt32(ReloadValuesAddress, 16);
+                int languageId = _m.ReadInt(LanguageAddress);
+
+                tmp += mapId * ReloadValuesStructSize; // Go to the map
+                tmp += 0x20 * languageId; // Go to the language
+
+                write = tmp.ToString("X");
+            }
+
+            _m.WriteMemory($"{ReloadAddress}+10", "int", $"0x{write}");
+            ReloadMap();
+        }
+
+        public override void LoadMap(int mapId, int entranceValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void LoadMap(int mapId, int entranceValue, int mode)
+        {
+            throw new NotImplementedException();
         }
 
         public int ReadMapId()
@@ -1814,26 +2175,6 @@ namespace SlyMultiTrainer
             return tmp;
         }
 
-        public override void LoadMap(int mapId)
-        {
-            string write = "";
-            if (Region == "NTSC Demo" || Region == "NTSC May 19")
-            {
-                int stringPointer = _m.ReadInt($"{ReloadValuesAddress},{mapId * 4:X}+4");
-                write = stringPointer.ToString("X");
-            }
-            else
-            {
-                int tmp = Convert.ToInt32(ReloadValuesAddress, 16);
-                int languageId = _m.ReadInt(LanguageAddress);
-                tmp += mapId * ReloadValuesStructSize + 0x20 * languageId;
-                write = tmp.ToString("X");
-            }
-
-            _m.WriteMemory($"{ReloadAddress}+10", "int", $"0x{write}");
-            ReloadMap();
-        }
-
         public void ReloadMap()
         {
             _m.WriteMemory($"{ReloadAddress}+C", "int", "1");
@@ -1841,65 +2182,48 @@ namespace SlyMultiTrainer
             _m.WriteMemory($"{ReloadAddress}", "int", "1");
         }
 
-        public override void ToggleInfiniteDbJump(bool enableInfDbJump)
+        #endregion
+
+        public void SkipCurrentDialogue()
         {
-            string offset1 = "2228";
-            string offset2 = "2498";
-            if (Region == "NTSC Demo")
+            string offset = "2E8";
+            if (Region == "NTSC May 19")
             {
-                offset1 = "2008";
-                offset2 = "2250";
-            }
-            else if (Region == "NTSC May 19")
-            {
-                offset1 = "2028";
-                offset2 = "2278";
-            }
-            else if (Region == "PAL (PS3 PSN)"
-                  || Region == "NTSC (PS3 PSN)"
-                  || Region == "NTSC-K (PS3 PSN)")
-            {
-                offset1 = "2218";
-                offset2 = "2488";
+                offset = "2F8";
             }
 
-            if (enableInfDbJump)
-            {
-                _m.FreezeValue($"{ActiveCharacterPointer},{offset1}", "int", "-1");
-                _m.FreezeValue($"{ActiveCharacterPointer},{offset2}", "int", "1");
-            }
-            else
-            {
-                _m.UnfreezeValue($"{ActiveCharacterPointer},{offset1}");
-                _m.UnfreezeValue($"{ActiveCharacterPointer},{offset2}");
-            }
+            _m.WriteMemory($"{DialoguePointer},{offset}", "int", "0");
         }
 
-        public override long ReadGadgets()
+        public override Controller_t GetController()
         {
-            int gadgets = _m.ReadInt(GadgetAddress);
-            return gadgets;
+            return new(_m, ControllerAddress);
         }
 
         protected override List<Character_t> GetCharacters()
         {
-            return new List<Character_t>
+            return new()
             {
                 new("Sly", 1)
             };
         }
 
+        protected override List<List<Gadget_t>> GetGadgets()
+        {
+            return new();
+        }
+
         protected override List<Map_t> GetMaps()
         {
-            return new List<Map_t>
+            return new()
             {
-                new Map_t("Splash",
+                new("Splash",
                     new()
                     {
                         new(),
                     }
                 ),
-                new Map_t("Paris",
+                new("Paris",
                     new()
                     {
                         new("Start", new(-2660, 850, -500)),
@@ -1911,13 +2235,13 @@ namespace SlyMultiTrainer
                         new("Van", new(7600, 600, -4400)),
                     }
                 ),
-                new Map_t("Hideout",
+                new("Hideout",
                     new()
                     {
                         new(),
                     }
                 ),
-                new Map_t("A Stealthy Approach",
+                new("A Stealthy Approach",
                     new()
                     {
                         new("Start", new(5588, -23622, 800)),
@@ -1929,7 +2253,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-15700, -8000, 0)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Prowling The Grounds",
+                new($"{SubMapNamePrefix}Prowling The Grounds",
                     new()
                     {
                         new("Start", new(-15654, -12032, 700)),
@@ -1939,7 +2263,7 @@ namespace SlyMultiTrainer
                         new("Submarine", new(-10643, 2477, 400)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}High Class Heist",
+                new($"{SubMapNamePrefix}High Class Heist",
                     new()
                     {
                         new("Start", new(-12384, 2114, -100)),
@@ -1950,7 +2274,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(5800, -300, -400)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Into the Machine",
+                new($"{SubMapNamePrefix}Into the Machine",
                     new()
                     {
                         new("Start", new(2610, 6071, 400)),
@@ -1965,7 +2289,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(45300, 3800, -2000)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Cunning Disguise",
+                new($"{SubMapNamePrefix}A Cunning Disguise",
                     new()
                     {
                         new("Start", new(-9660, 1020, -3500)),
@@ -1973,7 +2297,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-1550, -500, -3700)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The Fire Down Below",
+                new($"{SubMapNamePrefix}The Fire Down Below",
                     new()
                     {
                         new("Start", new(-4237, -5634, 0)),
@@ -1983,13 +2307,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(-1710, 10850, 1300)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Treasure in the Depths",
+                new($"{SubMapNamePrefix}Treasure in the Depths",
                     new()
                     {
                         new("Start", new(-1873, 10, 349)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The Gunboat Graveyard",
+                new($"{SubMapNamePrefix}The Gunboat Graveyard",
                     new()
                     {
                         new("Start", new(810, 3560, 150)),
@@ -1998,13 +2322,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(-4400, -8300, 400)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The Eye of the Storm",
+                new($"{SubMapNamePrefix}The Eye of the Storm",
                     new()
                     {
                         new("Start", new(-1200, 0, 100)),
                     }
                 ),
-                new Map_t("A Rocky Start",
+                new("A Rocky Start",
                     new()
                     {
                         new("Start", new(-3551, 3794, 319)),
@@ -2016,7 +2340,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(18000, -11700, 2000)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Muggshot's Turf",
+                new($"{SubMapNamePrefix}Muggshot's Turf",
                     new()
                     {
                         new("Start", new(-6245, 3136, 400)),
@@ -2024,7 +2348,7 @@ namespace SlyMultiTrainer
                         new("Casino", new(4700, 0, 600)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Boneyard Casino",
+                new($"{SubMapNamePrefix}Boneyard Casino",
                     new()
                     {
                         new("Start", new(3629, -1391, -400)),
@@ -2034,19 +2358,19 @@ namespace SlyMultiTrainer
                         new("Safe", new(-17000, -4200, -300)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Murray's Big Gamble",
+                new($"{SubMapNamePrefix}Murray's Big Gamble",
                     new()
                     {
                         new("Start", new(4685, 651, 1457)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}At the Dog Track",
+                new($"{SubMapNamePrefix}At the Dog Track",
                     new()
                     {
                         new("Start", new(-10452, 5939, 178)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Two to Tango",
+                new($"{SubMapNamePrefix}Two to Tango",
                     new()
                     {
                         new("Start", new(-8700, -200, 1200)),
@@ -2055,14 +2379,14 @@ namespace SlyMultiTrainer
                         new("Chase end", new(-11300, 11500, 3100)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Straight to the Top",
+                new($"{SubMapNamePrefix}Straight to the Top",
                     new()
                     {
                         new("Start", new(342, -331, -200)),
                         new("Safe", new(6100, -500, 2200)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Back Alley Heist",
+                new($"{SubMapNamePrefix}Back Alley Heist",
                     new()
                     {
                         new("Start", new(-4589, -1750, -300)),
@@ -2070,7 +2394,7 @@ namespace SlyMultiTrainer
                         new("Safe", new(-3000, -2900, 2000)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Last Call",
+                new($"{SubMapNamePrefix}Last Call",
                     new()
                     {
                         new("Start", new(-132, -801, 200)),
@@ -2078,7 +2402,7 @@ namespace SlyMultiTrainer
                         new("Third stage", new(0, -1374, 3300)),
                     }
                 ),
-                new Map_t("The Dread Swamp Path",
+                new("The Dread Swamp Path",
                     new()
                     {
                         new("Start", new(7261, -4509, 1500)),
@@ -2086,7 +2410,7 @@ namespace SlyMultiTrainer
                         new("Tents", new(0, -2400, 500)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The Swamp's Dark Centre",
+                new($"{SubMapNamePrefix}The Swamp's Dark Centre",
                     new()
                     {
                         new("Start", new(-8313, 319, -1400)),
@@ -2094,7 +2418,7 @@ namespace SlyMultiTrainer
                         new("W3 boss fight trigger", new(531, -358, 438)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The Lair of the Beast",
+                new($"{SubMapNamePrefix}The Lair of the Beast",
                     new()
                     {
                         new("Start", new(-832, -6506, 300)),
@@ -2103,7 +2427,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(5000, -6400, 800)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Grave Undertaking",
+                new($"{SubMapNamePrefix}A Grave Undertaking",
                     new()
                     {
                         new("Start", new(-6551, 1459, 1300)),
@@ -2112,14 +2436,14 @@ namespace SlyMultiTrainer
                         new("Exit", new(-600, 3400, 1800)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Piranha Lake",
+                new($"{SubMapNamePrefix}Piranha Lake",
                     new()
                     {
                         new("Start", new(-700, 0, 0)),
                         new("Exit", new(3100, 0, 400)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Descent into Danger",
+                new($"{SubMapNamePrefix}Descent into Danger",
                     new()
                     {
                         new("Start", new(-9772, 6418, -516)),
@@ -2129,7 +2453,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(-2300, 5200, -1100)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Ghastly Voyage",
+                new($"{SubMapNamePrefix}A Ghastly Voyage",
                     new()
                     {
                         new("Start", new(-8440, -9864, 600)),
@@ -2138,13 +2462,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(5800, -13500, 1300)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Down Home Cooking",
+                new($"{SubMapNamePrefix}Down Home Cooking",
                     new()
                     {
                         new("Start", new(3, 1625, 200)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Deadly Dance",
+                new($"{SubMapNamePrefix}A Deadly Dance",
                     new()
                     {
                         new("Phase 1 start", new(-5533, 131, 100)),
@@ -2157,7 +2481,7 @@ namespace SlyMultiTrainer
                         new("Phase 4 end", new(3183, 4546, 1400)),
                     }
                 ),
-                new Map_t("A Perilous Ascent",
+                new("A Perilous Ascent",
                     new()
                     {
                         new("Start", new(-8164, -8403, -4575)),
@@ -2169,14 +2493,14 @@ namespace SlyMultiTrainer
                         new("Key", new(7500, 4900, 100)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Inside the Stronghold",
+                new($"{SubMapNamePrefix}Inside the Stronghold",
                     new()
                     {
                         new("Start", new(-3428, -556, -3300)),
                         new("Hub", new(-1527, 476, -2101)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Flaming Temple of Flame",
+                new($"{SubMapNamePrefix}Flaming Temple of Flame",
                     new()
                     {
                         new("Start", new(-2159, 550, 100)),
@@ -2186,7 +2510,7 @@ namespace SlyMultiTrainer
                         new("Laser floor", new(12500, 0, 2700)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The Unseen Foe",
+                new($"{SubMapNamePrefix}The Unseen Foe",
                     new()
                     {
                         new("Start", new(-14526, -5006, -200)),
@@ -2197,13 +2521,13 @@ namespace SlyMultiTrainer
                         new("Exit", new(-8970, -9450, -100)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}The King of the Hill",
+                new($"{SubMapNamePrefix}The King of the Hill",
                     new()
                     {
                         new("Start", new(-3124, 39, 737)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Rapid Fire Assault",
+                new($"{SubMapNamePrefix}Rapid Fire Assault",
                     new()
                     {
                         new("Start", new(-1062, 3691, 100)),
@@ -2212,7 +2536,7 @@ namespace SlyMultiTrainer
                         new("Exit", new(2900, 500, -1200)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Duel by the Dragon",
+                new($"{SubMapNamePrefix}Duel by the Dragon",
                     new()
                     {
                         new("Start", new(-10617, -3961, -2500)),
@@ -2223,55 +2547,55 @@ namespace SlyMultiTrainer
                         new("Exit", new(-1900, -2600, -800)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Desperate Race",
+                new($"{SubMapNamePrefix}A Desperate Race",
                     new()
                     {
                         new("Start", new(8306, -2161, 1100)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Flame Fu!",
+                new($"{SubMapNamePrefix}Flame Fu!",
                     new()
                     {
                         new("Arena", new(-2687, 0, -100)),
                     }
                 ),
-                new Map_t("A Hazardous Path",
+                new("A Hazardous Path",
                     new()
                     {
                         new("Start", new(8570, -28669, 600)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Burning Rubber",
+                new($"{SubMapNamePrefix}Burning Rubber",
                     new()
                     {
                         new("Start", new(-5368, 1446, 300)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Daring Rescue",
+                new($"{SubMapNamePrefix}A Daring Rescue",
                     new()
                     {
                         new("Start", new(429, 2111, 400)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Bentley Comes Through",
+                new($"{SubMapNamePrefix}Bentley Comes Through",
                     new()
                     {
                         new("Start", new(-1191, 0, 63)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Temporary Truce",
+                new($"{SubMapNamePrefix}A Temporary Truce",
                     new()
                     {
                         new("Start", new(279, -201, 1025)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}Sinking Peril",
+                new($"{SubMapNamePrefix}Sinking Peril",
                     new()
                     {
                         new("Start", new(-291, -880, 292)),
                     }
                 ),
-                new Map_t($"{SubMapNamePrefix}A Strange Reunion",
+                new($"{SubMapNamePrefix}A Strange Reunion",
                     new()
                     {
                         new("Start", new(-3728, -5855, 743)),
@@ -2280,131 +2604,6 @@ namespace SlyMultiTrainer
                     }
                 ),
             };
-        }
-
-        public override int ReadActCharId()
-        {
-            return Characters.FirstOrDefault().Id;
-        }
-
-        public override void WriteActCharId(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void FreezeActCharId(string value = "")
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void UnfreezeActCharId()
-        {
-            throw new NotImplementedException();
-        }
-
-        public int ReadActCharGadgetPower()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void UnfreezeActCharGadgetPower()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void FreezeActCharGadgetPower(int value = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void ToggleInvulnerable(bool enableInvulnerable)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void ToggleUndetectable(bool enableUndetectable)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WriteActCharGadgetPower(int value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Vector3 ReadPositionFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Vector3 ReadWorldPositionFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void WritePositionFromPointerToEntity(string pointerToEntity, Vector3 value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void FreezePositionXFromPointerToEntity(string pointerToEntity, string value = "")
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void FreezePositionYFromPointerToEntity(string pointerToEntity, string value = "")
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void FreezePositionZFromPointerToEntity(string pointerToEntity, string value = "")
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void UnfreezePositionXFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void UnfreezePositionYFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void UnfreezePositionZFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Matrix4x4 ReadWorldRotationFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void WriteWorldRotationFromPointerToEntity(string pointerToEntity, Matrix4x4 rotationMatrix)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void WriteScaleFromPointerToEntity(string pointerToEntity, float scale)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override float ReadScaleFromPointerToEntity(string pointerToEntity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void LoadMap(int mapId, int entranceValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void LoadMap(int mapId, int entranceValue, int mode)
-        {
-            throw new NotImplementedException();
         }
     }
 }

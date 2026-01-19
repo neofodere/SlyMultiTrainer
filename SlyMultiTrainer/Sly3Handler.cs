@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Text;
+using static SlyMultiTrainer.Sly2_3_Savefile;
 using static SlyMultiTrainer.Util;
 
 namespace SlyMultiTrainer
@@ -16,10 +17,11 @@ namespace SlyMultiTrainer
         public string StringTableCountAddress = "";
         public string IsLoadingAddress = "";
         public DAG_t DAG;
+        public Sly2_3_Savefile Savefile;
 
-        private string _offsetTransformation1 = "44";
-        private string _offsetTransformation2 = "";
-        private string _offsetTransformation3 = "";
+        private string _offsetTransformationOrigin = "44";
+        private string _offsetTransformationLocal = "";
+        private string _offsetTransformationWorld = "";
         private string _offsetHealth = "16C";
         private string _offsetGadgetPower = "174";
         private string _offsetController = "134";
@@ -27,6 +29,7 @@ namespace SlyMultiTrainer
         private string _offsetInfiniteDbJump = "33C";
         private string _offsetSpeedMultiplier = "354";
         private string _offsetInvulnerable = "180";
+        private string _offsetGadgetBinds = "1250";
         private string _offsetUndetectable = "1160";
 
         private Memory.Mem _m;
@@ -37,9 +40,10 @@ namespace SlyMultiTrainer
             _m = m;
             DAG = new(m);
             DAG.SetVersion(DAG_VERSION.V3);
+            Savefile = new(m);
+            Savefile.SetVersion(SAVEFILE_VERSION.V1);
             _encoding = Encoding.Unicode;
 
-            DAG.OffsetId = "18";
             DAG.OffsetNextNodePointer = "20";
             DAG.OffsetState = "44";
             DAG.OffsetGoalDescription = "4C";
@@ -50,13 +54,12 @@ namespace SlyMultiTrainer
             DAG.OffsetClusterPointer = "6C";
             DAG.OffsetChildrenCount = "90";
             DAG.OffsetCheckpointEntranceValue = "A8";
-            DAG.OffsetSuckPointer = "AC";
             DAG.OffsetAttributes = "D0";
             DAG.OffsetAttributesForCluster = "D0";
             DAG.GetStringFromId = GetStringFromId;
             DAG.LoadMap = LoadMap;
             DAG.WriteActCharId = WriteActCharId;
-            
+
             if (region == "NTSC")
             {
                 ReloadAddress = "4797C4";
@@ -76,10 +79,10 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "36C710";
                 DAG.RootNodePointer = "478C8C";
                 DAG.CurrentCheckpointNodePointer = "4794CC";
-                DAG.TaskStringTablePointer = "4794A8";
                 DAG.ClusterIdAddress = "36DB98";
-                DAG.SavefileStartAddress = "468D30";
-                DAG.SavefileValuesOffsetsTablePointer = "4793CC";
+                Savefile.SavefileStartAddress = "468D30";
+                Savefile.SavefileKeyAddressTablePointer = "4793CC";
+                Savefile.SavefileKeyStringTablePointer = "4794A8";
                 DAG.Sly3Time = "36BC20";
                 DAG.Sly3Flag = "479754";
                 StringTableCountAddress = "47A2D4";
@@ -104,10 +107,10 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "36D190";
                 DAG.RootNodePointer = "47A30C";
                 DAG.CurrentCheckpointNodePointer = "47AB4C";
-                DAG.TaskStringTablePointer = "47AB28";
                 DAG.ClusterIdAddress = "36E618";
-                DAG.SavefileStartAddress = "46A3B0";
-                DAG.SavefileValuesOffsetsTablePointer = "47AA4C";
+                Savefile.SavefileStartAddress = "46A3B0";
+                Savefile.SavefileKeyAddressTablePointer = "47AA4C";
+                Savefile.SavefileKeyStringTablePointer = "47AB28";
                 DAG.Sly3Time = "36C6A0";
                 DAG.Sly3Flag = "47ADD4";
                 StringTableCountAddress = "47B954";
@@ -132,10 +135,10 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "36DC10";
                 DAG.RootNodePointer = "47AD8C";
                 DAG.CurrentCheckpointNodePointer = "47B5CC";
-                DAG.TaskStringTablePointer = "47B5A8";
                 DAG.ClusterIdAddress = "36F098";
-                DAG.SavefileStartAddress = "46AE30";
-                DAG.SavefileValuesOffsetsTablePointer = "47B4CC";
+                Savefile.SavefileStartAddress = "46AE30";
+                Savefile.SavefileKeyAddressTablePointer = "47B4CC";
+                Savefile.SavefileKeyStringTablePointer = "47B5A8";
                 DAG.Sly3Time = "36D120";
                 DAG.Sly3Flag = "47B854";
                 StringTableCountAddress = "47C3D4";
@@ -146,6 +149,8 @@ namespace SlyMultiTrainer
                 _offsetUndetectable = "1180";
                 _offsetSpeedMultiplier = "358";
                 _offsetInfiniteDbJump = "348";
+                _offsetGadgetBinds = "1270";
+
                 ReloadAddress = "46BB24";
                 ReloadValuesAddress = "2DEB08";
                 FKXListCount = "46BE0C";
@@ -163,10 +168,10 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "45AFC4";
                 DAG.RootNodePointer = "46AEF4";
                 DAG.CurrentCheckpointNodePointer = "46B738";
-                DAG.TaskStringTablePointer = "46B718";
                 DAG.ClusterIdAddress = "3600D0";
-                DAG.SavefileStartAddress = "45AFB0";
-                DAG.SavefileValuesOffsetsTablePointer = "46B63C";
+                Savefile.SavefileStartAddress = "45AFB0";
+                Savefile.SavefileKeyAddressTablePointer = "46B63C";
+                Savefile.SavefileKeyStringTablePointer = "46B718";
                 DAG.Sly3Time = "35F720";
                 DAG.Sly3Flag = "46BAC8";
                 StringTableCountAddress = "46C624";
@@ -178,12 +183,62 @@ namespace SlyMultiTrainer
                 }
 
                 Maps.RemoveRange(36, 4);
+
+                Gadgets = new()
+                {
+                    new()
+                    {
+                        new("Smoke Bomb", 0x1A),
+                        new("Combat Dodge", 0x1B),
+                        new("Feral Pounce", 0x1E),
+                        new("Mega Jump", 0x1F),
+                        new("Knockout Dive", 0x20),
+                        new("Unknown Rocket Boots", 0x21),
+                        new("Shadow Power Level 1", 0x22),
+                        new("Thief Reflexes", 0x23),
+                        new("Shadow Power Level 2", 0x24),
+                        new("Rocket Boots", 0x25),
+                        new("Treasure Map", 0x26),
+                        new("Shield", 0x27),
+                        new("Venice Disguise", 0x28),
+                        new("Photographer Disguise", 0x29),
+                        new("Pirate Disguise", 0x2A),
+                    },
+
+                    new()
+                    {
+                        new("Trigger Bomb", 0x6),
+                        new("Fishing Pole", 0x7),
+                        new("Alarm Clock", 0x8),
+                        new("Adrenaline Burst", 0x9),
+                        new("Health Extractor", 0xA),
+                        new("Insanity Strike", 0xC),
+                        new("WebCam Bomb", 0xD),
+                        new("Size Destabilizer", 0xE),
+                        new("Rage Bomb", 0xF),
+                        new("Reduction Bomb", 0x10),
+                    },
+
+                    new()
+                    {
+                        new("Be The Ball", 0x11),
+                        new("Berserker Charge", 0x12),
+                        new("Guttural Roar", 0x14),
+                        new("Fists of Flame", 0x15),
+                        new("Temporal Lock", 0x16),
+                        new("Raging Inferno Flop", 0x17),
+                        new("Diablo Fire Slam", 0x18),
+                        new("Cutscene Puppet", 0x19),
+                    }
+                };
             }
             else if (region == "NTSC E3 Demo")
             {
+                DAG.SetVersion(DAG_VERSION.V2);
                 _offsetSpeedMultiplier = "328";
                 _offsetInfiniteDbJump = "318";
-                DAG.SetVersion(DAG_VERSION.V2);
+                _offsetGadgetBinds = "1240";
+
                 ReloadAddress = "460C60";
                 ReloadValuesAddress = "461900,0"; // pointer
                 FKXListCount = "460F6C";
@@ -204,10 +259,10 @@ namespace SlyMultiTrainer
 
                 DAG.RootNodePointer = "460158";
                 DAG.CurrentCheckpointNodePointer = "460998";
-                DAG.TaskStringTablePointer = "460978";
                 DAG.ClusterIdAddress = "370488";
-                DAG.SavefileStartAddress = "453E20";
-                DAG.SavefileValuesOffsetsTablePointer = "46089C";
+                Savefile.SavefileStartAddress = "453E20";
+                Savefile.SavefileKeyAddressTablePointer = "46089C";
+                Savefile.SavefileKeyStringTablePointer = "460978";
                 DAG.Sly3Time = "36FA80";
                 DAG.Sly3Flag = "460C00";
                 DAG.OffsetCheckpointEntranceValue = "A4";
@@ -237,12 +292,63 @@ namespace SlyMultiTrainer
                 Maps[17].IsVisible = false;
                 Maps[18].IsVisible = false;
                 Maps.RemoveRange(20, 18);
+
+                Gadgets = new()
+                {
+                    new()
+                    {
+                        new("Smoke Bomb", 0x15),
+                        new("Combat Dodge", 0x16),
+                        new("Unknown Rocket Boots", 0x17),
+                        new("Thief Reflexes", 0x1B),
+                        new("Feral Pounce", 0x1C),
+                        new("Mega Jump", 0x1D),
+                        new("Insanity Strike", 0x20),
+                        new("Voltage Attack", 0x21),
+                        new("Rage Bomb", 0x23),
+                        new("Music Box", 0x24),
+                        new("Shadow Power Level 1", 0x26),
+                        new("Time Rush", 0x27),
+                        new("Crash Disguise 1", 0x28),
+                        new("Crash Disguise 2", 0x29),
+                        new("Rocket Boots", 0x2E),
+                        new("Shadow Power Level 2", 0x2F),
+                        new("Shield", 0x31),
+                    },
+
+                    new()
+                    {
+                        new("Trigger Bomb", 0x6),
+                        new("Fishing Pole", 0x2A),
+                        new("Cube", 0x7),
+                        new("Snooze Bomb", 0x8),
+                        new("Unknown", 0xD), // Insanity Strike or Size Destabilizer
+                        new("Adrenaline Burst", 0x9),
+                        new("Health Extractor", 0xA),
+                        new("Grapple-Cam", 0x2D),
+                        new("Reduction Bomb", 0xC),
+                    },
+
+                    new()
+                    {
+                        new("Be The Ball", 0x2B),
+                        new("Berserker Charge", 0x12),
+                        new("Guttural Roar", 0x13),
+                        new("Fists of Flame", 0xE),
+                        new("Raging Inferno Flop", 0x14),
+                        new("Diablo Fire Slam", 0x11),
+                        new("Turnbuckle Launch", 0xF),
+                        new("Butterfly Net", 0x2C),
+                    }
+                };
             }
             else if (region == "NTSC Regular Demo")
             {
                 _offsetSpeedMultiplier = "358";
                 _offsetInfiniteDbJump = "348";
                 _offsetUndetectable = "1180";
+                _offsetGadgetBinds = "1270";
+
                 ReloadAddress = "46E97C";
                 ReloadValuesAddress = "2D83A0";
                 FKXListCount = "46EC60";
@@ -263,14 +369,13 @@ namespace SlyMultiTrainer
 
                 DAG.RootNodePointer = "46DD74";
                 DAG.CurrentCheckpointNodePointer = "46E5B8";
-                DAG.TaskStringTablePointer = "46E598";
                 DAG.ClusterIdAddress = "37AE90";
-                DAG.SavefileStartAddress = "45DE40";
-                DAG.SavefileValuesOffsetsTablePointer = "46E4BC";
+                Savefile.SavefileStartAddress = "45DE40";
+                Savefile.SavefileKeyAddressTablePointer = "46E4BC";
+                Savefile.SavefileKeyStringTablePointer = "46E598";
                 DAG.Sly3Time = "37A4E0";
                 DAG.Sly3Flag = "46E918";
                 DAG.OffsetMissionName = "58";
-                DAG.OffsetSuckPointer = "A4";
                 DAG.OffsetAttributesForCluster = "C8";
 
                 Maps[0].IsVisible = false;
@@ -291,6 +396,49 @@ namespace SlyMultiTrainer
                 Maps[19].IsVisible = false;
                 Maps[20].IsVisible = false;
                 Maps.RemoveRange(22, 18);
+
+                Gadgets = new()
+                {
+                    new()
+                    {
+                        new("Smoke Bomb", 0x1A),
+                        new("Combat Dodge", 0x1B),
+                        new("Thief Reflexes", 0x23),
+                        new("Feral Pounce", 0x1E),
+                        new("Mega Jump", 0x1F),
+                        new("Shadow Power Level 1", 0x22),
+                        new("Unknown Rocket Boots", 0x21),
+                        new("Rocket Boots", 0x25),
+                        new("Shadow Power Level 2", 0x24),
+                        new("Shield", 0x27),
+                    },
+
+                    new()
+                    {
+                        new("Trigger Bomb", 0x6),
+                        new("Fishing Pole", 0x7),
+                        new("Alarm Clock", 0x8),
+                        new("Adrenaline Burst", 0x9),
+                        new("Health Extractor", 0xA),
+                        new("Insanity Strike", 0xC),
+                        new("Grapple-Cam", 0xD),
+                        new("Size Destabilizer", 0xE),
+                        new("Rage Bomb", 0xF),
+                        new("Reduction Bomb", 0x10),
+                    },
+
+                    new()
+                    {
+                        new("Be The Ball", 0x11),
+                        new("Berserker Charge", 0x12),
+                        new("Guttural Roar", 0x14),
+                        new("Fists of Flame", 0x15),
+                        new("Temporal Lock", 0x16),
+                        new("Raging Inferno Flop", 0x17),
+                        new("Diablo Fire Slam", 0x18),
+                        new("Cutscene Puppet", 0x19),
+                    }
+                };
             }
             else if (region == "PAL Demo")
             {
@@ -311,10 +459,10 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "3901D0";
                 DAG.RootNodePointer = "484C0C";
                 DAG.CurrentCheckpointNodePointer = "48544C";
-                DAG.TaskStringTablePointer = "485428";
                 DAG.ClusterIdAddress = "391658";
-                DAG.SavefileStartAddress = "474CD0";
-                DAG.SavefileValuesOffsetsTablePointer = "48534C";
+                Savefile.SavefileStartAddress = "474CD0";
+                Savefile.SavefileKeyAddressTablePointer = "48534C";
+                Savefile.SavefileKeyStringTablePointer = "485428";
                 DAG.Sly3Time = "38F6E0";
                 DAG.Sly3Flag = "4856D4";
                 StringTableCountAddress = "486254";
@@ -347,6 +495,7 @@ namespace SlyMultiTrainer
                 _offsetInvulnerable = "184";
                 _offsetUndetectable = "1190";
                 _offsetSpeedMultiplier = "368";
+                _offsetGadgetBinds = "1280";
 
                 ReloadAddress = "4AF7CC";
                 ReloadValuesAddress = "2F8068";
@@ -365,10 +514,10 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "38BD40";
                 DAG.RootNodePointer = "4AEC8C";
                 DAG.CurrentCheckpointNodePointer = "4AF4C8";
-                DAG.TaskStringTablePointer = "4AF4A8";
                 DAG.ClusterIdAddress = "38D1B8";
-                DAG.SavefileStartAddress = "49E6B0";
-                DAG.SavefileValuesOffsetsTablePointer = "4AF3CC";
+                Savefile.SavefileStartAddress = "49E6B0";
+                Savefile.SavefileKeyAddressTablePointer = "4AF3CC";
+                Savefile.SavefileKeyStringTablePointer = "4AF4A8";
                 DAG.Sly3Time = "38B220";
                 DAG.Sly3Flag = "4AF770";
                 StringTableCountAddress = "4B02C4";
@@ -382,6 +531,7 @@ namespace SlyMultiTrainer
                 _offsetInvulnerable = "184";
                 _offsetUndetectable = "1170";
                 _offsetSpeedMultiplier = "364";
+                _offsetGadgetBinds = "1260";
 
                 ReloadAddress = "4BE9C4";
                 ReloadValuesAddress = "304248";
@@ -400,14 +550,94 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "39AD40";
                 DAG.RootNodePointer = "4BDE8C";
                 DAG.CurrentCheckpointNodePointer = "4BE6CC";
-                DAG.TaskStringTablePointer = "4BE6A8";
                 DAG.ClusterIdAddress = "39C1C8";
-                DAG.SavefileStartAddress = "4AD8B0";
-                DAG.SavefileValuesOffsetsTablePointer = "4BE5CC";
+                Savefile.SavefileStartAddress = "4AD8B0";
+                Savefile.SavefileKeyAddressTablePointer = "4BE5CC";
+                Savefile.SavefileKeyStringTablePointer = "4BE6A8";
                 DAG.Sly3Time = "39A220";
                 DAG.Sly3Flag = "4BE954";
                 StringTableCountAddress = "4BF4D4";
                 IsLoadingAddress = "4AC680";
+            }
+            else if (region == "NTSC (PS3)"
+                  || region == "PAL (PS3)"
+                  || region == "UK (PS3)")
+            {
+                _encoding = Encoding.BigEndianUnicode;
+                _offsetHealth = "168";
+                _offsetGadgetPower = "170";
+                _offsetController = "130";
+                _offsetControllerBinds = "1E";
+                _offsetInfiniteDbJump = "32C";
+                _offsetSpeedMultiplier = "344";
+                _offsetInvulnerable = "17C";
+                _offsetUndetectable = "1150";
+                _offsetGadgetBinds = "1240";
+
+                ReloadAddress = "70FD3C";
+                ReloadValuesAddress = "4930D0";
+                FKXListCount = "710024";
+                ClockAddress = "514338";
+                CoinsAddress = "657284";
+                GadgetAddress = "657274";
+                CameraPointer = "70F8AC";
+                DrawDistanceAddress = $"{CameraPointer},114";
+                FOVAddress = $"{CameraPointer},11C";
+                ResetCameraAddress = $"{CameraPointer},304";
+                MapIdAddress = "70FE14";
+                DeathBarriersAddress = "70F164,2C";
+                GuardAIAddress = "57714C";
+                ActiveCharacterPointer = "5770CC";
+                ActiveCharacterIdAddress = "574A80";
+                DAG.RootNodePointer = "70F1FC";
+                DAG.CurrentCheckpointNodePointer = "70FA3C";
+                DAG.ClusterIdAddress = "575F08";
+                Savefile.SavefileStartAddress = "6571D0";
+                Savefile.SavefileKeyAddressTablePointer = "70F93C";
+                Savefile.SavefileKeyStringTablePointer = "70FA18";
+                DAG.Sly3Time = "5143B0";
+                DAG.Sly3Flag = "70FCCC";
+                StringTableCountAddress = "710854";
+                IsLoadingAddress = "656080";
+            }
+            else if (region == "NTSC-J (PS3)")
+            {
+                _encoding = Encoding.BigEndianUnicode;
+                _offsetHealth = "168";
+                _offsetGadgetPower = "170";
+                _offsetController = "130";
+                _offsetControllerBinds = "1E";
+                _offsetInfiniteDbJump = "32C";
+                _offsetSpeedMultiplier = "344";
+                _offsetInvulnerable = "17C";
+                _offsetUndetectable = "1150";
+                _offsetGadgetBinds = "1240";
+
+                ReloadAddress = "717DBC";
+                ReloadValuesAddress = "493110";
+                FKXListCount = "7180A4";
+                ClockAddress = "5143B8";
+                CoinsAddress = "657304";
+                GadgetAddress = "6572F4";
+                CameraPointer = "71792C";
+                DrawDistanceAddress = $"{CameraPointer},114";
+                FOVAddress = $"{CameraPointer},11C";
+                ResetCameraAddress = $"{CameraPointer},304";
+                MapIdAddress = "717E94";
+                DeathBarriersAddress = "7171E4,2C";
+                GuardAIAddress = "5771CC";
+                ActiveCharacterPointer = "57714C";
+                ActiveCharacterIdAddress = "574B00";
+                DAG.RootNodePointer = "71727C";
+                DAG.CurrentCheckpointNodePointer = "717ABC";
+                DAG.ClusterIdAddress = "575F88";
+                Savefile.SavefileStartAddress = "657250";
+                Savefile.SavefileKeyAddressTablePointer = "7179BC";
+                Savefile.SavefileKeyStringTablePointer = "717A98";
+                DAG.Sly3Time = "514430";
+                DAG.Sly3Flag = "717D4C";
+                StringTableCountAddress = "7188D4";
+                IsLoadingAddress = "656100";
             }
             else if (region == "NTSC (PS3 PSN)"
                   || region == "PAL (PS3 PSN)"
@@ -422,6 +652,7 @@ namespace SlyMultiTrainer
                 _offsetSpeedMultiplier = "344";
                 _offsetInvulnerable = "17C";
                 _offsetUndetectable = "1150";
+                _offsetGadgetBinds = "1240";
 
                 ReloadAddress = "78D2C0";
                 ReloadValuesAddress = "508650";
@@ -449,18 +680,18 @@ namespace SlyMultiTrainer
                 ActiveCharacterIdAddress = "5EA000";
                 DAG.RootNodePointer = "78C77C";
                 DAG.CurrentCheckpointNodePointer = "78CFBC";
-                DAG.TaskStringTablePointer = "78CF98";
                 DAG.ClusterIdAddress = "5EB488";
-                DAG.SavefileStartAddress = "6CC750";
-                DAG.SavefileValuesOffsetsTablePointer = "78CEBC";
+                Savefile.SavefileStartAddress = "6CC750";
+                Savefile.SavefileKeyAddressTablePointer = "78CEBC";
+                Savefile.SavefileKeyStringTablePointer = "78CF98";
                 DAG.Sly3Time = "589930";
                 DAG.Sly3Flag = "78D250";
                 StringTableCountAddress = "78DDD4";
                 IsLoadingAddress = "6CB600";
             }
 
-            _offsetTransformation2 = $"{_offsetTransformation1}+4";
-            _offsetTransformation3 = $"{_offsetTransformation1}+8";
+            _offsetTransformationLocal = $"{_offsetTransformationOrigin}+4";
+            _offsetTransformationWorld = $"{_offsetTransformationOrigin}+8";
         }
 
         public override void CustomTick()
@@ -468,106 +699,287 @@ namespace SlyMultiTrainer
 
         }
 
-        public override void OnMapChange(int mapId)
+        public override bool IsLoading()
         {
+            if (_m.ReadInt(IsLoadingAddress) == 3
+                && _m.ReadInt(Savefile.SavefileKeyAddressTablePointer) != 0)
+            {
+                return false;
+            }
 
+            return true;
         }
 
+        #region Gadgets
+        public int ReadActCharGadgetPower()
+        {
+            return _m.ReadInt($"{ActiveCharacterPointer},{_offsetGadgetPower}");
+        }
+
+        public void WriteActCharGadgetPower(int value)
+        {
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetGadgetPower}", "int", value.ToString());
+        }
+
+        public override void FreezeActCharGadgetPower(int value)
+        {
+            if (value == 0)
+            {
+                value = ReadActCharGadgetPower();
+            }
+
+            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetGadgetPower}", "int", value.ToString());
+        }
+
+        public override void UnfreezeActCharGadgetPower()
+        {
+            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetGadgetPower}");
+        }
+
+        public override int ReadActCharGadgetId(GADGET_BIND bind)
+        {
+            return _m.ReadInt($"{ActiveCharacterPointer},{_offsetGadgetBinds}+{(int)bind * 0xC:X}");
+        }
+
+        public override void WriteActCharGadgetId(GADGET_BIND bind, int value)
+        {
+            // Write to character's struct so that the change is immediate
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetGadgetBinds}+{(int)bind * 0xC:X}", "int", value.ToString());
+
+            // When we use an invalid gadget, the game writes -1 to +4, which makes all the other gadgets unusable
+            // We write 0 to +4 to prevent this
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetGadgetBinds}+{(int)bind * 0xC + 4:X}", "int", "0");
+
+            // Write to savefile too so that it persists after reload
+            var addr = Savefile.GetSavefileAddress(ActiveCharacter.NameForSavefile, "apukCur");
+            _m.WriteMemory($"{addr:X}+{(int)bind * 0x4:X}", "int", value.ToString());
+        }
+        #endregion
+
+        #region Entities
+        public override bool EntityHasTransformation(string pointerToEntity)
+        {
+            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformationOrigin}") == -1
+             || _m.ReadInt($"{pointerToEntity},{_offsetTransformationOrigin}") == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        #region Origin
+        public override Matrix4x4 ReadEntityOriginTransformation(string pointerToEntity)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return Matrix4x4.Identity;
+            }
+
+            return _m.ReadMatrix4($"{pointerToEntity},{_offsetTransformationOrigin},0");
+        }
+
+        #endregion
+
+        #region Local
+        public override Matrix4x4 ReadEntityLocalTransformation(string pointerToEntity)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return Matrix4x4.Identity;
+            }
+
+            return _m.ReadMatrix4($"{pointerToEntity},{_offsetTransformationLocal},0");
+        }
+
+        public override Vector3 ReadEntityLocalTranslation(string pointerToEntity)
+        {
+            return ReadEntityLocalTransformation(pointerToEntity).Translation;
+        }
+
+        public override void WriteEntityLocalTranslation(string pointerToEntity, Vector3 value)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return;
+            }
+
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformationLocal},30", "vec3", value.ToString());
+        }
+
+        public override void FreezeEntityLocalTranslationX(string pointerToEntity, string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadEntityLocalTranslation(pointerToEntity);
+                value = trans.X.ToString();
+            }
+
+            _m.FreezeValue($"{pointerToEntity},{_offsetTransformationLocal},30", "float", value);
+        }
+
+        public override void FreezeEntityLocalTranslationY(string pointerToEntity, string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadEntityLocalTranslation(pointerToEntity);
+                value = trans.Y.ToString();
+            }
+            _m.FreezeValue($"{pointerToEntity},{_offsetTransformationLocal},34", "float", value);
+        }
+
+        public override void FreezeEntityLocalTranslationZ(string pointerToEntity, string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadEntityLocalTranslation(pointerToEntity);
+                value = trans.Z.ToString();
+            }
+            _m.FreezeValue($"{pointerToEntity},{_offsetTransformationLocal},38", "float", value);
+        }
+
+        public override void UnfreezeEntityLocalTranslationX(string pointerToEntity)
+        {
+            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformationLocal},30");
+        }
+
+        public override void UnfreezeEntityLocalTranslationY(string pointerToEntity)
+        {
+            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformationLocal},34");
+        }
+
+        public override void UnfreezeEntityLocalTranslationZ(string pointerToEntity)
+        {
+            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformationLocal},38");
+        }
+
+        public override float ReadEntityLocalScale(string pointerToEntity)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return 1f;
+            }
+
+            return _m.ReadFloat($"{pointerToEntity},{_offsetTransformationLocal},0");
+        }
+
+        public override void WriteEntityLocalScale(string pointerToEntity, float scale)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return;
+            }
+
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformationLocal},0", "float", scale.ToString());
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformationLocal},14", "float", scale.ToString());
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformationLocal},28", "float", scale.ToString());
+        }
+        #endregion
+
+        #region World
+        public override Matrix4x4 ReadEntityWorldTransformation(string pointerToEntity)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return Matrix4x4.Identity;
+            }
+
+            return _m.ReadMatrix4($"{pointerToEntity},{_offsetTransformationWorld},0");
+        }
+
+        public override void WriteEntityWorldTransformation(string pointerToEntity, Matrix4x4 value)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return;
+            }
+
+            _m.WriteMemory($"{pointerToEntity},{_offsetTransformationWorld},0", "mat4", value.ToString());
+        }
+
+        #region Final
+        public override Vector3 ReadEntityFinalTranslation(string pointerToEntity)
+        {
+            if (!EntityHasTransformation(pointerToEntity))
+            {
+                return Vector3.Zero;
+            }
+
+            return _m.ReadVector3($"{pointerToEntity},{_offsetTransformationWorld},70");
+        }
+        #endregion
+
+        #endregion
+
+        public List<FKXEntry_t> GetFKXList()
+        {
+            int fkxCount = _m.ReadInt(FKXListCount);
+            string fkxPointer = _m.ReadInt($"{FKXListCount}+4").ToString("X");
+            List<FKXEntry_t> fkxList = new(fkxCount);
+            for (int i = 0; i < fkxCount; i++)
+            {
+                string address = (Convert.ToInt32(fkxPointer, 16) + i * 0x6C).ToString("X");
+                var data = _m.ReadBytes(address, 0x5C);
+                FKXEntry_t fkx = new(address, data);
+                for (int j = 0; j < fkx.Count; j++)
+                {
+                    fkx.EntityAddress.Add(_m.ReadInt($"{fkx.PoolPointer:X}+{j * 4:X}"));
+                }
+
+                fkxList.Add(fkx);
+            }
+
+            fkxList = fkxList.OrderBy(x => x.Name).ToList();
+            return fkxList;
+        }
+
+        #endregion
+
+        #region Active character
         public override bool IsActCharAvailable()
         {
             return _m.ReadInt(ActiveCharacterPointer) != 0;
         }
 
-        public override Vector3 ReadActCharPosition()
+        public override string GetActCharPointer()
         {
-            return ReadPositionFromPointerToEntity(ActiveCharacterPointer);
+            return ActiveCharacterPointer;
         }
 
-        public override void WriteActCharPosition(Vector3 value)
+        public override int ReadActCharId()
         {
-            //int tmp = _m.ReadInt($"{ActiveCharacterPointer},D4");
-            //_m.WriteMemory($"{ActiveCharacterPointer},D4", "int", "0");
-            WritePositionFromPointerToEntity(ActiveCharacterPointer, value);
-            Thread.Sleep(10);
-            //_m.WriteMemory($"{ActiveCharacterPointer},D4", "int", tmp.ToString());
+            return _m.ReadInt(ActiveCharacterIdAddress);
         }
 
-        public override void FreezeActCharPositionX(string value = "")
+        public override void WriteActCharId(int id)
         {
-            FreezePositionXFromPointerToEntity(ActiveCharacterPointer, value);
+            _m.WriteMemory($"{ActiveCharacterIdAddress}", "int", id.ToString());
         }
 
-        public override void FreezeActCharPositionY(string value = "")
+        public void WriteActCharId(int id, int id2 = -1)
         {
-            FreezePositionYFromPointerToEntity(ActiveCharacterPointer, value);
+            _m.WriteMemory($"{ActiveCharacterIdAddress}", "int", id.ToString());
+            _m.WriteMemory($"{ActiveCharacterIdAddress}+4", "int", id2.ToString());
         }
 
-        public override void FreezeActCharPositionZ(string value = "")
-        {
-            FreezePositionZFromPointerToEntity(ActiveCharacterPointer, value);
-        }
-
-        public override void UnfreezeActCharPositionX()
-        {
-            UnfreezePositionXFromPointerToEntity(ActiveCharacterPointer);
-        }
-
-        public override void UnfreezeActCharPositionY()
-        {
-            UnfreezePositionYFromPointerToEntity(ActiveCharacterPointer);
-        }
-
-        public override void UnfreezeActCharPositionZ()
-        {
-            UnfreezePositionZFromPointerToEntity(ActiveCharacterPointer);
-        }
-
-        public override void FreezeActCharVelocityZ(string value = "")
+        public override void FreezeActCharId(string value)
         {
             if (value == "")
             {
-                Vector3 trans = ReadActCharVelocity();
-                value = trans.Z.ToString();
+                value = ReadActCharId().ToString();
             }
 
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetTransformation2},B8", "float", value);
+            _m.FreezeValue($"{ActiveCharacterIdAddress}", "int", value.ToString());
         }
 
-        public override void UnfreezeActCharVelocityZ()
+        public override void UnfreezeActCharId()
         {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetTransformation2},B8");
-        }
-
-        public override float ReadSpeedMultiplier()
-        {
-            var value = _m.ReadFloat($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
-            return value;
-        }
-
-        public override void WriteSpeedMultiplier(float value)
-        {
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
-        }
-
-        public override void FreezeSpeedMultiplier(float value)
-        {
-            if (value == 0)
-            {
-                value = ReadSpeedMultiplier();
-            }
-
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
-        }
-
-        public override void UnfreezeSpeedMultiplier()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
+            _m.UnfreezeValue($"{ActiveCharacterIdAddress}");
         }
 
         public override int ReadActCharHealth()
         {
-            int health = _m.ReadInt($"{ActiveCharacterPointer},{_offsetHealth}");
-            return health;
+            return _m.ReadInt($"{ActiveCharacterPointer},{_offsetHealth}");
         }
 
         public override void WriteActCharHealth(int value)
@@ -575,12 +987,13 @@ namespace SlyMultiTrainer
             _m.WriteMemory($"{ActiveCharacterPointer},{_offsetHealth}", "int", value.ToString());
         }
 
-        public override void FreezeActCharHealth(int value = 0)
+        public override void FreezeActCharHealth(int value)
         {
             if (value == 0)
             {
                 value = ReadActCharHealth();
             }
+
             _m.FreezeValue($"{ActiveCharacterPointer},{_offsetHealth}", "int", value.ToString());
         }
 
@@ -589,42 +1002,139 @@ namespace SlyMultiTrainer
             _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetHealth}");
         }
 
-        public override Controller_t GetController()
+        public override Matrix4x4 ReadActCharOriginTransformation()
         {
-            return new(_m, $"{ActiveCharacterPointer},{_offsetController},{_offsetControllerBinds}");
+            return ReadEntityOriginTransformation(ActiveCharacterPointer);
+        }
+
+        public override Vector3 ReadActCharLocalTranslation()
+        {
+            return ReadEntityLocalTranslation(ActiveCharacterPointer);
+        }
+
+        public override void WriteActCharLocalTranslation(Vector3 value)
+        {
+            // int tmp = _m.ReadInt($"{ActiveCharacterPointer},D4");
+            // _m.WriteMemory($"{ActiveCharacterPointer},D4", "int", "0");
+            WriteEntityLocalTranslation(ActiveCharacterPointer, value);
+            // Thread.Sleep(10);
+            // _m.WriteMemory($"{ActiveCharacterPointer},D4", "int", tmp.ToString());
+        }
+
+        public override void FreezeActCharLocalTranslationX(string value)
+        {
+            FreezeEntityLocalTranslationX(ActiveCharacterPointer, value);
+        }
+
+        public override void FreezeActCharLocalTranslationY(string value)
+        {
+            FreezeEntityLocalTranslationY(ActiveCharacterPointer, value);
+        }
+
+        public override void FreezeActCharLocalTranslationZ(string value )
+        {
+            FreezeEntityLocalTranslationZ(ActiveCharacterPointer, value);
+        }
+
+        public override void UnfreezeActCharLocalTranslationX()
+        {
+            UnfreezeEntityLocalTranslationX(ActiveCharacterPointer);
+        }
+
+        public override void UnfreezeActCharLocalTranslationY()
+        {
+            UnfreezeEntityLocalTranslationY(ActiveCharacterPointer);
+        }
+
+        public override void UnfreezeActCharLocalTranslationZ()
+        {
+            UnfreezeEntityLocalTranslationZ(ActiveCharacterPointer);
+        }
+
+        public override void FreezeActCharVelocityZ(string value)
+        {
+            if (value == "")
+            {
+                Vector3 trans = ReadActCharVelocity();
+                value = trans.Z.ToString();
+            }
+
+            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetTransformationLocal},B8", "float", value);
+        }
+
+        public override void UnfreezeActCharVelocityZ()
+        {
+            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetTransformationLocal},B8");
+        }
+
+        public override float ReadActCharSpeedMultiplier()
+        {
+            return _m.ReadFloat($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
+        }
+
+        public override void WriteActCharSpeedMultiplier(float value)
+        {
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
+        }
+
+        public override void FreezeActCharSpeedMultiplier(float value)
+        {
+            if (value == 0)
+            {
+                value = ReadActCharSpeedMultiplier();
+            }
+
+            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}", "float", value.ToString());
+        }
+
+        public override void UnfreezeActCharSpeedMultiplier()
+        {
+            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetSpeedMultiplier}");
+        }
+
+        public Vector3 ReadActCharVelocity()
+        {
+            return _m.ReadVector3($"{ActiveCharacterPointer},{_offsetTransformationLocal},B0");
+        }
+
+        public void WriteActCharVelocity(Vector3 value)
+        {
+            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetTransformationLocal},B0", "vec3", value.ToString());
+        }
+        #endregion
+
+        #region Toggles
+        public override void ToggleUndetectable(bool enableUndetectable)
+        {
+            if (enableUndetectable)
+            {
+                _m.FreezeValue($"{ActiveCharacterPointer},{_offsetUndetectable},1C", "int", "1");
+            }
+            else
+            {
+                _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetUndetectable},1C");
+                _m.WriteMemory($"{ActiveCharacterPointer},{_offsetUndetectable},1C", "int", "0");
+            }
         }
 
         public override void ToggleInvulnerable(bool enableInvulnerable)
         {
-            string address = $"{ActiveCharacterPointer},{_offsetInvulnerable}";
             if (enableInvulnerable)
             {
-                _m.FreezeValue(address, "int", "1");
+                _m.FreezeValue($"{ActiveCharacterPointer},{_offsetInvulnerable}", "int", "1");
             }
             else
             {
-                _m.UnfreezeValue(address);
-                _m.WriteMemory(address, "int", "0");
-            }
-        }
-
-        public override void ToggleUndetectable(bool enableUndetectable)
-        {
-            string address = $"{ActiveCharacterPointer},{_offsetUndetectable},1C";
-            if (enableUndetectable)
-            {
-                _m.FreezeValue(address, "int", "1");
-            }
-            else
-            {
-                _m.UnfreezeValue(address);
-                _m.WriteMemory(address, "int", "0");
+                _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetInvulnerable}");
+                _m.WriteMemory($"{ActiveCharacterPointer},{_offsetInvulnerable}", "int", "0");
             }
         }
 
         public override void ToggleInfiniteDbJump(bool enableInfDbJump)
         {
-            if (Region == "NTSC July 16" || Region == "NTSC E3 Demo" || Region == "NTSC Regular Demo")
+            if (Region == "NTSC July 16"
+             || Region == "NTSC E3 Demo"
+             || Region == "NTSC Regular Demo")
             {
                 if (enableInfDbJump)
                 {
@@ -649,72 +1159,22 @@ namespace SlyMultiTrainer
             }
         }
 
-        public override bool IsLoading()
+        public void ToggleDeathBarriers(bool removeDeathBarriers)
         {
-            if (_m.ReadInt(IsLoadingAddress) != 3)
+            if (removeDeathBarriers)
             {
-                return true;
+                _m.FreezeValue(DeathBarriersAddress, "int", "0");
             }
-            return false;
-        }
-
-        public override void UnfreezeActCharGadgetPower()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterPointer},{_offsetGadgetPower}");
-        }
-
-        public override void FreezeActCharGadgetPower(int value = 0)
-        {
-            if (value == 0)
+            else
             {
-                value = ReadActCharGadgetPower();
+                _m.UnfreezeValue(DeathBarriersAddress);
+                _m.WriteMemory(DeathBarriersAddress, "int", "0x0901F0FF");
             }
-            _m.FreezeValue($"{ActiveCharacterPointer},{_offsetGadgetPower}", "int", value.ToString());
         }
 
-        public int ReadActCharGadgetPower()
-        {
-            int GadgetPower = _m.ReadInt($"{ActiveCharacterPointer},{_offsetGadgetPower}");
-            return GadgetPower;
-        }
+        #endregion
 
-        public void WriteActCharGadgetPower(int value)
-        {
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetGadgetPower}", "int", value.ToString());
-        }
-
-        public override int ReadActCharId()
-        {
-            int Id = _m.ReadInt(ActiveCharacterIdAddress);
-            return Id;
-        }
-
-        public override void WriteActCharId(int id)
-        {
-            _m.WriteMemory($"{ActiveCharacterIdAddress}", "int", id.ToString());
-        }
-
-        public void WriteActCharId(int id, int id2 = -1)
-        {
-            _m.WriteMemory($"{ActiveCharacterIdAddress}", "int", id.ToString());
-            _m.WriteMemory($"{ActiveCharacterIdAddress}+4", "int", id2.ToString());
-        }
-
-        public override void FreezeActCharId(string value = "")
-        {
-            if (value == "")
-            {
-                value = ReadActCharId().ToString();
-            }
-
-            _m.FreezeValue($"{ActiveCharacterIdAddress}", "int", value.ToString());
-        }
-
-        public override void UnfreezeActCharId()
-        {
-            _m.UnfreezeValue($"{ActiveCharacterIdAddress}");
-        }
-
+        #region Maps
         public override void LoadMap(int mapId)
         {
             byte[] data = _m.ReadBytes($"{ReloadValuesAddress}+{mapId * 0x40:X8}", 0x40);
@@ -744,174 +1204,7 @@ namespace SlyMultiTrainer
         {
             _m.WriteMemory(ReloadAddress, "int", "1");
         }
-
-        public void ToggleDeathBarriers(bool removeDeathBarriers)
-        {
-            if (removeDeathBarriers)
-            {
-                _m.FreezeValue(DeathBarriersAddress, "int", "0");
-            }
-            else
-            {
-                _m.UnfreezeValue(DeathBarriersAddress);
-                _m.WriteMemory(DeathBarriersAddress, "int", "0x0901F0FF");
-            }
-        }
-
-        public override Matrix4x4 ReadWorldRotationFromPointerToEntity(string pointerToEntity)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1)
-            {
-                return Matrix4x4.Identity;
-            }
-
-            Matrix4x4 trans = _m.ReadMatrix4($"{pointerToEntity},{_offsetTransformation3},0");
-            return trans;
-        }
-
-        public override void WriteWorldRotationFromPointerToEntity(string pointerToEntity, Matrix4x4 rotationMatrix)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1)
-            {
-                return;
-            }
-
-            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation3},0", "mat4", rotationMatrix.ToString());
-        }
-
-        public override void WriteScaleFromPointerToEntity(string pointerToEntity, float scale)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1)
-            {
-                return;
-            }
-
-            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation2},0", "float", scale.ToString());
-            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation2},14", "float", scale.ToString());
-            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation2},28", "float", scale.ToString());
-        }
-
-        public override float ReadScaleFromPointerToEntity(string pointerToEntity)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1
-                || _m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == 0)
-            {
-                return 1f;
-            }
-
-            float trans = _m.ReadFloat($"{pointerToEntity},{_offsetTransformation2},0");
-            return trans;
-        }
-
-        public override Vector3 ReadPositionFromPointerToEntity(string pointerToEntity)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1)
-            {
-                return Vector3.Zero;
-            }
-
-            Vector3 trans = _m.ReadVector3($"{pointerToEntity},{_offsetTransformation2},30");
-            return trans;
-        }
-
-        public override Vector3 ReadWorldPositionFromPointerToEntity(string pointerToEntity)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1)
-            {
-                return Vector3.Zero;
-            }
-
-            Vector3 trans = _m.ReadVector3($"{pointerToEntity},{_offsetTransformation2},70");
-            return trans;
-        }
-
-        public override void WritePositionFromPointerToEntity(string pointerToEntity, Vector3 value)
-        {
-            if (_m.ReadInt($"{pointerToEntity},{_offsetTransformation1}") == -1)
-            {
-                return;
-            }
-
-            _m.WriteMemory($"{pointerToEntity},{_offsetTransformation2},30", "vec3", value.ToString());
-        }
-
-        public override void FreezePositionXFromPointerToEntity(string pointerToEntity, string value = "")
-        {
-            if (value == "")
-            {
-                Vector3 trans = ReadPositionFromPointerToEntity(pointerToEntity);
-                value = trans.X.ToString();
-            }
-            _m.FreezeValue($"{pointerToEntity},{_offsetTransformation2},30", "float", value);
-        }
-
-        public override void FreezePositionYFromPointerToEntity(string pointerToEntity, string value = "")
-        {
-            if (value == "")
-            {
-                Vector3 trans = ReadPositionFromPointerToEntity(pointerToEntity);
-                value = trans.Y.ToString();
-            }
-            _m.FreezeValue($"{pointerToEntity},{_offsetTransformation2},34", "float", value);
-        }
-
-        public override void FreezePositionZFromPointerToEntity(string pointerToEntity, string value = "")
-        {
-            if (value == "")
-            {
-                Vector3 trans = ReadPositionFromPointerToEntity(pointerToEntity);
-                value = trans.Z.ToString();
-            }
-            _m.FreezeValue($"{pointerToEntity},{_offsetTransformation2},38", "float", value);
-        }
-
-        public override void UnfreezePositionXFromPointerToEntity(string pointerToEntity)
-        {
-            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformation2},30");
-        }
-
-        public override void UnfreezePositionYFromPointerToEntity(string pointerToEntity)
-        {
-            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformation2},34");
-        }
-
-        public override void UnfreezePositionZFromPointerToEntity(string pointerToEntity)
-        {
-            _m.UnfreezeValue($"{pointerToEntity},{_offsetTransformation2},38");
-        }
-
-        public Vector3 ReadActCharVelocity()
-        {
-            Vector3 trans = _m.ReadVector3($"{ActiveCharacterPointer},{_offsetTransformation2},B0");
-            return trans;
-        }
-
-        public void WriteActCharVelocity(Vector3 value)
-        {
-            _m.WriteMemory($"{ActiveCharacterPointer},{_offsetTransformation2},B0", "vec3", value.ToString());
-        }
-
-        public List<FKXEntry_t> GetFKXList()
-        {
-            int fkxCount = _m.ReadInt(FKXListCount);
-            string fkxPointer = _m.ReadInt($"{FKXListCount}+4").ToString("X");
-            List<FKXEntry_t> fkxList = new(fkxCount);
-            for (int i = 0; i < fkxCount; i++)
-            {
-                string address = (Convert.ToInt32(fkxPointer, 16) + i * 0x6C).ToString("X");
-                var data = _m.ReadBytes(address, 0x5C);
-                FKXEntry_t fkx = new(address, data);
-                for (int j = 0; j < fkx.Count; j++)
-                {
-                    fkx.EntityPointer.Add(_m.ReadInt($"{fkx.PoolPointer:X}+{j * 4:X}"));
-                }
-
-                fkxList.Add(fkx);
-            }
-
-            fkxList = fkxList.OrderBy(x => x.Name).ToList();
-            return fkxList;
-        }
+        #endregion
 
         public string GetStringFromId(int id)
         {
@@ -928,23 +1221,49 @@ namespace SlyMultiTrainer
                 if (id == stringId)
                 {
                     int stringPointer = _m.ReadInt($"{address}+{i * 8 + 4:X}");
-                    string descriptionName = _m.ReadNullTerminatedString(stringPointer.ToString("X"), _encoding);
-                    // "Carmelita's Gunner"
-                    descriptionName = descriptionName.Replace('\ufffd', '\'');
-                    return descriptionName;
+                    string str = _m.ReadNullTerminatedString(stringPointer.ToString("X"), _encoding);
+                    return str;
                 }
             }
 
             return "";
         }
 
+        public List<(int id, string str)> GetStringTable(bool ordered)
+        {
+            int count = _m.ReadInt($"{StringTableCountAddress}");
+            List<(int id, string str)> table = new(count);
+
+            string address = _m.ReadInt($"{StringTableCountAddress}+4").ToString("X");
+            for (int i = 0; i < count; i++)
+            {
+                int stringId = _m.ReadInt($"{address}+{i * 8:X}");
+                int stringPointer = _m.ReadInt($"{address}+{i * 8 + 4:X}");
+                string str = _m.ReadNullTerminatedString(stringPointer.ToString("X"), _encoding);
+                str = str.Replace("\n", "\r\n");
+                table.Add((stringId, str));
+            }
+
+            if (ordered)
+            {
+                table.Sort((a, b) => a.id.CompareTo(b.id));
+            }
+
+            return table;
+        }
+
+        public override Controller_t GetController()
+        {
+            return new(_m, $"{ActiveCharacterPointer},{_offsetController},{_offsetControllerBinds}");
+        }
+
         protected override List<Character_t> GetCharacters()
         {
-            return new List<Character_t>
+            return new()
             {
-                new("Sly", 24, "jt"),
-                new("Bentley", 25, "bentley"),
-                new("Murray", 26, "murray"),
+                new("Sly", 24, "jt", "sly"),
+                new("Bentley", 25, "bentley", "bentley"),
+                new("Murray", 26, "murray", "murray"),
                 new("Guru", 29, "shaman"),
                 new("Panda King", 30, "panda_king"),
                 new("Penelope", 31, "penelope"),
@@ -954,9 +1273,62 @@ namespace SlyMultiTrainer
             };
         }
 
+        protected override List<List<Gadget_t>> GetGadgets()
+        {
+            return new()
+            {
+                new()
+                {
+                    new("Smoke Bomb", 0x19),
+                    new("Combat Dodge", 0x1A),
+                    new("Paraglide", 0x1B),
+                    new("Silent Obliteration", 0x1C),
+                    new("Feral Pounce", 0x1D),
+                    new("Mega Jump", 0x1E),
+                    new("Knockout Dive", 0x1F),
+                    new("Shadow Power Level 1", 0x20),
+                    new("Thief Reflexes", 0x21),
+                    new("Shadow Power Level 2", 0x22),
+                    new("Rocket Boots", 0x23),
+                    new("Treasure Map", 0x24),
+                    new("Shield", 0x25),
+                    new("Venice Disguise", 0x26),
+                    new("Photographer Disguise", 0x27),
+                    new("Pirate Disguise", 0x28),
+                },
+
+                new()
+                {
+                    new("Trigger Bomb", 0x6),
+                    new("Fishing Pole", 0x7),
+                    new("Alarm Clock", 0x8),
+                    new("Adrenaline Burst", 0x9),
+                    new("Health Extractor", 0xA),
+                    new("Hover Pack", 0xB),
+                    new("Insanity Strike", 0xC),
+                    new("Grapple-Cam", 0xD),
+                    new("Size Destabilizer", 0xE),
+                    new("Rage Bomb", 0xF),
+                    new("Reduction Bomb", 0x10),
+                },
+
+                new()
+                {
+                    new("Be The Ball", 0x11),
+                    new("Berserker Charge", 0x12),
+                    new("Juggernaut Throw", 0x13),
+                    new("Guttural Roar", 0x14),
+                    new("Fists of Flame", 0x15),
+                    new("Temporal Lock", 0x16),
+                    new("Raging Inferno Flop", 0x17),
+                    new("Diablo Fire Slam", 0x18),
+                },
+            };
+        }
+
         protected override List<Map_t> GetMaps()
         {
-            return new List<Map_t>
+            return new()
             {
                 new("DVD Menu",
                     new()
@@ -1094,7 +1466,7 @@ namespace SlyMultiTrainer
                     new()
                     {
                         new("Safehouse", new(12180, -540, 1280)),
-                        new("Baron's Hangar", new(-6075, 6950, 2955)),
+                        new("Baron's Hangar", new(-6015, 6880, 2855)),
                         new("Forest", new(-2770, 3020, 530)),
                         new("Ramp", new(-4645, -9100, 1780)),
                         new("Barn", new(3680, -6000, 700)),

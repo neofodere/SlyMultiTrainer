@@ -23,7 +23,19 @@ namespace SlyMultiTrainer
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // Run once to fill the process list immediately
+            FillcmbProcesses();
+
             Init();
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    FillcmbProcesses();
+                    await Task.Delay(1000);
+                }
+            });
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -62,15 +74,19 @@ namespace SlyMultiTrainer
             UpdateUI(lblYCoord, Util.DefaultValueFloat);
             UpdateUI(lblZCoord, Util.DefaultValueFloat);
             UpdateUI(txtAddresses, "");
+            UpdateUI(txtStringsLocalized, "");
+            UpdateUI(txtStringsSavefile, "");
             ClearFKXTab();
             HideTab("Entities");
             HideTab("DAG");
+            HideTab("Strings");
             HideTab("WorldStates");
             UpdateUI(chkDisableDeathBarrier, false);
             UpdateUI(chkDisableGuardAI, false);
             UpdateUI(chkToggleInvulnerable, false);
             UpdateUI(chkToggleUndetectable, false);
             UpdateUI(lblLuckyCharms, false);
+            UpdateUI(btnToggleThiefMoves, false);
             UpdateUI(cmbLuckyCharms, false);
             UpdateUI(chkLuckyCharmsFreeze, false);
             UpdateUI(btnSkipCurrentDialogue, false);
@@ -84,25 +100,25 @@ namespace SlyMultiTrainer
             UpdateUI(lblMain, Color.Red);
             do
             {
-                Process[] processes = Process.GetProcesses();
-                for (int i = 0; i < processes.Length; i++)
+                UpdateUI(() =>
                 {
-                    if (processes[i].ProcessName.StartsWith("pcsx2")
-                        || processes[i].ProcessName.StartsWith("rpcs3"))
+                    var process = cmbProcesses.SelectedItem as Memory.Proc;
+                    if (process == null)
                     {
-                        // Open it and set ee base
-                        _m = new();
-                        if (!_m.OpenProcess(processes[i].Id))
-                        {
-                            bgWorkerMain.CancelAsync();
-                            return;
-                        }
-
-                        UpdateUI(lblMain, $"{_m.displayName} process found, but game not started");
-                        UpdateUI(lblMain, Color.DarkOrange);
-                        break;
+                        return;
                     }
-                }
+
+                    // Open it and set base
+                    _m = new();
+                    if (!_m.OpenProcess(process.Process.Id))
+                    {
+                        bgWorkerMain.CancelAsync();
+                        return;
+                    }
+
+                    UpdateUI(lblMain, $"{_m.displayName} process found, but game not started");
+                    UpdateUI(lblMain, Color.DarkOrange);
+                });
 
                 if (_m != null && _m.mProc != null)
                 {
@@ -122,7 +138,7 @@ namespace SlyMultiTrainer
                     || _m.mProc.Process != null && _m.mProc.Process.HasExited
                     || _triggerReattach)
                 {
-                    // We exit if we found a matching build or we closed pcsx2
+                    // We exit if we found a matching build, we closed the emulator
                     break;
                 }
 
@@ -224,6 +240,7 @@ namespace SlyMultiTrainer
             UpdateUI(this, $"{_formTitle} - {build}");
             UpdateUI(lblMain, $"Attached - Base at {_m.baseAddress:X}");
             UpdateUI(lblMain, Color.Green);
+            UpdateUI(this, Util.GetEmbeddedIcon($"SlyMultiTrainer.Img.icon_{build.Title.Last()}_256x256.ico")!, "Icon");
             UncheckAllCheckboxes(Controls);
             for (int i = 0; i < tabMain.Controls.Count; i++)
             {
@@ -233,17 +250,24 @@ namespace SlyMultiTrainer
             SetTxtAddresses();
 
             UpdateUI(grpFOV, true, "Visible");
-            UpdateUI(trkFOV, true, "Visible");
             UpdateUI(btnFOVReset, true, "Visible");
             UpdateUI(chkFOVFreeze, true, "Visible");
+            UpdateUI(grpDrawDistance, true, "Visible");
+            UpdateUI(btnDrawDistanceReset, true, "Visible");
+            UpdateUI(chkDrawDistanceFreeze, true, "Visible");
+            UpdateUI(grpClock, true, "Visible");
+            UpdateUI(btnClockReset, true, "Visible");
+            UpdateUI(chkClockFreeze, true, "Visible");
+
             UpdateUI(chkToggleUndetectable, true, "Visible");
             UpdateUI(chkToggleInvulnerable, true, "Visible");
             UpdateUI(chkDisableGuardAI, true, "Visible");
-            UpdateUI(this, Util.GetEmbeddedIcon($"SlyMultiTrainer.Img.icon_{build.Title.Last()}_256x256.ico")!, "Icon");
 
             if (build.Title == "Sly 1")
             {
                 ShowTab("WorldStates");
+                UpdateUI(grpGadgets, false, "Visible");
+                UpdateUI(btnToggleThiefMoves, true);
 
                 if (build.Region == "NTSC Demo")
                 {
@@ -259,7 +283,6 @@ namespace SlyMultiTrainer
                     HideTab("WorldStates");
                 }
 
-                UpdateUI(btnGetGadgets, "Toggle all\r\nthief moves");
                 UpdateUI(lblHealth, "Lives");
                 UpdateUI(chkInfiniteGadgetPower, false);
                 UpdateUI(lblLuckyCharms, true);
@@ -272,13 +295,14 @@ namespace SlyMultiTrainer
                 UpdateUI(chkToggleInvulnerable, false);
                 UpdateUI(chkToggleUndetectable, false);
                 UpdateUI(btnLoadLevelFull, false);
-                
             }
             else if (build.Title == "Sly 2")
             {
-                UpdateUI(btnGetGadgets, "Toggle all\r\ngadgets");
+                ShowTab("Strings");
+                ShowTab("DAG");
+                ShowTab("Entities");
                 UpdateUI(lblHealth, "Health");
-                UpdateUI(btnGetGadgets, true);
+                UpdateUI(btnToggleGadgets, true);
                 UpdateUI(chkInfiniteGadgetPower, true);
                 UpdateUI(lblLuckyCharms, false);
                 UpdateUI(cmbLuckyCharms, false);
@@ -290,19 +314,23 @@ namespace SlyMultiTrainer
                 UpdateUI(chkToggleUndetectable, true);
                 UpdateUI(chkToggleInvulnerable, true);
                 UpdateUI(chkDisableGuardAI, true);
+                UpdateUI(grpGadgets, true, "Visible");
+                UpdateUI(btnToggleThiefMoves, false);
 
                 if (build.Region == "NTSC E3 Demo")
                 {
                     UpdateUI(chkToggleUndetectable, false);
                     UpdateUI(chkToggleInvulnerable, false);
                     UpdateUI(chkDisableGuardAI, false);
+                    UpdateUI(grpGadgets, false, "Visible");
                 }
                 else if (build.Region == "NTSC March 17")
                 {
                     UpdateUI(chkToggleUndetectable, false);
                     UpdateUI(chkToggleInvulnerable, false);
-                    UpdateUI(btnGetGadgets, false);
+                    UpdateUI(btnToggleGadgets, false);
                     UpdateUI(chkInfiniteGadgetPower, false);
+                    UpdateUI(grpGadgets, false, "Visible");
                 }
                 else if (build.Region == "NTSC PlayStation Magazine Demo Disc 089")
                 {
@@ -314,12 +342,24 @@ namespace SlyMultiTrainer
                     UpdateUI(chkToggleUndetectable, false);
                     UpdateUI(chkToggleInvulnerable, false);
                 }
-
-                ShowTab("DAG");
-                ShowTab("Entities");
             }
             else if (build.Title == "Sly 3")
             {
+                ShowTab("Strings");
+                ShowTab("DAG");
+                ShowTab("Entities");
+                UpdateUI(lblHealth, "Health");
+                UpdateUI(chkInfiniteGadgetPower, true);
+                UpdateUI(lblLuckyCharms, false);
+                UpdateUI(cmbLuckyCharms, false);
+                UpdateUI(chkLuckyCharmsFreeze, false);
+                UpdateUI(btnLoadLevelFull, true);
+                UpdateUI(btnSkipCurrentDialogue, false);
+                UpdateUI(chkDisableGuardAI, true);
+                UpdateUI(chkToggleInfDbJump, true);
+                UpdateUI(grpGadgets, true, "Visible");
+                UpdateUI(btnToggleThiefMoves, false);
+
                 if (build.Region == "NTSC E3 Demo")
                 {
                     UpdateUI(chkDisableDeathBarrier, false);
@@ -332,18 +372,6 @@ namespace SlyMultiTrainer
                     UpdateUI(chkToggleInvulnerable, true);
                     UpdateUI(chkToggleUndetectable, true);
                 }
-                UpdateUI(btnGetGadgets, "Toggle all\r\ngadgets");
-                UpdateUI(lblHealth, "Health");
-                UpdateUI(chkInfiniteGadgetPower, true);
-                UpdateUI(lblLuckyCharms, false);
-                UpdateUI(cmbLuckyCharms, false);
-                UpdateUI(chkLuckyCharmsFreeze, false);
-                UpdateUI(btnLoadLevelFull, true);
-                UpdateUI(btnSkipCurrentDialogue, false);
-                UpdateUI(chkDisableGuardAI, true);
-                UpdateUI(chkToggleInfDbJump, true);
-                ShowTab("DAG");
-                ShowTab("Entities");
             }
 
             chkFOVFreeze.BackgroundImage = _iconFreezeDisabled;
@@ -388,6 +416,25 @@ namespace SlyMultiTrainer
                         }
                     }
                 }
+                else if (field.FieldType == typeof(Sly2_3_Savefile))
+                {
+                    Sly2_3_Savefile savefile = (Sly2_3_Savefile)field.GetValue(_game);
+                    var savefileFields = savefile.GetType()
+                                                 .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    foreach (var savefileField in savefileFields)
+                    {
+                        if (savefileField.FieldType == typeof(string))
+                        {
+                            string value = (string)savefileField.GetValue(savefile);
+                            if (value == null || value == "")
+                            {
+                                continue;
+                            }
+
+                            tmp += $"Savefile.{savefileField.Name} = {value}{Environment.NewLine}";
+                        }
+                    }
+                }
             }
 
             if (tmp.EndsWith(Environment.NewLine))
@@ -396,6 +443,53 @@ namespace SlyMultiTrainer
             }
 
             UpdateUI(txtAddresses, tmp);
+        }
+
+        private void FillcmbProcesses()
+        {
+            List<Memory.Proc> procs = new();
+            Process[] processes = Process.GetProcesses();
+            for (int i = 0; i < processes.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(processes[i].MainWindowTitle))
+                {
+                    continue;
+                }
+
+                if (processes[i].MainModule.ModuleName.StartsWith("pcsx2")
+                 || processes[i].MainModule.ModuleName.StartsWith("rpcs3"))
+                {
+                    Memory.Proc proc = new()
+                    {
+                        Process = processes[i],
+                    };
+
+                    procs.Add(proc);
+                }
+            }
+
+            Memory.Proc prevSelected;
+            UpdateUI(() =>
+            {
+                if (cmbProcesses.DroppedDown)
+                {
+                    return;
+                }
+
+                prevSelected = cmbProcesses.SelectedItem as Memory.Proc;
+                cmbProcesses.DataSource = procs;
+
+                if (prevSelected == null)
+                {
+                    return;
+                }
+
+                var x = procs.FirstOrDefault(x => x.Process.Id == prevSelected.Process.Id);
+                if (x != null)
+                {
+                    cmbProcesses.SelectedItem = x;
+                }
+            });
         }
 
         private void HideTab(string tabName)
@@ -587,6 +681,761 @@ namespace SlyMultiTrainer
             }
         }
 
+        #region Gadgets
+        private void btnToggleGadgets_Click(object sender, EventArgs e)
+        {
+            _game.ToggleAllGadgets();
+        }
+
+        private void btnToggleThiefMoves_Click(object sender, EventArgs e)
+        {
+            _game.ToggleAllGadgets();
+        }
+
+        private void chkInfiniteGadgetPower_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkInfiniteGadgetPower.Checked)
+            {
+                _game.FreezeActCharGadgetPower(100);
+            }
+            else
+            {
+                _game.UnfreezeActCharGadgetPower();
+            }
+        }
+
+        private void cmbGadgetL1_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            _game.WriteActCharGadgetId(Util.GADGET_BIND.L1, (cmbGadgetL1.SelectedItem as Util.Gadget_t).Id);
+        }
+
+        private void cmbGadgetL2_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            _game.WriteActCharGadgetId(Util.GADGET_BIND.L2, (cmbGadgetL2.SelectedItem as Util.Gadget_t).Id);
+        }
+
+        private void cmbGadgetR2_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            _game.WriteActCharGadgetId(Util.GADGET_BIND.R2, (cmbGadgetR2.SelectedItem as Util.Gadget_t).Id);
+        }
+
+        // When the user selects the item through autocompletion, the SelectionChangeCommitted event is not fired
+        // We can detect this and run it manually
+        private void cmbGadgetL1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbGadgetL1.ContainsFocus)
+            {
+                cmbGadgetL1_SelectionChangeCommitted(sender, e);
+            }
+        }
+
+        private void cmbGadgetL2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbGadgetL2.ContainsFocus)
+            {
+                cmbGadgetL2_SelectionChangeCommitted(sender, e);
+            }
+        }
+
+        private void cmbGadgetR2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbGadgetR2.ContainsFocus)
+            {
+                cmbGadgetR2_SelectionChangeCommitted(sender, e);
+            }
+        }
+        #endregion
+
+        #region Coins
+        private void btnCoinsSet_Click(object sender, EventArgs e)
+        {
+            int.TryParse(txtCoins.Text, CultureInfo.InvariantCulture, out int value);
+            _game.SetCoins(value);
+        }
+
+        #endregion
+
+        #region Entities
+        private void ClearFKXTab()
+        {
+            UpdateUI(lblFKXEntityInfo, Util.DefaultValueString);
+            UpdateUI(lblFKXEntityXCoord, Util.DefaultValueFloat);
+            UpdateUI(lblFKXEntityYCoord, Util.DefaultValueFloat);
+            UpdateUI(lblFKXEntityZCoord, Util.DefaultValueFloat);
+            UpdateUI(lblFKXEntityXCoordWorld, Util.DefaultValueFloat);
+            UpdateUI(lblFKXEntityYCoordWorld, Util.DefaultValueFloat);
+            UpdateUI(lblFKXEntityZCoordWorld, Util.DefaultValueFloat);
+            chkFKXEntityEditRotation.Checked = false;
+            chkFKXEntityEditRotation_CheckedChanged(chkFKXEntityEditRotation, EventArgs.Empty);
+        }
+
+        private void FillFKXTreeView(List<Util.FKXEntry_t> fkxList, string filter = "")
+        {
+            if (filter != "")
+            {
+                List<Util.FKXEntry_t> filtered = new();
+                for (int i = 0; i < fkxList.Count; i++)
+                {
+                    var item = fkxList[i];
+                    if (item.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                    {
+                        filtered.Add(item);
+                    }
+                    else if (item.Count > 0)
+                    {
+                        // Add the node if ANY of the entity addresses match
+                        for (int j = 0; j < item.Count; j++)
+                        {
+                            if (item.EntityAddress[j].ToString("X").Contains(filter, StringComparison.OrdinalIgnoreCase))
+                            {
+                                filtered.Add(item);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                fkxList = filtered;
+            }
+
+            trvFKXList.BeginUpdate();
+            trvFKXList.Nodes.Clear();
+            for (int i = 0; i < fkxList.Count; i++)
+            {
+                TreeNode node = new($"{fkxList[i].Name} ({fkxList[i].Count})");
+                node.Tag = fkxList[i];
+                trvFKXList.Nodes.Add(node);
+
+                if (fkxList[i].PoolPointer == 0x0)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < fkxList[i].Count; j++)
+                {
+                    string entityPointer = fkxList[i].EntityAddress[j].ToString("X");
+                    TreeNode childNode = new(entityPointer);
+                    childNode.Tag = entityPointer;
+                    node.Nodes.Add(childNode);
+                }
+            }
+
+            trvFKXList.EndUpdate();
+        }
+
+        public void btnRefreshFKXList_Click(object sender, EventArgs e)
+        {
+            List<Util.FKXEntry_t> fkxList = new();
+            if (_game is Sly2Handler)
+            {
+                fkxList = (_game as Sly2Handler).GetFKXList();
+            }
+            else if (_game is Sly3Handler)
+            {
+                fkxList = (_game as Sly3Handler).GetFKXList();
+            }
+
+            trvFKXList.Tag = fkxList;
+
+            FillFKXTreeView(fkxList);
+            ClearFKXTab();
+            txtEntitiesSearch.Text = "";
+            txtEntitiesSearch.PlaceholderText = $"Search through {fkxList.Count} entities";
+        }
+
+        private void txtEntitiesSearch_TextChanged(object sender, EventArgs e)
+        {
+            List<Util.FKXEntry_t> fkxList = trvFKXList.Tag as List<Util.FKXEntry_t>;
+            FillFKXTreeView(fkxList, txtEntitiesSearch.Text);
+            ClearFKXTab();
+        }
+
+        private void trvFKXList_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Tag is string)
+            {
+                // npc_boar_guard[0] = EF45B0
+                UpdateUI(lblFKXEntityInfo, $"{(e.Node.Parent.Tag as Util.FKXEntry_t).Name}[{e.Node.Index}] = {e.Node.Tag}");
+                return;
+            }
+
+            if (e.Node.Tag is Util.FKXEntry_t)
+            {
+                ClearFKXTab();
+
+                // npc_boar_guard = 48D110
+                UpdateUI(lblFKXEntityInfo, $"{(e.Node.Tag as Util.FKXEntry_t).Name} = {(e.Node.Tag as Util.FKXEntry_t).Address}");
+            }
+        }
+
+        public int GetPointerToEntityFromSelectedFKXNode()
+        {
+            var node = trvFKXList.SelectedNode;
+            if (node == null || node.Tag is not string)
+            {
+                return 0;
+            }
+
+            var fkx = node.Parent.Tag as Util.FKXEntry_t;
+            int pointerToEntity = fkx.PoolPointer + node.Index * 4;
+            return pointerToEntity;
+        }
+
+        private void btnCopyFKXEntityPointer_Click(object sender, EventArgs e)
+        {
+            if (trvFKXList.SelectedNode == null)
+            {
+                return;
+            }
+
+            if (trvFKXList.SelectedNode.Tag is string)
+            {
+                Clipboard.SetText(trvFKXList.SelectedNode.Tag.ToString());
+            }
+            else if (trvFKXList.SelectedNode.Tag is Util.FKXEntry_t)
+            {
+                Clipboard.SetText((trvFKXList.SelectedNode.Tag as Util.FKXEntry_t).Address);
+            }
+        }
+
+        private Vector3 GetCurrentFKXEntityPosition(out string pointerToEntity)
+        {
+            int value = GetPointerToEntityFromSelectedFKXNode();
+            pointerToEntity = value.ToString("X");
+            if (value == 0)
+            {
+                return Vector3.Zero;
+            }
+
+            Vector3 trans = _game.ReadEntityLocalTranslation(pointerToEntity);
+            return trans;
+        }
+
+        private void btnFKXEntityXCoordMinus_Click(object sender, EventArgs e)
+        {
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.X -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void btnFKXEntityXCoordPlus_Click(object sender, EventArgs e)
+        {
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.X += Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void chkFKXEntityXCoordFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
+            if (pointerToEntity == 0)
+            {
+                return;
+            }
+
+            if (chkFKXEntityXCoordFreeze.Checked)
+            {
+                _game.FreezeEntityLocalTranslationX(pointerToEntity.ToString("X"));
+            }
+            else
+            {
+                _game.UnfreezeEntityLocalTranslationX(pointerToEntity.ToString("X"));
+            }
+        }
+
+        private void btnFKXEntityXCoordSet_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtFKXEntityXCoordSet.Text, CultureInfo.InvariantCulture, out float value);
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.X = value;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void btnFKXEntityYCoordMinus_Click(object sender, EventArgs e)
+        {
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.Y -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void btnFKXEntityYCoordPlus_Click(object sender, EventArgs e)
+        {
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.Y += Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void chkFKXEntityYCoordFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
+            if (pointerToEntity == 0)
+            {
+                return;
+            }
+
+            if (chkFKXEntityYCoordFreeze.Checked)
+            {
+                _game.FreezeEntityLocalTranslationY(pointerToEntity.ToString("X"));
+            }
+            else
+            {
+                _game.UnfreezeEntityLocalTranslationY(pointerToEntity.ToString("X"));
+            }
+        }
+
+        private void btnFKXEntityYCoordSet_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtFKXEntityYCoordSet.Text, CultureInfo.InvariantCulture, out float value);
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.Y = value;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void btnFKXEntityZCoordMinus_Click(object sender, EventArgs e)
+        {
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.Z -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void btnFKXEntityZCoordPlus_Click(object sender, EventArgs e)
+        {
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.Z += Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void chkFKXEntityZCoordFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
+            if (pointerToEntity == 0)
+            {
+                return;
+            }
+
+            if (chkFKXEntityZCoordFreeze.Checked)
+            {
+                _game.FreezeEntityLocalTranslationZ(pointerToEntity.ToString("X"));
+            }
+            else
+            {
+                _game.UnfreezeEntityLocalTranslationZ(pointerToEntity.ToString("X"));
+            }
+        }
+
+        private void btnFKXEntityZCoordSet_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtFKXEntityZCoordSet.Text, CultureInfo.InvariantCulture, out float value);
+            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
+            trans.Z = value;
+            _game.WriteEntityLocalTranslation(pointerToEntity, trans);
+        }
+
+        private void trkFKXEntityCoord_Scroll(object sender, EventArgs e)
+        {
+            if (trkFKXEntityCoord.Value == 0)
+            {
+                Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity = 10;
+            }
+            else
+            {
+                Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity = trkFKXEntityCoord.Value * 50;
+            }
+        }
+
+        private void trkFKXEntityScale_Scroll(object sender, EventArgs e)
+        {
+            float trkValue = (float)trkFKXEntityScale.Value / 10;
+            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
+            _game.WriteEntityLocalScale(pointerToEntity.ToString("X"), trkValue);
+        }
+
+        private void btnFKXEntityScaleReset_Click(object sender, EventArgs e)
+        {
+            trkFKXEntityScale.Value = 10;
+            trkFKXEntityScale_Scroll(trkFKXEntityScale, EventArgs.Empty);
+        }
+
+        private void chkFKXEntityEditRotation_CheckedChanged(object sender, EventArgs e)
+        {
+            trkFKXEntityRotationX.Enabled = chkFKXEntityEditRotation.Checked;
+            trkFKXEntityRotationY.Enabled = chkFKXEntityEditRotation.Checked;
+            trkFKXEntityRotationZ.Enabled = chkFKXEntityEditRotation.Checked;
+        }
+
+        private void trkFKXEntityRotationX_Scroll(object sender, EventArgs e)
+        {
+            WriteRotationToSelectedFKXNode();
+        }
+
+        private void trkFKXEntityRotationY_Scroll(object sender, EventArgs e)
+        {
+            WriteRotationToSelectedFKXNode();
+        }
+
+        private void trkFKXEntityRotationZ_Scroll(object sender, EventArgs e)
+        {
+            WriteRotationToSelectedFKXNode();
+        }
+
+        private void WriteRotationToSelectedFKXNode()
+        {
+            string pointerToEntity = GetPointerToEntityFromSelectedFKXNode().ToString("X");
+
+            // Degrees to radians
+            float radX = MathF.PI / 180f * trkFKXEntityRotationX.Value;
+            float radY = MathF.PI / 180f * trkFKXEntityRotationY.Value;
+            float radZ = MathF.PI / 180f * trkFKXEntityRotationZ.Value;
+
+            Matrix4x4 rotationMatrix = Matrix4x4.CreateRotationX(radX) * Matrix4x4.CreateRotationY(radY) * Matrix4x4.CreateRotationZ(radZ);
+            rotationMatrix.Translation = _game.ReadEntityWorldTransformation(pointerToEntity).Translation;
+            _game.WriteEntityWorldTransformation(pointerToEntity, rotationMatrix);
+        }
+
+        private void btnFKXEntityWarpActChar_Click(object sender, EventArgs e)
+        {
+            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
+            if (pointerToEntity == 0)
+            {
+                return;
+            }
+
+            _game.WarpSourceEntityToDestEntity("", pointerToEntity.ToString("X"));
+            _game.ResetCamera();
+        }
+
+        private void btnFKXEntityWarpEntity_Click(object sender, EventArgs e)
+        {
+            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
+            if (pointerToEntity == 0)
+            {
+                return;
+            }
+
+            _game.WarpSourceEntityToDestEntity(pointerToEntity.ToString("X"), "");
+        }
+        #endregion
+
+        #region Active character
+        private void btnActCharHealthMinus_Click(object sender, EventArgs e)
+        {
+            int health = _game.ReadActCharHealth();
+            health -= Util.DefaultAmountToIncreaseOrDecreaseHealth;
+            _game.WriteActCharHealth(health);
+        }
+
+        private void btnActCharHealthPlus_Click(object sender, EventArgs e)
+        {
+            int health = _game.ReadActCharHealth();
+            health += Util.DefaultAmountToIncreaseOrDecreaseHealth;
+            _game.WriteActCharHealth(health);
+        }
+
+        private void chkActCharHealthFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkActCharHealthFreeze.Checked)
+            {
+                _game.FreezeActCharHealth();
+            }
+            else
+            {
+                _game.UnfreezeActCharHealth();
+            }
+        }
+
+        private void chkLuckyCharmsFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkLuckyCharmsFreeze.Checked)
+            {
+                (_game as Sly1Handler).FreezeLuckyCharms();
+            }
+            else
+            {
+                (_game as Sly1Handler).UnfreezeLuckyCharms();
+            }
+        }
+
+        private void cmbLuckyCharms_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            (_game as Sly1Handler).WriteLuckyCharms(cmbLuckyCharms.SelectedIndex);
+        }
+
+        private void btnActCharXCoordMinus_Click(object sender, EventArgs e)
+        {
+            Vector3 value = _game.ReadActCharLocalTranslation();
+            value.X -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
+            _game.WriteActCharLocalTranslation(value);
+        }
+
+        private void btnActCharXCoordPlus_Click(object sender, EventArgs e)
+        {
+            Vector3 value = _game.ReadActCharLocalTranslation();
+            value.X += Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
+            _game.WriteActCharLocalTranslation(value);
+        }
+
+        private void chkActCharXCoordFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkActCharXCoordFreeze.Checked)
+            {
+                _game.FreezeActCharLocalTranslationX();
+            }
+            else
+            {
+                _game.UnfreezeActCharLocalTranslationX();
+            }
+        }
+
+        private void btnActCharYCoordMinus_Click(object sender, EventArgs e)
+        {
+            Vector3 value = _game.ReadActCharLocalTranslation();
+            value.Y -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
+            _game.WriteActCharLocalTranslation(value);
+        }
+
+        private void btnActCharYCoordPlus_Click(object sender, EventArgs e)
+        {
+            Vector3 value = _game.ReadActCharLocalTranslation();
+            value.Y += Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
+            _game.WriteActCharLocalTranslation(value);
+        }
+
+        private void chkActCharYCoordFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkActCharYCoordFreeze.Checked)
+            {
+                _game.FreezeActCharLocalTranslationY();
+            }
+            else
+            {
+                _game.UnfreezeActCharLocalTranslationY();
+            }
+        }
+
+        private void btnActCharZCoordMinus_Click(object sender, EventArgs e)
+        {
+            Vector3 value = _game.ReadActCharLocalTranslation();
+            value.Z -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
+            _game.WriteActCharLocalTranslation(value);
+        }
+
+        private void btnActCharZCoordPlus_Click(object sender, EventArgs e)
+        {
+            Vector3 value = _game.ReadActCharLocalTranslation();
+            value.Z += Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
+            _game.WriteActCharLocalTranslation(value);
+        }
+
+        private void chkActCharZCoordFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkActCharZCoordFreeze.Checked)
+            {
+                _game.FreezeActCharLocalTranslationZ();
+            }
+            else
+            {
+                _game.UnfreezeActCharLocalTranslationZ();
+            }
+        }
+
+        private void btnActCharXCoordSet_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtActCharXCoordSet.Text, CultureInfo.InvariantCulture, out float value);
+            Vector3 trans = _game.ReadActCharLocalTranslation();
+            trans.X = value;
+            _game.WriteActCharLocalTranslation(trans);
+        }
+
+        private void btnActCharYCoordSet_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtActCharYCoordSet.Text, CultureInfo.InvariantCulture, out float value);
+            Vector3 trans = _game.ReadActCharLocalTranslation();
+            trans.Y = value;
+            _game.WriteActCharLocalTranslation(trans);
+        }
+
+        private void btnActCharZCoordSet_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtActCharZCoordSet.Text, CultureInfo.InvariantCulture, out float value);
+            Vector3 trans = _game.ReadActCharLocalTranslation();
+            trans.Z = value;
+            _game.WriteActCharLocalTranslation(trans);
+        }
+
+        private void trkActCharCoord_Scroll(object sender, EventArgs e)
+        {
+            if (trkActCharCoord.Value == 0)
+            {
+                Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar = 10;
+            }
+            else
+            {
+                Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar = trkActCharCoord.Value * 50;
+            }
+        }
+
+        private void cmbActChar_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (_game is Sly1Handler)
+            {
+                return;
+            }
+
+            Util.Character_t selectedItem = cmbActChar.SelectedItem as Util.Character_t;
+            _game.WriteActCharId(selectedItem.Id);
+        }
+
+        private void chkActCharFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_game is Sly1Handler)
+            {
+                return;
+            }
+
+            if (chkActCharFreeze.Checked)
+            {
+                Util.Character_t selectedItem = cmbActChar.SelectedItem as Util.Character_t;
+                _game.FreezeActCharId(selectedItem.Id.ToString());
+            }
+            else
+            {
+                _game.UnfreezeActCharId();
+            }
+        }
+
+        private void ToolStripMenuItemActCharCoordsCopyXYZToTextboxes_Click(object sender, EventArgs e)
+        {
+            txtActCharXCoordSet.Text = lblXCoord.Text;
+            txtActCharYCoordSet.Text = lblYCoord.Text;
+            txtActCharZCoordSet.Text = lblZCoord.Text;
+        }
+
+        private void ToolStripMenuItemActCharCoordsCopyXYZToClipboard_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText($"{txtActCharXCoordSet.Text} {txtActCharYCoordSet.Text} {txtActCharZCoordSet.Text}");
+        }
+
+        private void ToolStripMenuItemActCharCoordsPasteXYZFromClipboard_Click(object sender, EventArgs e)
+        {
+            string clipboard = Clipboard.GetText();
+            string[] coords = clipboard.Split(' ');
+            if (coords.Length != 3)
+            {
+                return;
+            }
+
+            float.TryParse(coords[0], CultureInfo.InvariantCulture, out float value1);
+            float.TryParse(coords[1], CultureInfo.InvariantCulture, out float value2);
+            float.TryParse(coords[2], CultureInfo.InvariantCulture, out float value3);
+            txtActCharXCoordSet.Text = value1.ToString();
+            txtActCharYCoordSet.Text = value2.ToString();
+            txtActCharZCoordSet.Text = value3.ToString();
+        }
+
+        private void ToolStripMenuItemActCharCoordsSetXYZ_Click(object sender, EventArgs e)
+        {
+            float.TryParse(txtActCharXCoordSet.Text, CultureInfo.InvariantCulture, out float value1);
+            float.TryParse(txtActCharYCoordSet.Text, CultureInfo.InvariantCulture, out float value2);
+            float.TryParse(txtActCharZCoordSet.Text, CultureInfo.InvariantCulture, out float value3);
+            Vector3 trans = new(value1, value2, value3);
+            _game.WriteActCharLocalTranslation(trans);
+        }
+
+        private void chkActCharFly_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkActCharFly.Checked)
+            {
+                _game.FreezeActCharLocalTranslationZ();
+            }
+            else
+            {
+                if (!chkActCharZCoordFreeze.Checked)
+                {
+                    _game.UnfreezeActCharLocalTranslationZ();
+                }
+
+                _game.UnfreezeActCharVelocityZ();
+            }
+        }
+
+        private void btnWarp_Click(object sender, EventArgs e)
+        {
+            Util.Warp_t warp = (Util.Warp_t)cmbWarps.SelectedItem;
+            if (warp == null)
+            {
+                return;
+            }
+
+            _game.WarpSourceEntityToPoint("", warp.Position);
+            _game.ResetCamera();
+        }
+        #endregion
+
+        #region Toggles
+        private void chkToggleUndetectable_CheckedChanged(object sender, EventArgs e)
+        {
+            _game.ToggleUndetectable(chkToggleUndetectable.Checked);
+        }
+
+        private void chkToggleInvulnerable_CheckedChanged(object sender, EventArgs e)
+        {
+            _game.ToggleInvulnerable(chkToggleInvulnerable.Checked);
+        }
+
+        private void chkToggleInfDbJump_CheckedChanged(object sender, EventArgs e)
+        {
+            _game.ToggleInfiniteDbJump(chkToggleInfDbJump.Checked);
+        }
+
+        private void chkDisableGuardAI_CheckedChanged(object sender, EventArgs e)
+        {
+            _game.ToggleGuardAI(chkDisableGuardAI.Checked);
+        }
+
+        private void chkDisableDeathBarrier_CheckedChanged(object sender, EventArgs e)
+        {
+            (_game as Sly3Handler).ToggleDeathBarriers(chkDisableDeathBarrier.Checked);
+        }
+        #endregion
+
+        #region Camera
+        private void btnResetCamera_Click(object sender, EventArgs e)
+        {
+            _game.ResetCamera();
+        }
+
+        private void trkFOV_Scroll(object sender, EventArgs e)
+        {
+            float value = (float)trkFOV.Value / 10;
+            _game.WriteFOV(value);
+        }
+
+        private void btnFOVReset_Click(object sender, EventArgs e)
+        {
+            float value = 1f; // Sly 1 uses 1.0f
+            if (_game is Sly2Handler || _game is Sly3Handler)
+            {
+                value = 1.1f;
+            }
+
+            trkFOV.Value = (int)(value * 10);
+            trkFOV_Scroll(trkFOV, EventArgs.Empty);
+        }
+
+        private void chkFOVFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFOVFreeze.Checked)
+            {
+                _game.FreezeFOV();
+                chkFOVFreeze.BackgroundImage = _iconFreezeEnabled;
+            }
+            else
+            {
+                _game.UnfreezeFOV();
+                chkFOVFreeze.BackgroundImage = _iconFreezeDisabled;
+            }
+        }
+
         private void trkDrawDistance_Scroll(object sender, EventArgs e)
         {
             float value = (float)trkDrawDistance.Value / 10;
@@ -612,12 +1461,42 @@ namespace SlyMultiTrainer
                 chkDrawDistanceFreeze.BackgroundImage = _iconFreezeDisabled;
             }
         }
+        #endregion
 
+        #region Clock
+        private void trkClock_Scroll(object sender, EventArgs e)
+        {
+            float value = (float)trkClock.Value / 10;
+            _game.WriteClock(value);
+        }
+
+        private void btnClockReset_Click(object sender, EventArgs e)
+        {
+            trkClock.Value = 10;
+            trkClock_Scroll(trkClock, EventArgs.Empty);
+        }
+
+        private void chkClockFreeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkClockFreeze.Checked)
+            {
+                _game.FreezeClock();
+                chkClockFreeze.BackgroundImage = _iconFreezeEnabled;
+            }
+            else
+            {
+                _game.UnfreezeClock();
+                chkClockFreeze.BackgroundImage = _iconFreezeDisabled;
+            }
+        }
+        #endregion
+
+        #region Maps
         private void btnLoadLevel_Click(object sender, EventArgs e)
         {
             var mapId = Util.GetOriginalMapId(cmbMaps);
 
-            // current map
+            // Current map
             if (mapId == -1)
             {
                 mapId = _game.GetMapId();
@@ -658,11 +1537,14 @@ namespace SlyMultiTrainer
                 }
                 else if (_game.Region == "NTSC E3 Demo")
                 {
-                    _game.LoadMap(mapId, entranceValue, 0);
-                    return;
+                    entranceValue = 0x19B;
+                }
+                else if (_game.Region == "NTSC Regular Demo")
+                {
+                    entranceValue = 0x1A2;
                 }
 
-                _game.LoadMap(mapId, entranceValue);
+                _game.LoadMap(mapId, entranceValue, 0);
             }
         }
 
@@ -678,334 +1560,7 @@ namespace SlyMultiTrainer
 
             (_game as Sly3Handler).LoadMapFull(mapId);
         }
-
-        private void btnActCharXCoordMinus_Click(object sender, EventArgs e)
-        {
-            Vector3 value = _game.ReadActCharPosition();
-            value.X -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
-            _game.WriteActCharPosition(value);
-        }
-
-        private void btnActCharXCoordPlus_Click(object sender, EventArgs e)
-        {
-            Vector3 value = _game.ReadActCharPosition();
-            value.X += Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
-            _game.WriteActCharPosition(value);
-        }
-
-        private void chkActCharXCoordFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkActCharXCoordFreeze.Checked)
-            {
-                _game.FreezeActCharPositionX();
-            }
-            else
-            {
-                _game.UnfreezeActCharPositionX();
-            }
-        }
-
-        private void btnActCharYCoordMinus_Click(object sender, EventArgs e)
-        {
-            Vector3 value = _game.ReadActCharPosition();
-            value.Y -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
-            _game.WriteActCharPosition(value);
-        }
-
-        private void btnActCharYCoordPlus_Click(object sender, EventArgs e)
-        {
-            Vector3 value = _game.ReadActCharPosition();
-            value.Y += Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
-            _game.WriteActCharPosition(value);
-        }
-
-        private void chkActCharYCoordFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkActCharYCoordFreeze.Checked)
-            {
-                _game.FreezeActCharPositionY();
-            }
-            else
-            {
-                _game.UnfreezeActCharPositionY();
-            }
-        }
-
-        private void btnActCharZCoordMinus_Click(object sender, EventArgs e)
-        {
-            Vector3 value = _game.ReadActCharPosition();
-            value.Z -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
-            _game.WriteActCharPosition(value);
-        }
-
-        private void btnActCharZCoordPlus_Click(object sender, EventArgs e)
-        {
-            Vector3 value = _game.ReadActCharPosition();
-            value.Z += Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar;
-            _game.WriteActCharPosition(value);
-        }
-
-        private void chkActCharZCoordFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkActCharZCoordFreeze.Checked)
-            {
-                _game.FreezeActCharPositionZ();
-            }
-            else
-            {
-                _game.UnfreezeActCharPositionZ();
-            }
-        }
-
-        private void btnActCharXCoordSet_Click(object sender, EventArgs e)
-        {
-            float.TryParse(txtActCharXCoordSet.Text, CultureInfo.InvariantCulture, out float value);
-            Vector3 trans = _game.ReadActCharPosition();
-            trans.X = value;
-            _game.WriteActCharPosition(trans);
-        }
-
-        private void btnActCharYCoordSet_Click(object sender, EventArgs e)
-        {
-            float.TryParse(txtActCharYCoordSet.Text, CultureInfo.InvariantCulture, out float value);
-            Vector3 trans = _game.ReadActCharPosition();
-            trans.Y = value;
-            _game.WriteActCharPosition(trans);
-        }
-
-        private void btnActCharZCoordSet_Click(object sender, EventArgs e)
-        {
-            float.TryParse(txtActCharZCoordSet.Text, CultureInfo.InvariantCulture, out float value);
-            Vector3 trans = _game.ReadActCharPosition();
-            trans.Z = value;
-            _game.WriteActCharPosition(trans);
-        }
-
-        private void trkActCharCoord_Scroll(object sender, EventArgs e)
-        {
-            if (trkActCharCoord.Value == 0)
-            {
-                Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar = 10;
-            }
-            else
-            {
-                Util.DefaultAmountToIncreaseOrDecreaseTranslationForActChar = trkActCharCoord.Value * 50;
-            }
-        }
-
-        private void btnActCharHealthMinus_Click(object sender, EventArgs e)
-        {
-            int health = _game.ReadActCharHealth();
-            health -= Util.DefaultAmountToIncreaseOrDecreaseHealth;
-            _game.WriteActCharHealth(health);
-        }
-
-        private void btnActCharHealthPlus_Click(object sender, EventArgs e)
-        {
-            int health = _game.ReadActCharHealth();
-            health += Util.DefaultAmountToIncreaseOrDecreaseHealth;
-            _game.WriteActCharHealth(health);
-        }
-
-        private void chkActCharHealthFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkActCharHealthFreeze.Checked)
-            {
-                _game.FreezeActCharHealth();
-            }
-            else
-            {
-                _game.UnfreezeActCharHealth();
-            }
-        }
-
-        private void cmbActChar_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            if (_game is Sly1Handler)
-            {
-                return;
-            }
-
-            Util.Character_t selectedItem = cmbActChar.SelectedItem as Util.Character_t;
-            _game.WriteActCharId(selectedItem.Id);
-        }
-
-        private void chkActCharFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_game is Sly1Handler)
-            {
-                return;
-            }
-
-            if (chkActCharFreeze.Checked)
-            {
-                Util.Character_t selectedItem = cmbActChar.SelectedItem as Util.Character_t;
-                _game.FreezeActCharId(selectedItem.Id.ToString());
-            }
-            else
-            {
-                _game.UnfreezeActCharId();
-            }
-        }
-
-        private void chkActCharFly_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkActCharFly.Checked)
-            {
-                _game.FreezeActCharPositionZ();
-            }
-            else
-            {
-                if (!chkActCharZCoordFreeze.Checked)
-                {
-                    _game.UnfreezeActCharPositionZ();
-                }
-                _game.UnfreezeActCharVelocityZ();
-            }
-        }
-
-        private void chkInfiniteGadgetPower_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkInfiniteGadgetPower.Checked)
-            {
-                _game.FreezeActCharGadgetPower(100);
-            }
-            else
-            {
-                _game.UnfreezeActCharGadgetPower();
-            }
-        }
-
-        private void btnGetGadgets_Click(object sender, EventArgs e)
-        {
-            _game.ToggleAllGadgets();
-        }
-
-        private void trkFOV_Scroll(object sender, EventArgs e)
-        {
-            float value = (float)trkFOV.Value / 10;
-            _game.WriteFOV(value);
-        }
-
-        private void btnFOVReset_Click(object sender, EventArgs e)
-        {
-            float value = 1f; // Sly 1 uses 1.0f
-            if (_game is Sly2Handler || _game is Sly3Handler)
-            {
-                value = 1.1f;
-            }
-
-            trkFOV.Value = (int)(value * 10);
-            trkFOV_Scroll(trkFOV, EventArgs.Empty);
-        }
-
-        private void chkFOVFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkFOVFreeze.Checked)
-            {
-                _game.FreezeFOV();
-                chkFOVFreeze.BackgroundImage = _iconFreezeEnabled;
-            }
-            else
-            {
-                _game.UnfreezeFOV();
-                chkFOVFreeze.BackgroundImage = _iconFreezeDisabled;
-            }
-        }
-
-        private void trkClock_Scroll(object sender, EventArgs e)
-        {
-            float value = (float)trkClock.Value / 10;
-            _game.WriteClock(value);
-        }
-
-        private void btnClockReset_Click(object sender, EventArgs e)
-        {
-            trkClock.Value = 10;
-            trkClock_Scroll(trkClock, EventArgs.Empty);
-        }
-
-        private void chkClockFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkClockFreeze.Checked)
-            {
-                _game.FreezeClock();
-                chkClockFreeze.BackgroundImage = _iconFreezeEnabled;
-            }
-            else
-            {
-                _game.UnfreezeClock();
-                chkClockFreeze.BackgroundImage = _iconFreezeDisabled;
-            }
-        }
-
-        private void btnResetCamera_Click(object sender, EventArgs e)
-        {
-            _game.ResetCamera();
-        }
-
-        private void btnCoinsSet_Click(object sender, EventArgs e)
-        {
-            int.TryParse(txtCoins.Text, CultureInfo.InvariantCulture, out int value);
-            _game.SetCoins(value);
-        }
-
-        private void btnWarp_Click(object sender, EventArgs e)
-        {
-            Util.Warp_t warp = (Util.Warp_t)cmbWarps.SelectedItem;
-            if (warp == null)
-            {
-                return;
-            }
-
-            _game.WriteActCharPosition(warp.Position);
-            _game.ResetCamera();
-        }
-
-        private void chkDisableDeathBarrier_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_game is Sly3Handler)
-            {
-                (_game as Sly3Handler).ToggleDeathBarriers(chkDisableDeathBarrier.Checked);
-            }
-        }
-
-        private void chkDisableGuardAI_CheckedChanged(object sender, EventArgs e)
-        {
-            _game.ToggleGuardAI(chkDisableGuardAI.Checked);
-        }
-
-        private void chkToggleInvulnerable_CheckedChanged(object sender, EventArgs e)
-        {
-            _game.ToggleInvulnerable(chkToggleInvulnerable.Checked);
-        }
-
-        private void chkToggleUndetectable_CheckedChanged(object sender, EventArgs e)
-        {
-            _game.ToggleUndetectable(chkToggleUndetectable.Checked);
-        }
-
-        private void chkToggleInfDbJump_CheckedChanged(object sender, EventArgs e)
-        {
-            _game.ToggleInfiniteDbJump(chkToggleInfDbJump.Checked);
-        }
-
-        private void chkLuckyCharmsFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkLuckyCharmsFreeze.Checked)
-            {
-                (_game as Sly1Handler).FreezeLuckyCharms();
-            }
-            else
-            {
-                (_game as Sly1Handler).UnfreezeLuckyCharms();
-            }
-        }
-
-        private void cmbLuckyCharms_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            (_game as Sly1Handler).WriteLuckyCharms(cmbLuckyCharms.SelectedIndex);
-        }
+        #endregion
 
         private void btnSkipCurrentDialogue_Click(object sender, EventArgs e)
         {
@@ -1015,7 +1570,7 @@ namespace SlyMultiTrainer
         private void tabControlMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControlMain.SelectedTab.Name == "tabDAG"
-                && tabControlMain.SelectedTab.Controls.Count == 0)
+             && tabControlMain.SelectedTab.Controls.Count == 0)
             {
                 DAG_t DAG = null;
                 if (_game is Sly2Handler)
@@ -1034,364 +1589,9 @@ namespace SlyMultiTrainer
             }
         }
 
-        public void btnRefreshFKXList_Click(object sender, EventArgs e)
+        private void btnReattach_Click(object sender, EventArgs e)
         {
-            List<Util.FKXEntry_t> fkxList = new();
-            if (_game is Sly2Handler)
-            {
-                fkxList = (_game as Sly2Handler).GetFKXList();
-            }
-            else if (_game is Sly3Handler)
-            {
-                fkxList = (_game as Sly3Handler).GetFKXList();
-            }
-
-            trvFKXList.Tag = fkxList;
-
-            FillFKXTreeView(fkxList);
-            ClearFKXTab();
-            txtEntitiesSearch.Text = "";
-            txtEntitiesSearch.PlaceholderText = $"Search through {fkxList.Count} entities";
-        }
-
-        private void FillFKXTreeView(List<Util.FKXEntry_t> fkxList, string filter = "")
-        {
-            if (filter != "")
-            {
-                fkxList = fkxList.Where(x => x.Name.Contains(filter)).ToList();
-            }
-
-            trvFKXList.BeginUpdate();
-            trvFKXList.Nodes.Clear();
-            for (int i = 0; i < fkxList.Count; i++)
-            {
-                TreeNode node = new($"{fkxList[i].Name} ({fkxList[i].Count})");
-                node.Tag = fkxList[i];
-                trvFKXList.Nodes.Add(node);
-
-                if (fkxList[i].PoolPointer == 0x0)
-                {
-                    continue;
-                }
-
-                for (int j = 0; j < fkxList[i].Count; j++)
-                {
-                    string entityPointer = fkxList[i].EntityPointer[j].ToString("X");
-                    TreeNode childNode = new(entityPointer);
-                    childNode.Tag = entityPointer;
-                    node.Nodes.Add(childNode);
-                }
-            }
-
-            trvFKXList.EndUpdate();
-        }
-
-        private void trvFKXList_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            if (e.Node.Tag is string)
-            {
-                // npc_boar_guard[0] = EF45B0
-                UpdateUI(lblFKXEntityInfo, $"{(e.Node.Parent.Tag as Util.FKXEntry_t).Name}[{e.Node.Index}] = {e.Node.Tag}");
-            }
-            else if (e.Node.Tag is Util.FKXEntry_t)
-            {
-                ClearFKXTab();
-                // npc_boar_guard = EF45B0
-                UpdateUI(lblFKXEntityInfo, $"{(e.Node.Tag as Util.FKXEntry_t).Name} = {(e.Node.Tag as Util.FKXEntry_t).Address}");
-                return;
-            }
-        }
-
-        public int GetPointerToEntityFromSelectedFKXNode()
-        {
-            var node = trvFKXList.SelectedNode;
-            if (node == null || node.Tag is not string)
-            {
-                return 0;
-            }
-
-            var fkx = node.Parent.Tag as Util.FKXEntry_t;
-            int pointerToEntity = fkx.PoolPointer + node.Index * 4;
-            return pointerToEntity;
-        }
-
-        private void txtEntitiesSearch_TextChanged(object sender, EventArgs e)
-        {
-            List<Util.FKXEntry_t> fkxList = trvFKXList.Tag as List<Util.FKXEntry_t>;
-            FillFKXTreeView(fkxList, txtEntitiesSearch.Text);
-            ClearFKXTab();
-        }
-
-        private void btnCopyFKXEntityPointer_Click(object sender, EventArgs e)
-        {
-            if (trvFKXList.SelectedNode == null)
-            {
-                return;
-            }
-
-            if (trvFKXList.SelectedNode.Tag is string)
-            {
-                Clipboard.SetText(trvFKXList.SelectedNode.Tag.ToString());
-            }
-            else if (trvFKXList.SelectedNode.Tag is Util.FKXEntry_t)
-            {
-                Clipboard.SetText((trvFKXList.SelectedNode.Tag as Util.FKXEntry_t).Address);
-            }
-        }
-
-        private Vector3 GetCurrentFKXEntityPosition(out string pointerToEntity)
-        {
-            int value = GetPointerToEntityFromSelectedFKXNode();
-            pointerToEntity = value.ToString("X");
-            if (value == 0)
-            {
-                return Vector3.Zero;
-            }
-
-            Vector3 trans = _game.ReadPositionFromPointerToEntity(pointerToEntity);
-            return trans;
-        }
-
-        private void btnFKXEntityXCoordMinus_Click(object sender, EventArgs e)
-        {
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.X -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void btnFKXEntityXCoordPlus_Click(object sender, EventArgs e)
-        {
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.X += Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void chkFKXEntityXCoordFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
-            if (pointerToEntity == 0)
-            {
-                return;
-            }
-
-            if (chkFKXEntityXCoordFreeze.Checked)
-            {
-                _game.FreezePositionXFromPointerToEntity(pointerToEntity.ToString("X"));
-            }
-            else
-            {
-                _game.UnfreezePositionXFromPointerToEntity(pointerToEntity.ToString("X"));
-            }
-        }
-
-        private void btnFKXEntityXCoordSet_Click(object sender, EventArgs e)
-        {
-            float.TryParse(txtFKXEntityXCoordSet.Text, CultureInfo.InvariantCulture, out float value);
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.X = value;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void btnFKXEntityYCoordMinus_Click(object sender, EventArgs e)
-        {
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.Y -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void btnFKXEntityYCoordPlus_Click(object sender, EventArgs e)
-        {
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.Y += Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void chkFKXEntityYCoordFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
-            if (pointerToEntity == 0)
-            {
-                return;
-            }
-
-            if (chkFKXEntityYCoordFreeze.Checked)
-            {
-                _game.FreezePositionYFromPointerToEntity(pointerToEntity.ToString("X"));
-            }
-            else
-            {
-                _game.UnfreezePositionYFromPointerToEntity(pointerToEntity.ToString("X"));
-            }
-        }
-
-        private void btnFKXEntityYCoordSet_Click(object sender, EventArgs e)
-        {
-            float.TryParse(txtFKXEntityYCoordSet.Text, CultureInfo.InvariantCulture, out float value);
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.Y = value;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void btnFKXEntityZCoordMinus_Click(object sender, EventArgs e)
-        {
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.Z -= Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void btnFKXEntityZCoordPlus_Click(object sender, EventArgs e)
-        {
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.Z += Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void chkFKXEntityZCoordFreeze_CheckedChanged(object sender, EventArgs e)
-        {
-            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
-            if (pointerToEntity == 0)
-            {
-                return;
-            }
-
-            if (chkFKXEntityZCoordFreeze.Checked)
-            {
-                _game.FreezePositionZFromPointerToEntity(pointerToEntity.ToString("X"));
-            }
-            else
-            {
-                _game.UnfreezePositionZFromPointerToEntity(pointerToEntity.ToString("X"));
-            }
-        }
-
-        private void btnFKXEntityZCoordSet_Click(object sender, EventArgs e)
-        {
-            float.TryParse(txtFKXEntityZCoordSet.Text, CultureInfo.InvariantCulture, out float value);
-            Vector3 trans = GetCurrentFKXEntityPosition(out string pointerToEntity);
-            trans.Z = value;
-            _game.WritePositionFromPointerToEntity(pointerToEntity, trans);
-        }
-
-        private void trkFKXEntityCoord_Scroll(object sender, EventArgs e)
-        {
-            if (trkFKXEntityCoord.Value == 0)
-            {
-                Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity = 10;
-            }
-            else
-            {
-                Util.DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity = trkFKXEntityCoord.Value * 50;
-            }
-        }
-
-        private void trkFKXEntityScale_Scroll(object sender, EventArgs e)
-        {
-            float trkValue = (float)trkFKXEntityScale.Value / 10;
-            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
-            _game.WriteScaleFromPointerToEntity(pointerToEntity.ToString("X"), trkValue);
-        }
-
-        private void btnFKXEntityScaleReset_Click(object sender, EventArgs e)
-        {
-            trkFKXEntityScale.Value = 10;
-            trkFKXEntityScale_Scroll(trkFKXEntityScale, EventArgs.Empty);
-        }
-
-        private void chkFKXEntityEditRotation_CheckedChanged(object sender, EventArgs e)
-        {
-            trkFKXEntityRotationX.Enabled = chkFKXEntityEditRotation.Checked;
-            trkFKXEntityRotationY.Enabled = chkFKXEntityEditRotation.Checked;
-            trkFKXEntityRotationZ.Enabled = chkFKXEntityEditRotation.Checked;
-        }
-
-        private void btnFKXEntityWarpActChar_Click(object sender, EventArgs e)
-        {
-            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
-            if (pointerToEntity == 0)
-            {
-                return;
-            }
-
-            Vector3 trans = _game.ReadWorldPositionFromPointerToEntity(pointerToEntity.ToString("X"));
-            _game.WriteActCharPosition(trans);
-        }
-
-        private void trkFKXEntityRotationX_Scroll(object sender, EventArgs e)
-        {
-            WriteRotationToSelectedFKXNode();
-        }
-
-        private void trkFKXEntityRotationY_Scroll(object sender, EventArgs e)
-        {
-            WriteRotationToSelectedFKXNode();
-        }
-
-        private void trkFKXEntityRotationZ_Scroll(object sender, EventArgs e)
-        {
-            WriteRotationToSelectedFKXNode();
-        }
-
-        private void WriteRotationToSelectedFKXNode()
-        {
-            int pointerToEntity = GetPointerToEntityFromSelectedFKXNode();
-
-            // Degrees to radians
-            float radX = MathF.PI / 180f * trkFKXEntityRotationX.Value;
-            float radY = MathF.PI / 180f * trkFKXEntityRotationY.Value;
-            float radZ = MathF.PI / 180f * trkFKXEntityRotationZ.Value;
-
-            Matrix4x4 rotationMatrix = Matrix4x4.CreateRotationX(radX) * Matrix4x4.CreateRotationY(radY) * Matrix4x4.CreateRotationZ(radZ);
-
-            _game.WriteWorldRotationFromPointerToEntity(pointerToEntity.ToString("X"), rotationMatrix);
-        }
-
-        private void ClearFKXTab()
-        {
-            UpdateUI(lblFKXEntityInfo, Util.DefaultValueString);
-            UpdateUI(lblFKXEntityXCoord, Util.DefaultValueFloat);
-            UpdateUI(lblFKXEntityYCoord, Util.DefaultValueFloat);
-            UpdateUI(lblFKXEntityZCoord, Util.DefaultValueFloat);
-            UpdateUI(lblFKXEntityXCoordWorld, Util.DefaultValueFloat);
-            UpdateUI(lblFKXEntityYCoordWorld, Util.DefaultValueFloat);
-            UpdateUI(lblFKXEntityZCoordWorld, Util.DefaultValueFloat);
-            chkFKXEntityEditRotation.Checked = false;
-            chkFKXEntityEditRotation_CheckedChanged(chkFKXEntityEditRotation, EventArgs.Empty);
-        }
-
-        private void ToolStripMenuItemActCharCoordsCopyOver_Click(object sender, EventArgs e)
-        {
-            txtActCharXCoordSet.Text = lblXCoord.Text;
-            txtActCharYCoordSet.Text = lblYCoord.Text;
-            txtActCharZCoordSet.Text = lblZCoord.Text;
-        }
-
-        private void ToolStripMenuItemActCharCoordsPasteXYZFromClipboard_Click(object sender, EventArgs e)
-        {
-            string clipboard = Clipboard.GetText();
-            string[] coords = clipboard.Split(' ');
-            if (coords.Length != 3)
-            {
-                return;
-            }
-
-            float.TryParse(coords[0], CultureInfo.InvariantCulture, out float value1);
-            float.TryParse(coords[1], CultureInfo.InvariantCulture, out float value2);
-            float.TryParse(coords[2], CultureInfo.InvariantCulture, out float value3);
-            txtActCharXCoordSet.Text = value1.ToString();
-            txtActCharYCoordSet.Text = value2.ToString();
-            txtActCharZCoordSet.Text = value3.ToString();
-        }
-
-        private void ToolStripMenuItemActCharCoordsSetXYZ_Click(object sender, EventArgs e)
-        {
-            //btnActCharXCoordSet_Click(btnActCharXCoordSet, e);
-            //btnActCharYCoordSet_Click(btnActCharYCoordSet, e);
-            //btnActCharZCoordSet_Click(btnActCharZCoordSet, e);
-            float.TryParse(txtActCharXCoordSet.Text, CultureInfo.InvariantCulture, out float value1);
-            float.TryParse(txtActCharYCoordSet.Text, CultureInfo.InvariantCulture, out float value2);
-            float.TryParse(txtActCharZCoordSet.Text, CultureInfo.InvariantCulture, out float value3);
-            Vector3 trans = new(value1, value2, value3);
-            _game.WriteActCharPosition(trans);
+            _triggerReattach = true;
         }
 
         private void btnSettings_Click(object sender, EventArgs e)
@@ -1401,8 +1601,20 @@ namespace SlyMultiTrainer
             f2.ShowDialog();
         }
 
-        private void btnReattach_Click(object sender, EventArgs e)
+        private void cmbProcesses_SelectionChangeCommitted(object sender, EventArgs e)
         {
+            if (_m.mProc == null)
+            {
+                return;
+            }
+
+            var proc = (cmbProcesses.SelectedItem as Memory.Proc);
+            if (proc.Process.Id == _m.mProc.Process.Id)
+            {
+                // If the process selected is the current one, don't reattach
+                return;
+            }
+
             _triggerReattach = true;
         }
     }

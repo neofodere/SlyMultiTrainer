@@ -11,29 +11,29 @@ namespace SlyMultiTrainer
         public static float DefaultAmountToIncreaseOrDecreaseTranslationForFKXEntity = 100;
         public static int DefaultAmountToIncreaseOrDecreaseHealth = 10;
         public static string DefaultValueFloat = "0";
+        public static string DefaultValueInt = "0";
         public static string DefaultValueString = "None";
         public static string SubMapNamePrefix = "   ";
 
-        [DebuggerDisplay("{Title,nq} {Region,nq} | {BuildIdAddress,nq} == {BuildId,nq}")]
+        [DebuggerDisplay("{Title,nq} {Region,nq} | {Address,nq} == {Value,nq}")]
         public class Build_t
         {
             public string Title = "";
             public string Region = "";
-            public string BuildId = "";
-            public string BuildIdAddress = "";
+            public string Value = "";
+            public string Address = "";
 
-            public Build_t(string title, string region, string buildId, string buildIdAddress)
+            public Build_t(string title, string region, string value, string address)
             {
                 Title = title;
                 Region = region;
-                BuildId = buildId;
-                BuildIdAddress = buildIdAddress;
+                Value = value;
+                Address = address;
             }
 
             public override string ToString()
             {
-                string tmp = $"{Title} {Region}";
-                return tmp;
+                return $"{Title} {Region}";
             }
         }
 
@@ -83,6 +83,30 @@ namespace SlyMultiTrainer
             new("Sly 3", "NTSC (PS3 PSN)", "1222.1218", "4991B0"), // NPUA80665
             new("Sly 3", "PAL (PS3 PSN)", "1222.1218", "4991C0"), // NPEA00343
             new("Sly 3", "NTSC-K (PS3 PSN)", "1222.1218", "499180"), // NPHA80176
+
+            // Sly 2 NTSC (PS3), Sly 2 PAL (PS3) and Sly 2 UK (PS3) have 0524.2241 at 38BB50
+            // Sly 3 NTSC (PS3), Sly 3 PAL (PS3) and Sly 3 UK (PS3) have 1222.1218 at 426550
+            // Let's use a different address instead
+
+            // The Sly Collection (NTSC) - BCUS98246
+            new("Sly 1", "NTSC (PS3)", "1018.1857", "33E028"),
+            new("Sly 2", "NTSC (PS3)", "Sly 2", "301BCED4"),
+            new("Sly 3", "NTSC (PS3)", "Sly 3", "301BCED4"),
+            
+            // The Sly Trilogy (PAL) - BCES00968
+            new("Sly 1", "PAL (PS3)", "1017.0103", "33E1F8"),
+            new("Sly 2", "PAL (PS3)", "Sly 2", "301BD754"),
+            new("Sly 3", "PAL (PS3)", "Sly 3", "301BD754"),
+
+            // The Sly Trilogy (UK) - BCES00982
+            new("Sly 1", "UK (PS3)", "1017.2109", "33E008"),
+            new("Sly 2", "UK (PS3)", "Sly 2", "301BCDC4"),
+            new("Sly 3", "UK (PS3)", "Sly 3", "301BCDC4"),
+
+            // Sly Cooper Collection (NTSC-J) - BCJS30061
+            new("Sly 1", "NTSC-J (PS3)", "1129.2221", "33E028"),
+            new("Sly 2", "NTSC-J (PS3)", "0524.2241", "38BBB0"),
+            new("Sly 3", "NTSC-J (PS3)", "1222.1218", "426590"),
         };
 
         public static Build_t? GetBuild(Memory.Mem m)
@@ -90,7 +114,7 @@ namespace SlyMultiTrainer
             Build_t? build = null;
             for (int i = 0; i < Builds.Count; i++)
             {
-                if (m.ReadString(Builds[i].BuildIdAddress) == Builds[i].BuildId)
+                if (m.ReadString(Builds[i].Address) == Builds[i].Value)
                 {
                     build = Builds[i];
                     break;
@@ -102,7 +126,7 @@ namespace SlyMultiTrainer
 
         public static bool IsBuildCurrent(Memory.Mem m, Build_t build)
         {
-            if (m.ReadString(build.BuildIdAddress) == build.BuildId)
+            if (m.ReadString(build.Address) == build.Value)
             {
                 return true;
             }
@@ -126,6 +150,12 @@ namespace SlyMultiTrainer
                 game = new Sly3Handler(m, form, build.Region);
             }
 
+            foreach (var gadgetList in game.Gadgets)
+            {
+                // Add a "None" gadget at the start of each gadget list
+                gadgetList.Insert(0, new("None", -1));
+            }
+
             return game;
         }
 
@@ -138,7 +168,7 @@ namespace SlyMultiTrainer
             public int Count;
             public int Count2;
             public string Name;
-            public List<int> EntityPointer;
+            public List<int> EntityAddress;
 
             public FKXEntry_t(string address, byte[] data)
             {
@@ -148,13 +178,12 @@ namespace SlyMultiTrainer
                 Count = EndianBitConverter.ToInt32(data, 8);
                 Count2 = EndianBitConverter.ToInt32(data, 0xC);
 
-                var q = Encoding.Default.GetString(data, 0x1C, 0x40);
-                var w = q.Split('\0');
-                var e = w[0];
-                var r = e.Substring(4);
-                Name = r;
+                var t1 = Encoding.Default.GetString(data, 0x1C, 0x40);
+                var t2 = t1.Split('\0');
+                var t3 = t2[0];
+                Name = t3.Substring(4);
 
-                EntityPointer = new(Count);
+                EntityAddress = new(Count);
             }
         }
 
@@ -186,8 +215,7 @@ namespace SlyMultiTrainer
 
         public static float ToDegrees(float radians)
         {
-            var tmp = radians * (180f / MathF.PI);
-            return tmp;
+            return radians * (180f / MathF.PI);
         }
 
         public static int GetOriginalMapId(ComboBox cmb)
@@ -213,12 +241,19 @@ namespace SlyMultiTrainer
             public string Name;
             public int Id;
             public string InternalName;
+            public string NameForSavefile;
 
-            public Character_t(string name, int id, string internalName)
+            public Character_t(string name, int id, string internalName, string nameForSavefile)
             {
                 Name = name;
                 Id = id;
                 InternalName = internalName;
+                NameForSavefile = nameForSavefile;
+            }
+
+            public Character_t(string name, int id, string internalName) : this(name, id, internalName, "")
+            {
+
             }
 
             public Character_t(string name, int id) : this(name, id, "")
@@ -238,9 +273,8 @@ namespace SlyMultiTrainer
                     return false;
                 }
 
-                var qwe = obj as Character_t;
-
-                if (Id != qwe.Id)
+                var tmp = obj as Character_t;
+                if (Id != tmp.Id)
                 {
                     return false;
                 }
@@ -254,16 +288,15 @@ namespace SlyMultiTrainer
             public string Name;
             public Vector3 Position;
 
-            public Warp_t()
-            {
-                Name = "None";
-                Position = new(0, 0, 0);
-            }
-
             public Warp_t(string name, Vector3 position)
             {
                 Name = name;
                 Position = position;
+            }
+
+            public Warp_t() : this("None", new Vector3(0, 0, 0))
+            {
+
             }
 
             public override string ToString()
@@ -367,6 +400,24 @@ namespace SlyMultiTrainer
             }
         }
 
+        [DebuggerDisplay("{Name} - {Id}")]
+        public class Gadget_t
+        {
+            public string Name;
+            public int Id;
+
+            public Gadget_t(string name, int id)
+            {
+                Name = name;
+                Id = id;
+            }
+
+            public override string ToString()
+            {
+                return Name;
+            }
+        }
+
         public static Image CreateSquare(Microsoft.Msagl.Drawing.Color color, int size = 16)
         {
             Bitmap bmp = new(size, size);
@@ -377,6 +428,7 @@ namespace SlyMultiTrainer
                     g.FillRectangle(b, 0, 0, size, size);
                 }
             }
+
             return bmp;
         }
 
@@ -405,6 +457,13 @@ namespace SlyMultiTrainer
             }
 
             return new Icon(stream);
+        }
+
+        public enum GADGET_BIND
+        {
+            L1,
+            L2,
+            R2,
         }
     }
 }

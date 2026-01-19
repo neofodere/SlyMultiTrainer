@@ -32,7 +32,7 @@
             btnCancel = new Button();
             cmbFlyUp = new ComboBox();
             label1 = new Label();
-            groupBox1 = new GroupBox();
+            grpClock = new GroupBox();
             label3 = new Label();
             cmbFlyAccelerate = new ComboBox();
             label2 = new Label();
@@ -40,7 +40,7 @@
             btnResetSettings = new Button();
             tabControl1 = new TabControl();
             tabSettingsMain = new TabPage();
-            groupBox1.SuspendLayout();
+            grpClock.SuspendLayout();
             tabControl1.SuspendLayout();
             tabSettingsMain.SuspendLayout();
             SuspendLayout();
@@ -84,21 +84,21 @@
             label1.TabIndex = 37;
             label1.Text = "Up";
             // 
-            // groupBox1
+            // grpClock
             // 
-            groupBox1.BackColor = Color.Transparent;
-            groupBox1.Controls.Add(label3);
-            groupBox1.Controls.Add(cmbFlyAccelerate);
-            groupBox1.Controls.Add(label2);
-            groupBox1.Controls.Add(cmbFlyDown);
-            groupBox1.Controls.Add(label1);
-            groupBox1.Controls.Add(cmbFlyUp);
-            groupBox1.Location = new Point(6, 6);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(169, 118);
-            groupBox1.TabIndex = 38;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Fly";
+            grpClock.BackColor = Color.Transparent;
+            grpClock.Controls.Add(label3);
+            grpClock.Controls.Add(cmbFlyAccelerate);
+            grpClock.Controls.Add(label2);
+            grpClock.Controls.Add(cmbFlyDown);
+            grpClock.Controls.Add(label1);
+            grpClock.Controls.Add(cmbFlyUp);
+            grpClock.Location = new Point(6, 6);
+            grpClock.Name = "grpClock";
+            grpClock.Size = new Size(169, 118);
+            grpClock.TabIndex = 38;
+            grpClock.TabStop = false;
+            grpClock.Text = "Fly";
             // 
             // label3
             // 
@@ -160,7 +160,7 @@
             // 
             // tabSettingsMain
             // 
-            tabSettingsMain.Controls.Add(groupBox1);
+            tabSettingsMain.Controls.Add(grpClock);
             tabSettingsMain.Location = new Point(4, 22);
             tabSettingsMain.Name = "tabSettingsMain";
             tabSettingsMain.Padding = new Padding(3);
@@ -188,8 +188,8 @@
             Text = "Sly Multi Trainer - Settings";
             FormClosing += FormSettings_FormClosing;
             Load += FormSettings_Load;
-            groupBox1.ResumeLayout(false);
-            groupBox1.PerformLayout();
+            grpClock.ResumeLayout(false);
+            grpClock.PerformLayout();
             tabControl1.ResumeLayout(false);
             tabSettingsMain.ResumeLayout(false);
             ResumeLayout(false);
@@ -202,7 +202,7 @@
         private Button btnCancel;
         public ComboBox cmbFlyUp;
         private Label label1;
-        private GroupBox groupBox1;
+        private GroupBox grpClock;
         private Label label3;
         public ComboBox cmbFlyAccelerate;
         private Label label2;

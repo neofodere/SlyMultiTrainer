@@ -18,13 +18,9 @@ namespace SlyMultiTrainer
 
         public string RootNodePointer = "";
         public string CurrentCheckpointNodePointer = "";
-        public string TaskStringTablePointer = "";
-        public string SavefileStartAddress = "";
         public string ClusterIdAddress = "";
-        public string SavefileValuesOffsetsTablePointer = "";
         public string Sly3Time = "";
         public string Sly3Flag = "";
-        public string OffsetId = "";
         public string OffsetNextNodePointer = "";
         public string OffsetState = "";
         public string OffsetFocusCount = "";
@@ -32,17 +28,13 @@ namespace SlyMultiTrainer
         public string OffsetGoalDescription = ""; // FOR CLUSTER: "Locate The Job Start Point" (for satellite sabotage)
         public string OffsetMissionName = ""; // FOR CLUSTER: "Satellite Sabotage"
         public string OffsetMissionDescription = ""; // FOR CLUSTER (we don't use it for now)
-        //public string OffsetIsChalktalk = ""; // Not found yet
         public string OffsetClusterPointer = ""; // Pointer to the cluster node
         public string OffsetChildrenCount = ""; // Count of how many children the task has. The pointer to the array of node pointers is at +4
-        public string OffsetSuckPointer = ""; // FOR CLUSTER: pointer to the suck value of the job
         public string OffsetCheckpointEntranceValue = ""; // Entrance value of the checkpoint
         public string OffsetAttributes = "";
         public string OffsetAttributesForCluster = "";
         public int AttributeCountForTask = 0;
 
-        public Dictionary<short, string> TaskStringTable;
-        public Dictionary<int, int> SavefileValuesTable; // Id + SubId combined, absolute address
         public Func<int, string> GetStringFromId;
         public Action<int, int, int> LoadMap;
         public Action<int, int> WriteActCharId;
@@ -53,6 +45,7 @@ namespace SlyMultiTrainer
         public int SelectedClusterDefaultLineWidth = 10;
 
         private Memory.Mem _m;
+        private Sly2_3_Savefile _savefile;
         private Node? _selectedNode; // For highlighting
         private bool _showAddress = false;
         private bool _showId = false;
@@ -61,6 +54,7 @@ namespace SlyMultiTrainer
         // Store the current zoom and pan before refreshing
         private bool _lockPanAndZoomOnRefresh = false;
         private Microsoft.Msagl.Core.Geometry.Curves.PlaneTransformation _oldTransform;
+
         public DAG_t(Memory.Mem m)
         {
             Viewer = new();
@@ -76,12 +70,11 @@ namespace SlyMultiTrainer
             _m = m;
         }
 
-        public void Init()
+        public void Init(Sly2_3_Savefile savefile)
         {
             Tasks.Clear();
             Clusters.Clear();
-            TaskStringTable = GetTaskStringTable();
-            SavefileValuesTable = GetSavefileValuesTable();
+            _savefile = savefile;
         }
 
         public void SetVersion(DAG_VERSION version)
@@ -95,6 +88,12 @@ namespace SlyMultiTrainer
             {
                 AttributeCountForTask = 5;
             }
+        }
+
+        public void TriggerRefresh()
+        {
+            Viewer.Enabled = false;
+            Graph = null;
         }
 
         public void GetDAG()
@@ -127,35 +126,6 @@ namespace SlyMultiTrainer
                     }
                 }
             }
-
-            // Remove from SavefileValuesTable everything except the keys used by the tasks and clusters
-            if (Version != DAG_VERSION.V0)
-            {
-                List<int> keysToKeep = new();
-                for (int i = 0; i < Tasks.Count; i++)
-                {
-                    for (int j = 0; j < Tasks[i].Attributes.Count; j++)
-                    {
-                        int combined = GetIdSubIdCombined(Tasks[i].Attributes[j]);
-                        keysToKeep.Add(combined);
-                    }
-                }
-
-                for (int i = 0; i < Clusters.Count; i++)
-                {
-                    for (int j = 0; j < Clusters[i].Attributes.Count; j++)
-                    {
-                        int combined = GetIdSubIdCombined(Clusters[i].Attributes[j]);
-                        keysToKeep.Add(combined);
-                    }
-                }
-
-                var keysToRemove = SavefileValuesTable.Keys.Where(k => !keysToKeep.Contains(k)).ToList();
-                foreach (var key in keysToRemove)
-                {
-                    SavefileValuesTable.Remove(key);
-                }
-            }
         }
 
         public Task_t ReadTask(string taskPointer)
@@ -174,7 +144,7 @@ namespace SlyMultiTrainer
                 return task;
             }
 
-            task.Id = _m.ReadInt($"{taskAddress}+{OffsetId}");
+            task.Id = _m.ReadInt($"{taskAddress}+18");
             if (parentTask != null)
             {
                 task.Parent.Add(parentTask);
@@ -202,6 +172,7 @@ namespace SlyMultiTrainer
             task.State = (STATE)_m.ReadInt($"{taskAddress}+{OffsetState}");
             task.FocusCount = _m.ReadInt($"{taskAddress}+{OffsetFocusCount}");
             task.CompleteCount = _m.ReadInt($"{taskAddress}+{OffsetCompleteCount}");
+
             task.CheckpointEntranceValue = _m.ReadInt($"{taskAddress}+{OffsetCheckpointEntranceValue}");
             if (task.CheckpointEntranceValue != -1)
             {
@@ -217,18 +188,27 @@ namespace SlyMultiTrainer
             {
                 for (int i = 0; i < AttributeCountForTask; i++)
                 {
-                    Attribute_t attribute = new();
+                    SavefileAttribute_t attribute = new();
                     attribute.Id = _m.ReadShort($"{taskAddress}+{OffsetAttributes}+{8 * i + 4:X},0");
                     attribute.SubId = _m.ReadShort($"{taskAddress}+{OffsetAttributes}+{8 * i + 4:X},2");
                     task.Attributes.Add(attribute);
                 }
 
-                // Name
-                task.Name = TaskStringTable.GetValueOrDefault(task.Attributes[0].Id, "");
+                if (Version == DAG_VERSION.V0)
+                {
+                    task.SavefileFlagsAddress = _savefile.GetSavefileAddress(task.Attributes[1].Id, task.Attributes[1].SubId);
+                }
+                else
+                {
+                    task.SavefileFlagsAddress = _savefile.GetSavefileAddress(task.Attributes[0].Id, task.Attributes[0].SubId);
+                }
 
-                // The 2nd regex is for sly 3 ep2-5
-                if (Regex.IsMatch(task.Name, @"^t\d_chalktalk\d$")
-                 || Regex.IsMatch(task.Name, @"^t\d_chalktalk_\d$"))
+                // Name
+                task.Name = _savefile.SavefileKeyStringTable.GetValueOrDefault(task.Attributes[0].Id, "");
+
+                // Chalktalk detection, based on the name for now.
+                // Usually "tN_chalktalkM" or for some sly 3 tasks "tN_chalktalk_M"
+                if (Regex.IsMatch(task.Name, @"^t\d_chalktalk_?\d$"))
                 {
                     task.IsChalktalk = true;
                 }
@@ -297,20 +277,29 @@ namespace SlyMultiTrainer
 
         public Cluster_t ReadCluster(string clusterAddress, bool contributeToDag)
         {
-            Cluster_t cluster = new(_m.ReadInt($"{clusterAddress}+{OffsetId}"), clusterAddress);
+            Cluster_t cluster = new(_m.ReadInt($"{clusterAddress}+18"), clusterAddress);
 
             if (contributeToDag)
             {
                 for (int i = 0; i < AttributeCountForTask - 1; i++)
                 {
-                    Attribute_t attr = new();
+                    SavefileAttribute_t attr = new();
                     attr.Id = _m.ReadShort($"{clusterAddress}+{OffsetAttributesForCluster}+{8 * i + 4:X},0");
                     attr.SubId = _m.ReadShort($"{clusterAddress}+{OffsetAttributesForCluster}+{8 * i + 4:X},2");
                     cluster.Attributes.Add(attr);
                 }
 
+                if (Version == DAG_VERSION.V0)
+                {
+                    cluster.SavefileFlagsAddress = _savefile.GetSavefileAddress(cluster.Attributes[1].Id, cluster.Attributes[1].SubId);
+                }
+                else
+                {
+                    cluster.SavefileFlagsAddress = _savefile.GetSavefileAddress(cluster.Attributes[0].Id, cluster.Attributes[0].SubId);
+                }
+
                 // Get the mission name (if any)
-                cluster.Name = TaskStringTable.GetValueOrDefault(cluster.Attributes[0].Id, "");
+                cluster.Name = _savefile.SavefileKeyStringTable.GetValueOrDefault(cluster.Attributes[0].Id, "");
 
                 if (Version != DAG_VERSION.V2)
                 {
@@ -321,17 +310,15 @@ namespace SlyMultiTrainer
                 cluster.SetText(_showAddress, _showId, _showName, _showIdAsDecimal);
             }
 
-            float suckValue = _m.ReadFloat($"{clusterAddress}+{OffsetSuckPointer},0");
-            cluster.Suck = suckValue;
-
+            cluster.Suck = _savefile.ReadSavefileValue<float>(cluster.Name, "suck_value");
             return cluster;
         }
 
         public bool IsTaskEqualToTask(Task_t task1, Task_t task2)
         {
             if (task1.State != task2.State
-                || task1.FocusCount != task2.FocusCount
-                || task1.CompleteCount != task2.CompleteCount)
+             || task1.FocusCount != task2.FocusCount
+             || task1.CompleteCount != task2.CompleteCount)
             {
                 return false;
             }
@@ -349,64 +336,9 @@ namespace SlyMultiTrainer
             return true;
         }
 
-        public Dictionary<int, int> GetSavefileValuesTable()
-        {
-            Dictionary<int, int> table = new();
-            if (Version == DAG_VERSION.V0)
-            {
-                return table;
-            }
-
-            int tableStart = _m.ReadInt($"{SavefileValuesOffsetsTablePointer}");
-            short nextIdOffset = 1;
-            do
-            {
-                int current = tableStart + nextIdOffset * 0xA;
-                short id = _m.ReadShort($"{current:X}");
-                short childOffset = _m.ReadShort($"{current + 6:X}");
-                nextIdOffset = _m.ReadShort($"{current + 8:X}");
-                while (childOffset != 0)
-                {
-                    current = tableStart + childOffset * 0xA;
-
-                    // NOTE: Instead of adding the offset to the dictionary,
-                    // we already convert it to an absolute address by adding the offset to SavefileStartAddress
-                    // In sly 2 ntsc, this sum is done at 1D814C, where s3 is 3D4A60 and v0 is the offset (16A0 for t1_follow_intro)
-                    short subId = _m.ReadShort($"{current:X}");
-                    int combined = GetIdSubIdCombined(id, subId);
-                    short savefileValueOffset = _m.ReadShort($"{current + 4:X}");
-                    int address = Convert.ToInt32(SavefileStartAddress, 16) + savefileValueOffset;
-                    table.TryAdd(combined, address);
-
-                    childOffset = _m.ReadShort($"{current + 8:X}");
-                }
-            } while (nextIdOffset != 0);
-
-            return table;
-        }
-
-        public Dictionary<short, string> GetTaskStringTable()
-        {
-            int i = 0;
-            short stringId = 0;
-            Dictionary<short, string> table = new();
-
-            while (stringId != 0x100)
-            {
-                stringId = (short)_m.ReadInt($"{TaskStringTablePointer},{i * 0x10 + 8:X}");
-                int stringPointer = _m.ReadInt($"{TaskStringTablePointer},{i * 0x10 + 4:X}");
-                string taskName = _m.ReadNullTerminatedString(stringPointer.ToString("X"));
-                table.TryAdd(stringId, taskName);
-                i++;
-            }
-
-            return table;
-        }
-
         public string GetCurrentCheckpointAddress()
         {
-            var tmp = _m.ReadInt(CurrentCheckpointNodePointer).ToString("X");
-            return tmp;
+            return _m.ReadInt(CurrentCheckpointNodePointer).ToString("X");
         }
 
         public void WriteCurrentCheckpointAddress(Task_t? task)
@@ -420,48 +352,90 @@ namespace SlyMultiTrainer
             _m.WriteMemory($"{CurrentCheckpointNodePointer}", "int", value);
         }
 
-        public void WriteClusterSuck(Cluster_t cluster)
+        public void WriteClusterSuck(Cluster_t cluster, float suck)
         {
-            _m.WriteMemory($"{cluster.Address}+{OffsetSuckPointer},0", "float", cluster.Suck.ToString());
+            cluster.Suck = suck;
+            _savefile.WriteSavefileValue(cluster.Name, "suck_value", "float", ((float)suck).ToString());
         }
 
-        public STATE ReadTaskState(Task_t task)
+        public void WriteClusterState(Cluster_t cluster, STATE state)
         {
-            STATE state = (STATE)_m.ReadInt($"{task.Address}+{OffsetState}");
-            return state;
-        }
-
-        public void WriteTaskState(Task_t task, bool alsoToSavefile = false)
-        {
-            _m.WriteMemory($"{task.Address}+{OffsetState}", "int", ((int)task.State).ToString());
-
-            if (alsoToSavefile)
+            if (state == STATE.Unavailable)
             {
-                int addr = GetSavefileAddress(task.Attributes[3]);
-                _m.WriteMemory($"{addr}", "int", ((int)task.State).ToString());
+                for (int i = 0; i < cluster.Tasks.Count; i++)
+                {
+                    WriteTaskState(cluster.Tasks[i], STATE.Unavailable);
+                    WriteTaskFocusAndCompleteCount(cluster.Tasks[0], 0, 0);
+                }
+            }
+            else if (state == STATE.Available)
+            {
+                WriteTaskState(cluster.Tasks[0], STATE.Available);
+                WriteTaskFocusAndCompleteCount(cluster.Tasks[0], 0, 0);
+
+                for (int i = 1; i < cluster.Tasks.Count; i++)
+                {
+                    WriteTaskState(cluster.Tasks[i], STATE.Unavailable);
+                    WriteTaskFocusAndCompleteCount(cluster.Tasks[i], 0, 0);
+                }
+            }
+            else if (state == STATE.Complete)
+            {
+                for (int i = 0; i < cluster.Tasks.Count; i++)
+                {
+                    WriteTaskState(cluster.Tasks[i], STATE.Complete);
+                    WriteTaskFocusAndCompleteCount(cluster.Tasks[0], 1, 1);
+                }
+            }
+            else if (state == STATE.Final)
+            {
+                for (int i = 0; i < cluster.Tasks.Count; i++)
+                {
+                    WriteTaskState(cluster.Tasks[i], STATE.Final);
+                    WriteTaskFocusAndCompleteCount(cluster.Tasks[0], 1, 1);
+                }
             }
         }
 
-        public void WriteTaskFocusAndCompleteCount(Task_t task)
+        public void WriteTaskState(Task_t task, STATE state, bool alsoToSavefile = true)
         {
-            int[] tmp =
+            _m.WriteMemory($"{task.Address}+{OffsetState}", "int", ((int)state).ToString());
+
+            if (alsoToSavefile)
             {
-                task.FocusCount,
-                task.CompleteCount,
-            };
-
-            byte[] byteArray = EndianBitConverter.ArrayToByteArray(tmp);
-            _m.WriteBytes($"{task.Address}+{OffsetFocusCount}", byteArray);
+                _savefile.WriteSavefileValue(task.Name, "state", "int", ((int)state).ToString());
+            }
         }
 
-        public void WriteTaskFocusCount(Task_t task)
+        public void WriteTaskFocusAndCompleteCount(Task_t task, int focusCount, int completeCount, bool alsoToSavefile = true)
         {
-            _m.WriteMemory($"{task.Address}+{OffsetFocusCount}", "int", task.FocusCount.ToString());
-        }
+            task.FocusCount = focusCount;
+            task.CompleteCount = completeCount;
 
-        public void WriteTaskCompleteCount(Task_t task)
-        {
-            _m.WriteMemory($"{task.Address}+{OffsetCompleteCount}", "int", task.CompleteCount.ToString());
+            int[] tmp;
+            if (Version == DAG_VERSION.V0)
+            {
+                tmp =
+                [
+                    task.FocusCount,
+                ];
+            }
+            else
+            {
+                tmp =
+                [
+                    task.FocusCount,
+                    task.CompleteCount,
+                ];
+            }
+
+            byte[] bytes = EndianBitConverter.ArrayToByteArray(tmp);
+            _m.WriteBytes($"{task.Address}+{OffsetFocusCount}", bytes);
+
+            if (alsoToSavefile)
+            {
+                _savefile.WriteSavefileValue(task.Name, "focus_count", "bytes", EndianBitConverter.ByteArrayToString(bytes));
+            }
         }
 
         private void LoadCheckpoint(Task_t targetTask, bool withZeroFocus)
@@ -549,7 +523,7 @@ namespace SlyMultiTrainer
             // - This goes against the "Stop when predecessor is already in desired state" point. Is Bruce assuming the dag is *always* in a valid state?
             // - While we walk backwards we mark each node to be final (if we want to set targetTask to be available, it means everything before that must be final)
             // - NOTE: If a specific checkpoint was loaded, the tasks that come before targetTask AND that are part of the same cluster need to be marked as complete instead of final. We check for this later. For now, let's just mark all parents to be final
-            // IMPORTANT: We manually go look for the root node. This fixes sly2 ep3 having more than 1 node with no parents (Sly 2 march ep3 has even more, 6 nodes with no parents)
+            // IMPORTANT: We manually go look for the root node. This fixes sly2 ep3 having more than 1 node with no parents (Sly 2 march ep3 has even more)
             MarkTaskSavefileChangeBackward(targetTask, STATE.Available, out Task_t rootTask);
 
             // https://youtu.be/Yl20uIQ3fEw?t=1935 (32:15)
@@ -559,7 +533,8 @@ namespace SlyMultiTrainer
             //   - Recursively walk forward through successors
             //   - Skip tasks marked with a state
 
-            // - We start from the rootTask (top of the dag) and we mark the childrens, but we "skip" the ones already marked (the word "skip" here means we don't mark them AGAIN, but we still need to consider their children, which means every node in the dag)
+            // - We start from the rootTask (top of the dag) and we mark the childrens,
+            // but we "skip" the ones already marked (the word "skip" here means we don't mark them AGAIN, but we still need to consider their children, which means every node in the dag)
             // - Childrens of final have to be available
             // - Childrens of available have to be unavailable
             // - Childrens of unavailable have to be unavailable
@@ -580,34 +555,36 @@ namespace SlyMultiTrainer
                     task.StateSavefileChange = STATE.Complete;
                 }
 
-                var addressValuesPair = TaskSetSavefileValue(task, withZeroFocus);
+                var addressValuesPair = TaskGetSavefileFlags(task, withZeroFocus, targetTask == task);
                 SavefileValues.Add(addressValuesPair);
-                task.MarkSavefileChange = false;
+                task.IsMarkedForSavefileChange = false;
 
                 if (Version >= DAG_VERSION.V2)
                 {
                     // In sly 3 the focus in the task structs are copied to the ones in the savefile
                     // So we also need to write the focus count to each task struct
                     // Unfortunately these memory writes will cost us some time
+
+                    int focusCount = 0;
+                    int completeCount = 0;
+
                     if (task.StateSavefileChange == STATE.Final
-                        || task.StateSavefileChange == STATE.Complete)
+                     || task.StateSavefileChange == STATE.Complete)
                     {
-                        task.FocusCount = 1;
-                        task.CompleteCount = 1;
+                        focusCount = 1;
+                        completeCount = 1;
                     }
-                    else if (task.StateSavefileChange == STATE.Available && !withZeroFocus)
+                    else if (task == targetTask)
                     {
-                        task.FocusCount = 1;
-                        task.CompleteCount = 1;
-                    }
-                    else
-                    {
-                        task.FocusCount = 0;
-                        task.CompleteCount = 0;
+                        // And for the "targetTask" we check if the user wants to load it with or without focus
+                        if (!withZeroFocus)
+                        {
+                            focusCount = 1;
+                            completeCount = 1;
+                        }
                     }
 
-                    // Optimize the write to the 2 focus counts. This saves around 50ms overall. The difference is noticeable.
-                    WriteTaskFocusAndCompleteCount(task);
+                    WriteTaskFocusAndCompleteCount(task, focusCount, completeCount, false);
                 }
             }
 
@@ -629,7 +606,7 @@ namespace SlyMultiTrainer
                         break;
                     }
 
-                    if (SavefileValuesToWrite[i + 1].Address != SavefileValuesToWrite[i].Address + 0x14)
+                    if (SavefileValuesToWrite[i + 1].Address != SavefileValuesToWrite[i].Address + SavefileValuesToWrite[i].Values.Length)
                     {
                         // Sequence break, write then pass to the next
                         int tmp = toTake;
@@ -655,12 +632,21 @@ namespace SlyMultiTrainer
                             .ToArray();
             _m.WriteBytes($"{SavefileValuesToWrite[toSkip].Address:X}", flags2);
 
-            // targetTask.Id wrote at +4 and +8, both are needed for sly 3
-            int[] NodeIds =
+            List<int> NodeIds =
+            [
+                targetTask.Cluster.Id, // Job id
+                targetTask.Id, // Unknown, might be "last task made available"
+                targetTask.Id // Checkpoint id
+            ];
+
+            // If it's sly 3, we write 0 at +C.
+            // This disables 3D for the maps that support it (e.g. ep1 t1_gauntlet_interior_intro)
+            if (Version >= DAG_VERSION.V2)
             {
-                targetTask.Cluster.Id, targetTask.Id, targetTask.Id
-            };
-            _m.WriteBytes($"{ClusterIdAddress}", EndianBitConverter.ArrayToByteArray(NodeIds));
+                NodeIds.Add(0);
+            }
+
+            _m.WriteBytes($"{ClusterIdAddress}", EndianBitConverter.ArrayToByteArray(NodeIds.ToArray()));
 
             // Entity
             WriteActCharId(targetTask.EntityId, targetTask.EntityId2);
@@ -681,11 +667,13 @@ namespace SlyMultiTrainer
                     {
                         timeTask = 0xc;
                     }
+
                     int final = 0xc;
-                    if (flag == 0x0)
+                    if (flag == 0)
                     {
                         final = time;
                     }
+
                     if (timeTask != final)
                     {
                         mode = 2;
@@ -696,44 +684,81 @@ namespace SlyMultiTrainer
             LoadMap(targetTask.MapId, targetTask.CheckpointEntranceValue, mode);
         }
 
-        public (int, byte[]) TaskSetSavefileValue(Task_t task, bool withZeroFocus)
+        public (int, byte[]) TaskGetSavefileFlags(Task_t task, bool withZeroFocus, bool isTargetTask)
         {
-            int address = GetSavefileAddress(task.Attributes[0]);
-
-            int[] flags =
+            byte[] bytes;
+            if (Version == DAG_VERSION.V0)
             {
-                0,
-                0,
-                0,
-                (int)task.StateSavefileChange,
-                0,
-            };
-
-            if (task.StateSavefileChange == STATE.Final
-                || task.StateSavefileChange == STATE.Complete)
-            {
-                // We set the focus if the desired state is final or complete (the player has been through that task)
-                flags[0] = 1;
-                flags[1] = 1;
-            }
-            else if (task.StateSavefileChange == STATE.Available)
-            {
-                // And for the "targetTask" (the desired state is available), we check if the user wants to load it with or without focus
-                if (!withZeroFocus)
+                int[] flags =
                 {
+                    0,
+                    (int)task.StateSavefileChange,
+                };
+
+                if (task.StateSavefileChange == STATE.Final
+                 || task.StateSavefileChange == STATE.Complete)
+                {
+                    // We set the focus if the desired state is final or complete (the player has been through that task)
+                    flags[0] = 1;
+                }
+                else if (isTargetTask)
+                {
+                    // And for the "targetTask" we check if the user wants to load it with or without focus
+                    if (!withZeroFocus)
+                    {
+                        flags[0] = 1;
+                    }
+                }
+                else
+                {
+                    // The rest is unavailable or available, so no focus because the player has not been through that task
+                }
+
+                bytes = new byte[9];
+                byte[] intBytes = EndianBitConverter.ArrayToByteArray(flags);
+                Array.Copy(intBytes, 0, bytes, 1, 8);
+            }
+            else
+            {
+                int[] flags =
+                {
+                    0,
+                    0,
+                    0,
+                    (int)task.StateSavefileChange,
+                    0,
+                };
+
+                if (task.StateSavefileChange == STATE.Final
+                 || task.StateSavefileChange == STATE.Complete)
+                {
+                    // We set the focus if the desired state is final or complete (the player has been through that task)
                     flags[0] = 1;
                     flags[1] = 1;
                 }
-            }
-            // The rest is unavailable, so no focus because the player has not been through that task
+                else if (isTargetTask)
+                {
+                    // And for the "targetTask" we check if the user wants to load it with or without focus
+                    if (!withZeroFocus)
+                    {
+                        flags[0] = 1;
+                        flags[1] = 1;
+                    }
+                }
+                else
+                {
+                    // The rest is unavailable or available, so no focus because the player has not been through that task
+                }
 
-            byte[] tmp = EndianBitConverter.ArrayToByteArray(flags);
-            return (address, tmp);
+                bytes = EndianBitConverter.ArrayToByteArray(flags);
+            }
+
+            return (task.SavefileFlagsAddress, bytes);
         }
 
         private void MarkTaskSavefileChange(Task_t task, STATE state)
         {
-            task.MarkSavefileChange = true;
+            task.IsMarkedForSavefileChange = true;
             task.StateSavefileChange = state;
         }
 
@@ -760,25 +785,25 @@ namespace SlyMultiTrainer
             for (int i = 0; i < Tasks.Count; i++)
             {
                 Task_t task = Tasks[i];
-                if (task.MarkSavefileChange)
+                if (task.IsMarkedForSavefileChange)
                 {
                     // Skip tasks already marked
                     continue;
                 }
 
-                if (task.Parent.All(x => x.MarkSavefileChange && x.StateSavefileChange == STATE.Final))
+                if (task.Parent.All(x => x.IsMarkedForSavefileChange && x.StateSavefileChange == STATE.Final))
                 {
                     MarkTaskSavefileChange(task, STATE.Available);
                 }
-                else if (task.Parent.Any(x => x.MarkSavefileChange && x.StateSavefileChange == STATE.Available))
+                else if (task.Parent.Any(x => x.IsMarkedForSavefileChange && x.StateSavefileChange == STATE.Available))
                 {
                     MarkTaskSavefileChange(task, STATE.Unavailable);
                 }
-                else if (task.Parent.Any(x => x.MarkSavefileChange && x.StateSavefileChange == STATE.Unavailable))
+                else if (task.Parent.Any(x => x.IsMarkedForSavefileChange && x.StateSavefileChange == STATE.Unavailable))
                 {
                     MarkTaskSavefileChange(task, STATE.Unavailable);
                 }
-                else if (task.Parent.Any(x => x.MarkSavefileChange && x.StateSavefileChange == STATE.Complete))
+                else if (task.Parent.Any(x => x.IsMarkedForSavefileChange && x.StateSavefileChange == STATE.Complete))
                 {
                     MarkTaskSavefileChange(task, STATE.Available);
                 }
@@ -817,53 +842,6 @@ namespace SlyMultiTrainer
             }
             */
         }
-
-        private int GetSavefileAddress(Attribute_t attribute)
-        {
-            int combined = GetIdSubIdCombined(attribute);
-            SavefileValuesTable.TryGetValue(combined, out int address);
-            return address;
-        }
-
-        public int GetIdSubIdCombined(short id, short subId)
-        {
-            int combined = (id << 16) | ((ushort)subId);
-            return combined;
-        }
-
-        public int GetIdSubIdCombined(Attribute_t attribute)
-        {
-            return GetIdSubIdCombined(attribute.Id, attribute.SubId);
-        }
-
-        private void SetSavefileValue(int address, byte[] value)
-        {
-            _m.WriteBytes(address.ToString("X"), value);
-        }
-
-        //public void ClusterSetSavefileValue(Cluster_t cluster)
-        //{
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        ResetDagValue(cluster.Attributes[i].Id, (short)cluster.Attributes[i].SubId, 0);
-        //    }
-
-        //    // Tasks in the cluster
-        //    for (int i = 0; i < cluster.Tasks.Count; i++)
-        //    {
-        //        for (int j = 0; j < 5; j++)
-        //        {
-        //            if (i == 0 && cluster.Tasks[i].Attributes[j].SubId == ATTRIBUTE_SUBID.State)
-        //            {
-        //                ResetDagValue(cluster.Tasks[i].Attributes[j].Id, (short)cluster.Tasks[i].Attributes[j].SubId, (int)STATE.Available);
-        //            }
-        //            else
-        //            {
-        //                ResetDagValue(cluster.Tasks[i].Attributes[j].Id, (short)cluster.Tasks[i].Attributes[j].SubId, 0);
-        //            }
-        //        }
-        //    }
-        //}
 
         /*
         Microsoft.Msagl.Core.Geometry.Curves.ICurve GetNodeBoundary(Microsoft.Msagl.Drawing.Node node)
@@ -919,7 +897,7 @@ namespace SlyMultiTrainer
         }
         */
 
-        public void SetGraph()
+        public bool SetGraph()
         {
             if (_lockPanAndZoomOnRefresh)
             {
@@ -1013,13 +991,19 @@ namespace SlyMultiTrainer
 
                 foreach (var child in Tasks[i].Children)
                 {
+                    if (child.Address == null)
+                    {
+                        TriggerRefresh();
+                        return false;
+                    }
+
                     Trav(child);
                     Graph.AddEdge(Tasks[i].Id.ToString("X"), child.Id.ToString("X"));
                 }
             }
 
             // It is possible that msagl fails to set the graph
-            // It's rare, but it seems to happen if the window is minimized, the game is loading a map and a save state is being loaded
+            // It seems to happen if the window is minimized and the game is loading a map
             try
             {
                 Viewer.Graph = Graph;
@@ -1033,6 +1017,8 @@ namespace SlyMultiTrainer
             {
                 Viewer.Transform = _oldTransform;
             }
+
+            return true;
         }
 
         public Microsoft.Msagl.Drawing.Color GetClusterColorFromState(STATE nodeState)
@@ -1087,6 +1073,7 @@ namespace SlyMultiTrainer
                 {
                     _selectedNode.Attr.LineWidth = NodeDefaultLineWidth;
                 }
+
                 _selectedNode = null;
             }
         }
@@ -1200,7 +1187,7 @@ namespace SlyMultiTrainer
                     if (node.UserData is Task_t)
                     {
                         SelectNode(node, SelectedNodeDefaultLineWidth);
-                        ShowNodeContextMenu(node, e.Location);
+                        ShowTaskContextMenu(node, e.Location);
                     }
                     else if (node.UserData is Cluster_t)
                     {
@@ -1221,6 +1208,8 @@ namespace SlyMultiTrainer
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
+                // Load checkpoint
+
                 if (Viewer.Graph == null)
                 {
                     // Prevent crash when clicking before the graph is loaded (pcsx2 just launched and in splash screen)
@@ -1256,244 +1245,220 @@ namespace SlyMultiTrainer
                     SelectNode(node, SelectedClusterDefaultLineWidth);
                     task = cluster.Tasks[0];
                 }
-                else
-                {
-                    return;
-                }
 
                 // load checkpoint with focus if shift is being held down
                 bool hasShift = GViewer.ModifierKeys.HasFlag(Keys.Shift);
                 LoadCheckpoint(task, hasShift);
             }
         }
+
         private void ShowGraphContextMenu(Point location)
         {
-            var items = new ToolStripItem[]
+            var menu = new ContextMenuStrip();
+
+            menu.Items.Add(new ToolStripMenuItem($"Graph ({Tasks.Count} tasks)")
             {
-                new ToolStripMenuItem($"Graph ({Tasks.Count} tasks)")
+                Font = new Font(SystemFonts.MenuFont, System.Drawing.FontStyle.Bold),
+            });
+
+            menu.Items.Add(new ToolStripSeparator());
+
+            if (Tasks.Count != 0)
+            {
+                menu.Items.Add(new ToolStripMenuItem("Go to root", null, (s, e) =>
                 {
-                    Font = new Font(SystemFonts.MenuFont, System.Drawing.FontStyle.Bold)
-                },
-
-                new ToolStripSeparator(),
-
-                new ToolStripMenuItem("Go to root", null, (s, e) =>
-                {
-                    if (Tasks.Count == 0)
-                    {
-                        return;
-                    }
-
                     var rootNode = Tasks[0].MsaglNode;
-                    // var nodeWidth = rootNode.GeometryNode.BoundingBox.Width;
-                    // var viewerWidth = Viewer.ClientSize.Width;
-                    // double zoomX = viewerWidth / nodeWidth;
-                    //Viewer.CenterToPoint(rootNode.GeometryNode.Center);
-                    //Viewer.Refresh();
-                    //Viewer.ResumeLayout();
-                    //Viewer.ZoomF = zoomX;
-                    
-                    // var q = rootNode.GeometryNode.BoundingBox;
-                    // q = rootNode.GeometryObject.BoundingBox;
-                    // q = rootNode.BoundingBox;
-                    // var b = rootNode.BoundingBox;
-                    // Viewer.ShowBBox(b);
-
                     if (rootNode != null)
                     {
                         var b = rootNode.BoundingBox;
                         Viewer.ShowBBox(b);
                     }
-                }),
-                new ToolStripMenuItem("Restore pan and zoom", null, (s, e) =>
-                {
-                    Viewer.Transform = null;
-                    Viewer.Invalidate();
-                }),
+                }));
+            }
 
-                new ToolStripMenuItem("Settings (requires refresh)", null, new ToolStripItem[]
-                {
-                    new ToolStripMenuItem("Lock pan and zoom on refresh", null, (s, e) =>
-                    {
-                        _lockPanAndZoomOnRefresh = !(s as ToolStripMenuItem)!.Checked;
-                    })
-                    {
-                        Checked = _lockPanAndZoomOnRefresh
-                    },
-                    new ToolStripMenuItem("Show name", null, (s, e) =>
-                    {
-                        _showName = !(s as ToolStripMenuItem)!.Checked;
-                        ResizeNodesAndClustersToFitLabels();
-                    })
-                    {
-                        Checked = _showName
-                    },
-                    new ToolStripMenuItem("Show address", null, (s, e) =>
-                    {
-                        _showAddress = !(s as ToolStripMenuItem)!.Checked;
-                        ResizeNodesAndClustersToFitLabels();
-                    })
-                    {
-                        Checked = _showAddress
-                    },
-                    new ToolStripMenuItem("Show id", null, (s, e) =>
-                    {
-                        _showId = !(s as ToolStripMenuItem)!.Checked;
-                        ResizeNodesAndClustersToFitLabels();
-                    })
-                    {
-                        Checked = _showId
-                    },
-                    new ToolStripMenuItem("Show id as decimal", null, (s, e) =>
-                    {
-                        _showIdAsDecimal = !(s as ToolStripMenuItem)!.Checked;
-                        ResizeNodesAndClustersToFitLabels();
-                    })
-                    {
-                        Checked = _showIdAsDecimal
-                    },
-                }),
-                new ToolStripMenuItem("Refresh", null, (s, e) =>
-                {
-                    Graph = null;
-                    //Viewer.Invalidate();
-                }),
-                new ToolStripMenuItem("Save as png...", null, (s, e) =>
-                {
-                    SaveGraphAs("png");
-                }),
-            };
+            menu.Items.Add(new ToolStripMenuItem("Restore pan and zoom", null, (s, e) =>
+            {
+                Viewer.Transform = null;
+                Viewer.Invalidate();
+            }));
 
-            var menu = new ContextMenuStrip();
-            menu.Items.AddRange(items);
+            var settingsMenu = new ToolStripMenuItem("Settings (requires refresh)");
+
+            settingsMenu.DropDownItems.Add(new ToolStripMenuItem("Lock pan and zoom on refresh", null, (s, e) =>
+            {
+                _lockPanAndZoomOnRefresh = !(s as ToolStripMenuItem)!.Checked;
+            })
+            {
+                Checked = _lockPanAndZoomOnRefresh
+            });
+
+            settingsMenu.DropDownItems.Add(new ToolStripMenuItem("Show name", null, (s, e) =>
+            {
+                _showName = !(s as ToolStripMenuItem)!.Checked;
+                ResizeNodesAndClustersToFitLabels();
+            })
+            {
+                Checked = _showName
+            });
+
+            settingsMenu.DropDownItems.Add(new ToolStripMenuItem("Show address", null, (s, e) =>
+            {
+                _showAddress = !(s as ToolStripMenuItem)!.Checked;
+                ResizeNodesAndClustersToFitLabels();
+            })
+            {
+                Checked = _showAddress
+            });
+
+            settingsMenu.DropDownItems.Add(new ToolStripMenuItem("Show id", null, (s, e) =>
+            {
+                _showId = !(s as ToolStripMenuItem)!.Checked;
+                ResizeNodesAndClustersToFitLabels();
+            })
+            {
+                Checked = _showId
+            });
+
+            settingsMenu.DropDownItems.Add(new ToolStripMenuItem("Show id as decimal", null, (s, e) =>
+            {
+                _showIdAsDecimal = !(s as ToolStripMenuItem)!.Checked;
+                ResizeNodesAndClustersToFitLabels();
+            })
+            {
+                Checked = _showIdAsDecimal
+            });
+
+            menu.Items.Add(settingsMenu);
+
+            menu.Items.Add(new ToolStripMenuItem
+            (
+                "Refresh", null, (s, e) => TriggerRefresh()
+            ));
+
+            menu.Items.Add(new ToolStripMenuItem
+            (
+                "Save as png...", null, (s, e) => SaveGraphAs("png")
+            ));
+
             menu.Show(Viewer, location);
         }
 
-        private void ShowNodeContextMenu(Node graphNode, Point location)
+        private void ShowTaskContextMenu(Node graphNode, Point location)
         {
-            Task_t? task = graphNode.UserData as Task_t;
-            if (task == null)
+            if (graphNode.UserData is not Task_t task)
             {
                 return;
             }
 
-            var items = new ToolStripItem[]
-            {
-                new ToolStripMenuItem($"Task: {task.Text}")
-                {
-                    Font = new Font(SystemFonts.MenuFont, System.Drawing.FontStyle.Bold)
-                },
-
-                new ToolStripSeparator(),
-
-                new ToolStripMenuItem("Set state to", null, new ToolStripMenuItem[]
-                {
-                    new("Unavailable", Util.CreateSquare(GetNodeColorFromState(STATE.Unavailable)), (s, e) =>
-                    {
-                        task.State = STATE.Unavailable;
-                        task.IsStateChangedByUser = true;
-                    }),
-                    new("Available", Util.CreateSquare(GetNodeColorFromState(STATE.Available)), (s, e) =>
-                    {
-                        task.State = STATE.Available;
-                        task.IsStateChangedByUser = true;
-                    }),
-                    new("Complete", Util.CreateSquare(GetNodeColorFromState(STATE.Complete)), (s, e) =>
-                    {
-                        task.State = STATE.Complete;
-                        task.IsStateChangedByUser = true;
-                    }),
-                    new("Final", Util.CreateSquare(GetNodeColorFromState(STATE.Final)), (s, e) =>
-                    {
-                        task.State = STATE.Final;
-                        task.IsStateChangedByUser = true;
-                    }),
-                }),
-
-                new ToolStripMenuItem("Set as current checkpoint", null, (s, e) =>
-                {
-                    WriteCurrentCheckpointAddress(task);
-                })
-                {
-                    Visible = task.CheckpointEntranceValue != -1
-                },
-                new ToolStripMenuItem($"Load to checkpoint", null, (s, e) =>
-                {
-                    LoadCheckpoint(task, false);
-                })
-                {
-                    Visible = task.CheckpointEntranceValue != -1 && Version != DAG_VERSION.V0
-                },
-                new ToolStripMenuItem($"Load to checkpoint with zero focus", null, (s, e) =>
-                {
-                    LoadCheckpoint(task, true);
-                })
-                {
-                    Visible = task.CheckpointEntranceValue != -1 && Version != DAG_VERSION.V0
-                },
-                new ToolStripMenuItem("Load to this entrance location", null, (s, e) =>
-                {
-                    LoadMap(task.MapId, task.CheckpointEntranceValue, 0);
-                })
-                {
-                    Visible = task.CheckpointEntranceValue != -1 && Version != DAG_VERSION.V0
-                },
-
-                new ToolStripMenuItem("Copy", null, new ToolStripItem[]
-                {
-                    new ToolStripMenuItem($"Address: {task.Address}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(task.Address);
-                    }),
-                    new ToolStripMenuItem($"Id: {(_showIdAsDecimal ? task.Id : task.Id.ToString("X"))}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(_showIdAsDecimal ? task.Id.ToString() : task.Id.ToString("X"));
-                    }),
-                    new ToolStripMenuItem($"Name: {task.Name}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(task.Name);
-                    }),
-                    new ToolStripMenuItem($"Goal description: {task.GoalDescription}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(task.GoalDescription);
-                    })
-                    {
-                        Visible = task.GoalDescription != ""
-                    },
-                    new ToolStripMenuItem($"Entrance value: {task.CheckpointEntranceValue:X}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(task.CheckpointEntranceValue.ToString("X"));
-                    })
-                    {
-                        Visible = task.CheckpointEntranceValue != -1
-                    },
-                    new ToolStripMenuItem($"Focus count: {task.FocusCount}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(task.FocusCount.ToString());
-                    }),
-                    new ToolStripMenuItem($"Complete count: {task.CompleteCount}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(task.CompleteCount.ToString());
-                    }),
-                    new ToolStripMenuItem($"Savefile flags address: {GetSavefileAddress(task.Attributes[0]):X}", null, (s, e) =>
-                    {
-                        Clipboard.SetText($"{GetSavefileAddress(task.Attributes[0]):X}");
-                    })
-                    {
-                        Visible = Version != DAG_VERSION.V0
-                    },
-                }),
-            };
-
             var menu = new ContextMenuStrip();
-            menu.Items.AddRange(items.ToArray());
+
+            menu.Items.Add(new ToolStripMenuItem($"Task: {task.Text}")
+            {
+                Font = new Font(SystemFonts.MenuFont, System.Drawing.FontStyle.Bold),
+            });
+
+            menu.Items.Add(new ToolStripSeparator());
+
+            var stateMenu = new ToolStripMenuItem("Set state to");
+            foreach (STATE state in Enum.GetValues<STATE>().Cast<STATE>())
+            {
+                var item = new ToolStripMenuItem
+                (
+                    state.ToString(),
+                    Util.CreateSquare(GetNodeColorFromState(state)),
+                    (s, e) => WriteTaskState(task, state)
+                );
+
+                stateMenu.DropDownItems.Add(item);
+            }
+
+            menu.Items.Add(stateMenu);
+
+            if (task.CheckpointEntranceValue != -1)
+            {
+                menu.Items.Add(new ToolStripMenuItem
+                (
+                    "Set as current checkpoint", null, (s, e) => WriteCurrentCheckpointAddress(task)
+                ));
+
+                menu.Items.Add(new ToolStripMenuItem
+                (
+                    "Load to checkpoint", null, (s, e) => LoadCheckpoint(task, false)
+                ));
+
+                menu.Items.Add(new ToolStripMenuItem
+                (
+                    "Load to checkpoint with zero focus", null, (s, e) => LoadCheckpoint(task, true)
+                ));
+
+                menu.Items.Add(new ToolStripMenuItem
+                (
+                    "Load to this entrance location", null, (s, e) => LoadMap(task.MapId, task.CheckpointEntranceValue, 0)
+                ));
+            }
+
+            var copyMenu = new ToolStripMenuItem("Copy");
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Address: {task.Address}", null, (s, e) => Clipboard.SetText(task.Address)
+            ));
+
+            string id = task.Id.ToString();
+            if (!_showIdAsDecimal)
+            {
+                id = task.Id.ToString("X");
+            }
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Id: {id}", null, (s, e) => Clipboard.SetText(id)
+            ));
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Name: {task.Name}", null, (s, e) => Clipboard.SetText(task.Name)
+            ));
+
+            if (task.GoalDescription != "")
+            {
+                copyMenu.DropDownItems.Add(new ToolStripMenuItem
+                (
+                    $"Goal description: {task.GoalDescription}", null, (s, e) => Clipboard.SetText(task.GoalDescription)
+                ));
+            }
+
+            if (task.CheckpointEntranceValue != -1)
+            {
+                copyMenu.DropDownItems.Add(new ToolStripMenuItem
+                (
+                    $"Entrance value: {task.CheckpointEntranceValue:X}", null, (s, e) => Clipboard.SetText(task.CheckpointEntranceValue.ToString("X"))
+                ));
+            }
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Focus count: {task.FocusCount}", null, (s, e) => Clipboard.SetText(task.FocusCount.ToString())
+            ));
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Complete count: {task.CompleteCount}", null, (s, e) => Clipboard.SetText(task.CompleteCount.ToString())
+            ));
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Savefile flags address: {task.SavefileFlagsAddress:X}", null, (s, e) => Clipboard.SetText($"{task.SavefileFlagsAddress:X}")
+            ));
+
+            menu.Items.Add(copyMenu);
+
             menu.Show(Viewer, location);
         }
 
         private void ShowClusterContextMenu(Node graphNode, Point location)
         {
-            Cluster_t? cluster = graphNode.UserData as Cluster_t;
-            if (cluster == null)
+            if (graphNode.UserData is not Cluster_t cluster)
             {
                 return;
             }
@@ -1506,84 +1471,42 @@ namespace SlyMultiTrainer
                 return;
             }
 
-            var items = new ToolStripItem[]
+            var menu = new ContextMenuStrip();
+
+            menu.Items.Add(new ToolStripMenuItem($"Job: {cluster.Text}")
             {
-                new ToolStripMenuItem($"Job: {cluster.Text}")
-                {
-                    Font = new Font(SystemFonts.MenuFont, System.Drawing.FontStyle.Bold)
-                },
+                Font = new Font(SystemFonts.MenuFont, System.Drawing.FontStyle.Bold),
+            });
 
-                new ToolStripSeparator(),
+            menu.Items.Add(new ToolStripSeparator());
 
-                new ToolStripMenuItem("Set state to", null, new ToolStripMenuItem[]
-                {
-                    new("Unavailable", Util.CreateSquare(GetNodeColorFromState(STATE.Unavailable)), (s, e) =>
-                    {
-                        for (int i = 0; i < cluster.Tasks.Count; i++)
-                        {
-                            //if (cluster.Tasks[i].State == STATE.Unavailable
-                            //    && cluster.Tasks[i].FocusCount == 0
-                            //    && cluster.Tasks[i].CompleteCount == 0)
-                            //{
-                            //    continue;
-                            //}
-                            cluster.Tasks[i].State = STATE.Unavailable;
-                            cluster.Tasks[i].FocusCount = 0;
-                            cluster.Tasks[i].CompleteCount = 0;
-                            cluster.Tasks[i].IsStateChangedByUser = true;
-                        }
-                    }),
-                    new("Available", Util.CreateSquare(GetNodeColorFromState(STATE.Available)), (s, e) =>
-                    {
-                        cluster.Tasks[0].State = STATE.Available;
-                        cluster.Tasks[0].FocusCount = 0;
-                        cluster.Tasks[0].CompleteCount = 0;
-                        cluster.Tasks[0].IsStateChangedByUser = true;
-                        for (int i = 1; i < cluster.Tasks.Count; i++)
-                        {
-                            cluster.Tasks[i].State = STATE.Unavailable;
-                            cluster.Tasks[i].FocusCount = 0;
-                            cluster.Tasks[i].CompleteCount = 0;
-                            cluster.Tasks[i].IsStateChangedByUser = true;
-                        }
-                    }),
-                    new("Complete", Util.CreateSquare(GetNodeColorFromState(STATE.Complete)), (s, e) =>
-                    {
-                        for (int i = 0; i < cluster.Tasks.Count; i++)
-                        {
-                            cluster.Tasks[i].State = STATE.Complete;
-                            cluster.Tasks[i].FocusCount = 1;
-                            cluster.Tasks[i].CompleteCount = 1;
-                            cluster.Tasks[i].IsStateChangedByUser = true;
-                        }
-                    }),
-                    new("Final", Util.CreateSquare(GetNodeColorFromState(STATE.Final)), (s, e) =>
-                    {
-                        for (int i = 0; i < cluster.Tasks.Count; i++)
-                        {
-                            cluster.Tasks[i].State = STATE.Final;
-                            cluster.Tasks[i].FocusCount = 1;
-                            cluster.Tasks[i].CompleteCount = 1;
-                            cluster.Tasks[i].IsStateChangedByUser = true;
-                        }
-                    }),
-                }),
+            var stateMenu = new ToolStripMenuItem("Set state to");
+            foreach (var state in Enum.GetValues<STATE>().Cast<STATE>())
+            {
+                var item = new ToolStripMenuItem(
+                    state.ToString(),
+                    Util.CreateSquare(GetNodeColorFromState(state)),
+                    (s, e) => WriteClusterState(cluster, state)
+                );
 
-                new ToolStripMenuItem("Load job", null, (s, e) =>
-                {
-                    LoadCheckpoint(cluster.Tasks[0], false);
-                })
-                {
-                    Visible = Version != DAG_VERSION.V0
-                },
-                new ToolStripMenuItem("Load job with zero focus", null, (s, e) =>
-                {
-                    LoadCheckpoint(cluster.Tasks[0], true);
-                })
-                {
-                    Visible = Version != DAG_VERSION.V0
-                },
-                new ToolStripMenuItem($"Suck value: {cluster.Suck:0.0} (click to edit)", null, (s, e) =>
+                stateMenu.DropDownItems.Add(item);
+            }
+
+            menu.Items.Add(stateMenu);
+
+            menu.Items.Add(new ToolStripMenuItem
+            (
+                "Load job", null, (s, e) => LoadCheckpoint(cluster.Tasks[0], false)
+            ));
+
+            menu.Items.Add(new ToolStripMenuItem
+            (
+                "Load job with zero focus", null, (s, e) => LoadCheckpoint(cluster.Tasks[0], true)
+            ));
+
+            menu.Items.Add(new ToolStripMenuItem
+            (
+                $"Suck value: {cluster.Suck:0.0} (click to edit)", null, (s, e) =>
                 {
                     string input = ShowInputBox($"{cluster.Name}", "Edit suck value", $"{cluster.Suck:0.0}");
                     if (input == null)
@@ -1592,41 +1515,49 @@ namespace SlyMultiTrainer
                         return;
                     }
 
-                    float.TryParse(input, out float result);
-                    cluster.Suck = result;
-                    WriteClusterSuck(cluster);
-                }),
+                    float.TryParse(input, out float suck);
+                    WriteClusterSuck(cluster, suck);
+                }
+            ));
 
-                new ToolStripMenuItem("Copy", null, new ToolStripMenuItem[]
-                {
-                    new($"Address: {cluster.Address}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(cluster.Address);
-                    }),
-                    new($"Id: {(_showIdAsDecimal ? cluster.Id : cluster.Id.ToString("X"))}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(_showIdAsDecimal ? cluster.Id.ToString() : cluster.Id.ToString("X"));
-                    }),
-                    new($"Name: {cluster.Name}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(cluster.Name);
-                    }),
-                    new($"Description: {cluster.Description}", null, (s, e) =>
-                    {
-                        Clipboard.SetText(cluster.Description);
-                    }),
-                    new ToolStripMenuItem($"Savefile flags address: {GetSavefileAddress(cluster.Attributes[0]):X}", null, (s, e) =>
-                    {
-                        Clipboard.SetText($"{GetSavefileAddress(cluster.Attributes[0]):X}");
-                    })
-                    {
-                        Visible = Version != DAG_VERSION.V0
-                    },
-                }),
-            };
+            var copyMenu = new ToolStripMenuItem("Copy");
 
-            var menu = new ContextMenuStrip();
-            menu.Items.AddRange(items.ToArray());
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Address: {cluster.Address}", null, (s, e) => Clipboard.SetText(cluster.Address)
+            ));
+
+            string id = cluster.Id.ToString();
+            if (!_showIdAsDecimal)
+            {
+                id = cluster.Id.ToString("X");
+            }
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Id: {id}", null, (s, e) => Clipboard.SetText(id)
+            ));
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Name: {cluster.Name}", null, (s, e) => Clipboard.SetText(cluster.Name)
+            ));
+
+            if (cluster.Description != "")
+            {
+                copyMenu.DropDownItems.Add(new ToolStripMenuItem
+                (
+                    $"Description: {cluster.Description}", null, (s, e) => Clipboard.SetText(cluster.Description)
+                ));
+            }
+
+            copyMenu.DropDownItems.Add(new ToolStripMenuItem
+            (
+                $"Savefile flags address: {cluster.SavefileFlagsAddress:X}", null, (s, e) => Clipboard.SetText($"{cluster.SavefileFlagsAddress:X}")
+            ));
+
+            menu.Items.Add(copyMenu);
+
             menu.Show(Viewer, location);
         }
     }
@@ -1660,12 +1591,6 @@ namespace SlyMultiTrainer
         public string Address;
 
         /// <summary>
-        /// Flag to identify if the state of a cluster was changed by the user, instead of the game.
-        /// If this flag is set to true, then a memory write is needed
-        /// </summary>
-        public bool IsStateChangedByUser;
-
-        /// <summary>
         /// Tasks that are part of this cluster
         /// </summary>
         public List<Task_t> Tasks;
@@ -1683,7 +1608,12 @@ namespace SlyMultiTrainer
         /// <summary>
         /// Attributes of the cluster (id + subid pairs)
         /// </summary>
-        public List<Attribute_t> Attributes;
+        public List<SavefileAttribute_t> Attributes;
+
+        /// <summary>
+        /// The first memory address of the array of flags in the savefile region of this cluster
+        /// </summary>
+        public int SavefileFlagsAddress;
 
         public Cluster_t(int id, string address)
         {
@@ -1805,18 +1735,12 @@ namespace SlyMultiTrainer
         public STATE State;
 
         /// <summary>
-        /// Flag to identify if a field of a task was changed by the user instead of the game.
-        /// If this flag is set to true, then a memory write is needed
-        /// </summary>
-        public bool IsStateChangedByUser;
-
-        /// <summary>
         /// Variable used to mark the task to a desired state when loading a checkpoint
         /// </summary>
-        public bool MarkSavefileChange;
+        public bool IsMarkedForSavefileChange;
 
         /// <summary>
-        /// State to set the task to when loading a checkpoint. Only considered when MarkSavefileChange is set to true
+        /// State to set the task to when loading a checkpoint. Only considered when IsMarkedForSavefileChange is set to true
         /// </summary>
         public STATE StateSavefileChange;
 
@@ -1843,7 +1767,12 @@ namespace SlyMultiTrainer
         /// <summary>
         /// Attributes of the task (id + subid pairs)
         /// </summary>
-        public List<Attribute_t> Attributes;
+        public List<SavefileAttribute_t> Attributes;
+
+        /// <summary>
+        /// The first memory address of the array of flags in the savefile region of this task
+        /// </summary>
+        public int SavefileFlagsAddress;
 
         public Task_t()
         {
@@ -1897,18 +1826,18 @@ namespace SlyMultiTrainer
 
     public enum DAG_VERSION
     {
-        V0 = 0, // Sly 2 e3 demo, march
+        V0 = 0, // Sly 2 ntsc e3 demo, march
         V1 = 1, // Sly 2 retail
         V2 = 2, // Sly 3 e3 demo
         V3 = 3 // Sly 3 retail
     }
 
     [DebuggerDisplay("Id: {Id,h} SubId: {SubId,h}")]
-    public class Attribute_t
+    public class SavefileAttribute_t
     {
         public short Id;
         public short SubId;
-        public Attribute_t()
+        public SavefileAttribute_t()
         {
 
         }

@@ -32,40 +32,49 @@
             bgWorkerMain = new System.ComponentModel.BackgroundWorker();
             tabControlMain = new TabControl();
             tabMain = new TabPage();
+            btnToggleThiefMoves = new Button();
+            btnSkipCurrentDialogue = new Button();
+            grpGadgets = new GroupBox();
+            btnToggleGadgets = new Button();
+            lblGadgetL1 = new Label();
+            lblGadgetR2 = new Label();
+            cmbGadgetL1 = new ComboBox();
+            cmbGadgetR2 = new ComboBox();
+            cmbGadgetL2 = new ComboBox();
+            lblGadgetL2 = new Label();
+            chkInfiniteGadgetPower = new CheckBox();
             toolStrip1 = new ToolStrip();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
-            ToolStripMenuItemActCharCoordsCopyOver = new ToolStripMenuItem();
+            ToolStripMenuItemActCharCoordsCopyXYZToTextboxes = new ToolStripMenuItem();
+            ToolStripMenuItemActCharCoordsCopyXYZToClipboard = new ToolStripMenuItem();
             ToolStripMenuItemActCharCoordsPasteXYZFromClipboard = new ToolStripMenuItem();
             ToolStripMenuItemActCharCoordsSetXYZ = new ToolStripMenuItem();
-            btnSkipCurrentDialogue = new Button();
             lblLuckyCharms = new Label();
             chkLuckyCharmsFreeze = new CheckBox();
             cmbLuckyCharms = new ComboBox();
             btnLoadLevelFull = new Button();
             btnCoinsSet = new Button();
-            groupBox5 = new GroupBox();
+            grpFlags = new GroupBox();
             chkToggleInfDbJump = new CheckBox();
             chkToggleUndetectable = new CheckBox();
             chkToggleInvulnerable = new CheckBox();
             chkDisableGuardAI = new CheckBox();
             chkDisableDeathBarrier = new CheckBox();
             btnResetCamera = new Button();
-            groupBox4 = new GroupBox();
+            grpCamera = new GroupBox();
             chkDrawDistanceFreeze = new CheckBox();
             btnDrawDistanceReset = new Button();
             chkFOVFreeze = new CheckBox();
             btnFOVReset = new Button();
             grpFOV = new GroupBox();
             trkFOV = new TrackBar();
-            groupBox3 = new GroupBox();
+            grpDrawDistance = new GroupBox();
             trkDrawDistance = new TrackBar();
             cmbWarps = new ComboBox();
             chkClockFreeze = new CheckBox();
             btnClockReset = new Button();
-            groupBox1 = new GroupBox();
+            grpClock = new GroupBox();
             trkClock = new TrackBar();
-            btnGetGadgets = new Button();
-            chkInfiniteGadgetPower = new CheckBox();
             lblCoins = new Label();
             txtCoins = new TextBox();
             btnWarp = new Button();
@@ -102,12 +111,13 @@
             cmbMaps = new ComboBox();
             btnLoadLevel = new Button();
             tabEntities = new TabPage();
+            btnFKXEntityWarpEntity = new Button();
             txtEntitiesSearch = new TextBox();
             btnFKXEntityScaleReset = new Button();
-            groupBox7 = new GroupBox();
+            grpFKXEntityScale = new GroupBox();
             trkFKXEntityScale = new TrackBar();
             chkFKXEntityEditRotation = new CheckBox();
-            groupBox6 = new GroupBox();
+            grpFKXEntityEditRotation = new GroupBox();
             label11 = new Label();
             trkFKXEntityRotationX = new TrackBar();
             trkFKXEntityRotationY = new TrackBar();
@@ -150,6 +160,12 @@
             btnRefreshFKXList = new Button();
             trvFKXList = new TreeView();
             tabDAG = new TabPage();
+            tabStrings = new TabPage();
+            tabControlStrings = new TabControl();
+            tabPageLocalized = new TabPage();
+            txtStringsLocalized = new TextBox();
+            tabPageSavefile = new TabPage();
+            txtStringsSavefile = new TextBox();
             tabWorldStates = new TabPage();
             tabControlWorldStates = new TabControl();
             tabWorldState1 = new TabPage();
@@ -159,34 +175,39 @@
             tabWorldState5 = new TabPage();
             tabAbout = new TabPage();
             splitContainer1 = new SplitContainer();
-            label16 = new Label();
             label15 = new Label();
             lblAboutTitle = new Label();
             lblLogs = new Label();
             txtAddresses = new TextBox();
+            cmbProcesses = new ComboBox();
             btnReattach = new Button();
             lblMain = new Label();
             btnSettings = new Button();
             tabControlMain.SuspendLayout();
             tabMain.SuspendLayout();
+            grpGadgets.SuspendLayout();
             toolStrip1.SuspendLayout();
-            groupBox5.SuspendLayout();
-            groupBox4.SuspendLayout();
+            grpFlags.SuspendLayout();
+            grpCamera.SuspendLayout();
             grpFOV.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trkFOV).BeginInit();
-            groupBox3.SuspendLayout();
+            grpDrawDistance.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trkDrawDistance).BeginInit();
-            groupBox1.SuspendLayout();
+            grpClock.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trkClock).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trkActCharCoord).BeginInit();
             tabEntities.SuspendLayout();
-            groupBox7.SuspendLayout();
+            grpFKXEntityScale.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityScale).BeginInit();
-            groupBox6.SuspendLayout();
+            grpFKXEntityEditRotation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityRotationX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityRotationY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityRotationZ).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityCoord).BeginInit();
+            tabStrings.SuspendLayout();
+            tabControlStrings.SuspendLayout();
+            tabPageLocalized.SuspendLayout();
+            tabPageSavefile.SuspendLayout();
             tabWorldStates.SuspendLayout();
             tabControlWorldStates.SuspendLayout();
             tabAbout.SuspendLayout();
@@ -207,6 +228,7 @@
             tabControlMain.Controls.Add(tabMain);
             tabControlMain.Controls.Add(tabEntities);
             tabControlMain.Controls.Add(tabDAG);
+            tabControlMain.Controls.Add(tabStrings);
             tabControlMain.Controls.Add(tabWorldStates);
             tabControlMain.Controls.Add(tabAbout);
             tabControlMain.Dock = DockStyle.Fill;
@@ -220,22 +242,22 @@
             // tabMain
             // 
             tabMain.BackColor = Color.White;
-            tabMain.Controls.Add(toolStrip1);
+            tabMain.Controls.Add(btnToggleThiefMoves);
             tabMain.Controls.Add(btnSkipCurrentDialogue);
+            tabMain.Controls.Add(grpGadgets);
+            tabMain.Controls.Add(toolStrip1);
             tabMain.Controls.Add(lblLuckyCharms);
             tabMain.Controls.Add(chkLuckyCharmsFreeze);
             tabMain.Controls.Add(cmbLuckyCharms);
             tabMain.Controls.Add(btnLoadLevelFull);
             tabMain.Controls.Add(btnCoinsSet);
-            tabMain.Controls.Add(groupBox5);
+            tabMain.Controls.Add(grpFlags);
             tabMain.Controls.Add(btnResetCamera);
-            tabMain.Controls.Add(groupBox4);
+            tabMain.Controls.Add(grpCamera);
             tabMain.Controls.Add(cmbWarps);
             tabMain.Controls.Add(chkClockFreeze);
             tabMain.Controls.Add(btnClockReset);
-            tabMain.Controls.Add(groupBox1);
-            tabMain.Controls.Add(btnGetGadgets);
-            tabMain.Controls.Add(chkInfiniteGadgetPower);
+            tabMain.Controls.Add(grpClock);
             tabMain.Controls.Add(lblCoins);
             tabMain.Controls.Add(txtCoins);
             tabMain.Controls.Add(btnWarp);
@@ -278,6 +300,135 @@
             tabMain.TabIndex = 0;
             tabMain.Text = "Main";
             // 
+            // btnToggleThiefMoves
+            // 
+            btnToggleThiefMoves.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btnToggleThiefMoves.Location = new Point(436, 62);
+            btnToggleThiefMoves.Name = "btnToggleThiefMoves";
+            btnToggleThiefMoves.Size = new Size(88, 38);
+            btnToggleThiefMoves.TabIndex = 74;
+            btnToggleThiefMoves.Text = "Toggle all\r\nthief moves";
+            btnToggleThiefMoves.UseVisualStyleBackColor = true;
+            btnToggleThiefMoves.Click += btnToggleThiefMoves_Click;
+            // 
+            // btnSkipCurrentDialogue
+            // 
+            btnSkipCurrentDialogue.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btnSkipCurrentDialogue.Location = new Point(530, 62);
+            btnSkipCurrentDialogue.Name = "btnSkipCurrentDialogue";
+            btnSkipCurrentDialogue.Size = new Size(88, 38);
+            btnSkipCurrentDialogue.TabIndex = 63;
+            btnSkipCurrentDialogue.Text = "Skip current dialogue";
+            btnSkipCurrentDialogue.UseVisualStyleBackColor = true;
+            btnSkipCurrentDialogue.Click += btnSkipCurrentDialogue_Click;
+            // 
+            // grpGadgets
+            // 
+            grpGadgets.Controls.Add(btnToggleGadgets);
+            grpGadgets.Controls.Add(lblGadgetL1);
+            grpGadgets.Controls.Add(lblGadgetR2);
+            grpGadgets.Controls.Add(cmbGadgetL1);
+            grpGadgets.Controls.Add(cmbGadgetR2);
+            grpGadgets.Controls.Add(cmbGadgetL2);
+            grpGadgets.Controls.Add(lblGadgetL2);
+            grpGadgets.Controls.Add(chkInfiniteGadgetPower);
+            grpGadgets.Font = new Font("Microsoft Sans Serif", 8F);
+            grpGadgets.Location = new Point(408, 89);
+            grpGadgets.Name = "grpGadgets";
+            grpGadgets.Size = new Size(268, 104);
+            grpGadgets.TabIndex = 73;
+            grpGadgets.TabStop = false;
+            grpGadgets.Text = "Gadgets";
+            // 
+            // btnToggleGadgets
+            // 
+            btnToggleGadgets.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btnToggleGadgets.Location = new Point(174, 15);
+            btnToggleGadgets.Name = "btnToggleGadgets";
+            btnToggleGadgets.Size = new Size(88, 51);
+            btnToggleGadgets.TabIndex = 44;
+            btnToggleGadgets.Text = "Toggle all";
+            btnToggleGadgets.UseVisualStyleBackColor = true;
+            btnToggleGadgets.Click += btnToggleGadgets_Click;
+            // 
+            // lblGadgetL1
+            // 
+            lblGadgetL1.AutoSize = true;
+            lblGadgetL1.Font = new Font("Microsoft Sans Serif", 10F);
+            lblGadgetL1.Location = new Point(6, 16);
+            lblGadgetL1.Name = "lblGadgetL1";
+            lblGadgetL1.Size = new Size(24, 17);
+            lblGadgetL1.TabIndex = 68;
+            lblGadgetL1.Text = "L1";
+            // 
+            // lblGadgetR2
+            // 
+            lblGadgetR2.AutoSize = true;
+            lblGadgetR2.Font = new Font("Microsoft Sans Serif", 10F);
+            lblGadgetR2.Location = new Point(6, 74);
+            lblGadgetR2.Name = "lblGadgetR2";
+            lblGadgetR2.Size = new Size(26, 17);
+            lblGadgetR2.TabIndex = 72;
+            lblGadgetR2.Text = "R2";
+            // 
+            // cmbGadgetL1
+            // 
+            cmbGadgetL1.AutoCompleteMode = AutoCompleteMode.Suggest;
+            cmbGadgetL1.AutoCompleteSource = AutoCompleteSource.ListItems;
+            cmbGadgetL1.Items.AddRange(new object[] { "None", "Silver", "Gold" });
+            cmbGadgetL1.Location = new Point(33, 15);
+            cmbGadgetL1.Name = "cmbGadgetL1";
+            cmbGadgetL1.Size = new Size(135, 21);
+            cmbGadgetL1.TabIndex = 67;
+            cmbGadgetL1.SelectedIndexChanged += cmbGadgetL1_SelectedIndexChanged;
+            cmbGadgetL1.SelectionChangeCommitted += cmbGadgetL1_SelectionChangeCommitted;
+            // 
+            // cmbGadgetR2
+            // 
+            cmbGadgetR2.AutoCompleteMode = AutoCompleteMode.Suggest;
+            cmbGadgetR2.AutoCompleteSource = AutoCompleteSource.ListItems;
+            cmbGadgetR2.Items.AddRange(new object[] { "None", "Silver", "Gold" });
+            cmbGadgetR2.Location = new Point(33, 73);
+            cmbGadgetR2.Name = "cmbGadgetR2";
+            cmbGadgetR2.Size = new Size(135, 21);
+            cmbGadgetR2.TabIndex = 71;
+            cmbGadgetR2.SelectedIndexChanged += cmbGadgetR2_SelectedIndexChanged;
+            cmbGadgetR2.SelectionChangeCommitted += cmbGadgetR2_SelectionChangeCommitted;
+            // 
+            // cmbGadgetL2
+            // 
+            cmbGadgetL2.AutoCompleteMode = AutoCompleteMode.Suggest;
+            cmbGadgetL2.AutoCompleteSource = AutoCompleteSource.ListItems;
+            cmbGadgetL2.Items.AddRange(new object[] { "None", "Silver", "Gold" });
+            cmbGadgetL2.Location = new Point(33, 44);
+            cmbGadgetL2.Name = "cmbGadgetL2";
+            cmbGadgetL2.Size = new Size(135, 21);
+            cmbGadgetL2.TabIndex = 69;
+            cmbGadgetL2.SelectedIndexChanged += cmbGadgetL2_SelectedIndexChanged;
+            cmbGadgetL2.SelectionChangeCommitted += cmbGadgetL2_SelectionChangeCommitted;
+            // 
+            // lblGadgetL2
+            // 
+            lblGadgetL2.AutoSize = true;
+            lblGadgetL2.Font = new Font("Microsoft Sans Serif", 10F);
+            lblGadgetL2.Location = new Point(6, 45);
+            lblGadgetL2.Name = "lblGadgetL2";
+            lblGadgetL2.Size = new Size(24, 17);
+            lblGadgetL2.TabIndex = 70;
+            lblGadgetL2.Text = "L2";
+            // 
+            // chkInfiniteGadgetPower
+            // 
+            chkInfiniteGadgetPower.Appearance = Appearance.Button;
+            chkInfiniteGadgetPower.Location = new Point(174, 72);
+            chkInfiniteGadgetPower.Name = "chkInfiniteGadgetPower";
+            chkInfiniteGadgetPower.Size = new Size(88, 23);
+            chkInfiniteGadgetPower.TabIndex = 43;
+            chkInfiniteGadgetPower.Text = "Infinite power";
+            chkInfiniteGadgetPower.TextAlign = ContentAlignment.MiddleCenter;
+            chkInfiniteGadgetPower.UseVisualStyleBackColor = true;
+            chkInfiniteGadgetPower.CheckedChanged += chkInfiniteGadgetPower_CheckedChanged;
+            // 
             // toolStrip1
             // 
             toolStrip1.AllowClickThrough = true;
@@ -294,17 +445,24 @@
             // toolStripDropDownButton1
             // 
             toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { ToolStripMenuItemActCharCoordsCopyOver, ToolStripMenuItemActCharCoordsPasteXYZFromClipboard, ToolStripMenuItemActCharCoordsSetXYZ });
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { ToolStripMenuItemActCharCoordsCopyXYZToTextboxes, ToolStripMenuItemActCharCoordsCopyXYZToClipboard, ToolStripMenuItemActCharCoordsPasteXYZFromClipboard, ToolStripMenuItemActCharCoordsSetXYZ });
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
             toolStripDropDownButton1.Size = new Size(13, 22);
             // 
-            // ToolStripMenuItemActCharCoordsCopyOver
+            // ToolStripMenuItemActCharCoordsCopyXYZToTextboxes
             // 
-            ToolStripMenuItemActCharCoordsCopyOver.Name = "ToolStripMenuItemActCharCoordsCopyOver";
-            ToolStripMenuItemActCharCoordsCopyOver.Size = new Size(208, 22);
-            ToolStripMenuItemActCharCoordsCopyOver.Text = "Copy over";
-            ToolStripMenuItemActCharCoordsCopyOver.Click += ToolStripMenuItemActCharCoordsCopyOver_Click;
+            ToolStripMenuItemActCharCoordsCopyXYZToTextboxes.Name = "ToolStripMenuItemActCharCoordsCopyXYZToTextboxes";
+            ToolStripMenuItemActCharCoordsCopyXYZToTextboxes.Size = new Size(208, 22);
+            ToolStripMenuItemActCharCoordsCopyXYZToTextboxes.Text = "Copy XYZ to textboxes";
+            ToolStripMenuItemActCharCoordsCopyXYZToTextboxes.Click += ToolStripMenuItemActCharCoordsCopyXYZToTextboxes_Click;
+            // 
+            // ToolStripMenuItemActCharCoordsCopyXYZToClipboard
+            // 
+            ToolStripMenuItemActCharCoordsCopyXYZToClipboard.Name = "ToolStripMenuItemActCharCoordsCopyXYZToClipboard";
+            ToolStripMenuItemActCharCoordsCopyXYZToClipboard.Size = new Size(208, 22);
+            ToolStripMenuItemActCharCoordsCopyXYZToClipboard.Text = "Copy XYZ to clipboard";
+            ToolStripMenuItemActCharCoordsCopyXYZToClipboard.Click += ToolStripMenuItemActCharCoordsCopyXYZToClipboard_Click;
             // 
             // ToolStripMenuItemActCharCoordsPasteXYZFromClipboard
             // 
@@ -319,17 +477,6 @@
             ToolStripMenuItemActCharCoordsSetXYZ.Size = new Size(208, 22);
             ToolStripMenuItemActCharCoordsSetXYZ.Text = "Set XYZ";
             ToolStripMenuItemActCharCoordsSetXYZ.Click += ToolStripMenuItemActCharCoordsSetXYZ_Click;
-            // 
-            // btnSkipCurrentDialogue
-            // 
-            btnSkipCurrentDialogue.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            btnSkipCurrentDialogue.Location = new Point(530, 118);
-            btnSkipCurrentDialogue.Name = "btnSkipCurrentDialogue";
-            btnSkipCurrentDialogue.Size = new Size(88, 38);
-            btnSkipCurrentDialogue.TabIndex = 63;
-            btnSkipCurrentDialogue.Text = "Skip current dialogue";
-            btnSkipCurrentDialogue.UseVisualStyleBackColor = true;
-            btnSkipCurrentDialogue.Click += btnSkipCurrentDialogue_Click;
             // 
             // lblLuckyCharms
             // 
@@ -386,19 +533,19 @@
             btnCoinsSet.UseVisualStyleBackColor = true;
             btnCoinsSet.Click += btnCoinsSet_Click;
             // 
-            // groupBox5
+            // grpFlags
             // 
-            groupBox5.Controls.Add(chkToggleInfDbJump);
-            groupBox5.Controls.Add(chkToggleUndetectable);
-            groupBox5.Controls.Add(chkToggleInvulnerable);
-            groupBox5.Controls.Add(chkDisableGuardAI);
-            groupBox5.Controls.Add(chkDisableDeathBarrier);
-            groupBox5.Location = new Point(4, 285);
-            groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(393, 66);
-            groupBox5.TabIndex = 57;
-            groupBox5.TabStop = false;
-            groupBox5.Text = "Flags";
+            grpFlags.Controls.Add(chkToggleInfDbJump);
+            grpFlags.Controls.Add(chkToggleUndetectable);
+            grpFlags.Controls.Add(chkToggleInvulnerable);
+            grpFlags.Controls.Add(chkDisableGuardAI);
+            grpFlags.Controls.Add(chkDisableDeathBarrier);
+            grpFlags.Location = new Point(4, 285);
+            grpFlags.Name = "grpFlags";
+            grpFlags.Size = new Size(393, 66);
+            grpFlags.TabIndex = 57;
+            grpFlags.TabStop = false;
+            grpFlags.Text = "Flags";
             // 
             // chkToggleInfDbJump
             // 
@@ -461,20 +608,20 @@
             btnResetCamera.UseVisualStyleBackColor = true;
             btnResetCamera.Click += btnResetCamera_Click;
             // 
-            // groupBox4
+            // grpCamera
             // 
-            groupBox4.Controls.Add(chkDrawDistanceFreeze);
-            groupBox4.Controls.Add(btnDrawDistanceReset);
-            groupBox4.Controls.Add(chkFOVFreeze);
-            groupBox4.Controls.Add(btnFOVReset);
-            groupBox4.Controls.Add(grpFOV);
-            groupBox4.Controls.Add(groupBox3);
-            groupBox4.Location = new Point(4, 200);
-            groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(393, 79);
-            groupBox4.TabIndex = 55;
-            groupBox4.TabStop = false;
-            groupBox4.Text = "Camera";
+            grpCamera.Controls.Add(chkDrawDistanceFreeze);
+            grpCamera.Controls.Add(btnDrawDistanceReset);
+            grpCamera.Controls.Add(chkFOVFreeze);
+            grpCamera.Controls.Add(btnFOVReset);
+            grpCamera.Controls.Add(grpFOV);
+            grpCamera.Controls.Add(grpDrawDistance);
+            grpCamera.Location = new Point(4, 200);
+            grpCamera.Name = "grpCamera";
+            grpCamera.Size = new Size(393, 79);
+            grpCamera.TabIndex = 55;
+            grpCamera.TabStop = false;
+            grpCamera.Text = "Camera";
             // 
             // chkDrawDistanceFreeze
             // 
@@ -553,16 +700,16 @@
             trkFOV.Value = 11;
             trkFOV.Scroll += trkFOV_Scroll;
             // 
-            // groupBox3
+            // grpDrawDistance
             // 
-            groupBox3.Controls.Add(trkDrawDistance);
-            groupBox3.Font = new Font("Microsoft Sans Serif", 8F);
-            groupBox3.Location = new Point(150, 19);
-            groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(177, 55);
-            groupBox3.TabIndex = 51;
-            groupBox3.TabStop = false;
-            groupBox3.Text = "Draw distance";
+            grpDrawDistance.Controls.Add(trkDrawDistance);
+            grpDrawDistance.Font = new Font("Microsoft Sans Serif", 8F);
+            grpDrawDistance.Location = new Point(150, 19);
+            grpDrawDistance.Name = "grpDrawDistance";
+            grpDrawDistance.Size = new Size(177, 55);
+            grpDrawDistance.TabIndex = 51;
+            grpDrawDistance.TabStop = false;
+            grpDrawDistance.Text = "Draw distance";
             // 
             // trkDrawDistance
             // 
@@ -595,7 +742,7 @@
             chkClockFreeze.FlatAppearance.BorderSize = 0;
             chkClockFreeze.FlatAppearance.CheckedBackColor = SystemColors.Control;
             chkClockFreeze.FlatStyle = FlatStyle.Flat;
-            chkClockFreeze.Location = new Point(444, 212);
+            chkClockFreeze.Location = new Point(449, 217);
             chkClockFreeze.Name = "chkClockFreeze";
             chkClockFreeze.Size = new Size(25, 27);
             chkClockFreeze.TabIndex = 49;
@@ -606,7 +753,7 @@
             // btnClockReset
             // 
             btnClockReset.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            btnClockReset.Location = new Point(474, 214);
+            btnClockReset.Location = new Point(479, 219);
             btnClockReset.Name = "btnClockReset";
             btnClockReset.Size = new Size(63, 23);
             btnClockReset.TabIndex = 39;
@@ -614,16 +761,16 @@
             btnClockReset.UseVisualStyleBackColor = true;
             btnClockReset.Click += btnClockReset_Click;
             // 
-            // groupBox1
+            // grpClock
             // 
-            groupBox1.Controls.Add(trkClock);
-            groupBox1.Font = new Font("Microsoft Sans Serif", 8F);
-            groupBox1.Location = new Point(403, 219);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(138, 55);
-            groupBox1.TabIndex = 45;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Clock";
+            grpClock.Controls.Add(trkClock);
+            grpClock.Font = new Font("Microsoft Sans Serif", 8F);
+            grpClock.Location = new Point(408, 224);
+            grpClock.Name = "grpClock";
+            grpClock.Size = new Size(138, 55);
+            grpClock.TabIndex = 45;
+            grpClock.TabStop = false;
+            grpClock.Text = "Clock";
             // 
             // trkClock
             // 
@@ -636,29 +783,6 @@
             trkClock.TickStyle = TickStyle.TopLeft;
             trkClock.Value = 5;
             trkClock.Scroll += trkClock_Scroll;
-            // 
-            // btnGetGadgets
-            // 
-            btnGetGadgets.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            btnGetGadgets.Location = new Point(530, 78);
-            btnGetGadgets.Name = "btnGetGadgets";
-            btnGetGadgets.Size = new Size(88, 38);
-            btnGetGadgets.TabIndex = 44;
-            btnGetGadgets.Text = "Toggle all\r\ngadgets";
-            btnGetGadgets.UseVisualStyleBackColor = true;
-            btnGetGadgets.Click += btnGetGadgets_Click;
-            // 
-            // chkInfiniteGadgetPower
-            // 
-            chkInfiniteGadgetPower.Appearance = Appearance.Button;
-            chkInfiniteGadgetPower.Location = new Point(530, 34);
-            chkInfiniteGadgetPower.Name = "chkInfiniteGadgetPower";
-            chkInfiniteGadgetPower.Size = new Size(88, 38);
-            chkInfiniteGadgetPower.TabIndex = 43;
-            chkInfiniteGadgetPower.Text = "Infinite gadget power";
-            chkInfiniteGadgetPower.TextAlign = ContentAlignment.MiddleCenter;
-            chkInfiniteGadgetPower.UseVisualStyleBackColor = true;
-            chkInfiniteGadgetPower.CheckedChanged += chkInfiniteGadgetPower_CheckedChanged;
             // 
             // lblCoins
             // 
@@ -1042,11 +1166,12 @@
             // tabEntities
             // 
             tabEntities.BackColor = Color.White;
+            tabEntities.Controls.Add(btnFKXEntityWarpEntity);
             tabEntities.Controls.Add(txtEntitiesSearch);
             tabEntities.Controls.Add(btnFKXEntityScaleReset);
-            tabEntities.Controls.Add(groupBox7);
+            tabEntities.Controls.Add(grpFKXEntityScale);
             tabEntities.Controls.Add(chkFKXEntityEditRotation);
-            tabEntities.Controls.Add(groupBox6);
+            tabEntities.Controls.Add(grpFKXEntityEditRotation);
             tabEntities.Controls.Add(btnCopyFKXEntityPointer);
             tabEntities.Controls.Add(label5);
             tabEntities.Controls.Add(lblFKXEntityZCoordWorld);
@@ -1089,6 +1214,16 @@
             tabEntities.TabIndex = 1;
             tabEntities.Text = "Entities";
             // 
+            // btnFKXEntityWarpEntity
+            // 
+            btnFKXEntityWarpEntity.Location = new Point(467, 316);
+            btnFKXEntityWarpEntity.Name = "btnFKXEntityWarpEntity";
+            btnFKXEntityWarpEntity.Size = new Size(100, 50);
+            btnFKXEntityWarpEntity.TabIndex = 92;
+            btnFKXEntityWarpEntity.Text = "Warp entity to active character";
+            btnFKXEntityWarpEntity.UseVisualStyleBackColor = true;
+            btnFKXEntityWarpEntity.Click += btnFKXEntityWarpEntity_Click;
+            // 
             // txtEntitiesSearch
             // 
             txtEntitiesSearch.Font = new Font("Microsoft Sans Serif", 9F);
@@ -1108,16 +1243,16 @@
             btnFKXEntityScaleReset.UseVisualStyleBackColor = true;
             btnFKXEntityScaleReset.Click += btnFKXEntityScaleReset_Click;
             // 
-            // groupBox7
+            // grpFKXEntityScale
             // 
-            groupBox7.Controls.Add(trkFKXEntityScale);
-            groupBox7.Font = new Font("Microsoft Sans Serif", 8F);
-            groupBox7.Location = new Point(535, 234);
-            groupBox7.Name = "groupBox7";
-            groupBox7.Size = new Size(138, 55);
-            groupBox7.TabIndex = 90;
-            groupBox7.TabStop = false;
-            groupBox7.Text = "Scale";
+            grpFKXEntityScale.Controls.Add(trkFKXEntityScale);
+            grpFKXEntityScale.Font = new Font("Microsoft Sans Serif", 8F);
+            grpFKXEntityScale.Location = new Point(535, 234);
+            grpFKXEntityScale.Name = "grpFKXEntityScale";
+            grpFKXEntityScale.Size = new Size(138, 55);
+            grpFKXEntityScale.TabIndex = 90;
+            grpFKXEntityScale.TabStop = false;
+            grpFKXEntityScale.Text = "Scale";
             // 
             // trkFKXEntityScale
             // 
@@ -1143,19 +1278,19 @@
             chkFKXEntityEditRotation.UseVisualStyleBackColor = true;
             chkFKXEntityEditRotation.CheckedChanged += chkFKXEntityEditRotation_CheckedChanged;
             // 
-            // groupBox6
+            // grpFKXEntityEditRotation
             // 
-            groupBox6.Controls.Add(label11);
-            groupBox6.Controls.Add(trkFKXEntityRotationX);
-            groupBox6.Controls.Add(trkFKXEntityRotationY);
-            groupBox6.Controls.Add(label6);
-            groupBox6.Controls.Add(label10);
-            groupBox6.Controls.Add(trkFKXEntityRotationZ);
-            groupBox6.Location = new Point(258, 144);
-            groupBox6.Name = "groupBox6";
-            groupBox6.Size = new Size(415, 79);
-            groupBox6.TabIndex = 88;
-            groupBox6.TabStop = false;
+            grpFKXEntityEditRotation.Controls.Add(label11);
+            grpFKXEntityEditRotation.Controls.Add(trkFKXEntityRotationX);
+            grpFKXEntityEditRotation.Controls.Add(trkFKXEntityRotationY);
+            grpFKXEntityEditRotation.Controls.Add(label6);
+            grpFKXEntityEditRotation.Controls.Add(label10);
+            grpFKXEntityEditRotation.Controls.Add(trkFKXEntityRotationZ);
+            grpFKXEntityEditRotation.Location = new Point(258, 144);
+            grpFKXEntityEditRotation.Name = "grpFKXEntityEditRotation";
+            grpFKXEntityEditRotation.Size = new Size(415, 79);
+            grpFKXEntityEditRotation.TabIndex = 88;
+            grpFKXEntityEditRotation.TabStop = false;
             // 
             // label11
             // 
@@ -1626,6 +1761,71 @@
             tabDAG.TabIndex = 2;
             tabDAG.Text = "DAG";
             // 
+            // tabStrings
+            // 
+            tabStrings.Controls.Add(tabControlStrings);
+            tabStrings.Location = new Point(4, 22);
+            tabStrings.Name = "tabStrings";
+            tabStrings.Size = new Size(679, 372);
+            tabStrings.TabIndex = 5;
+            tabStrings.Text = "Strings";
+            tabStrings.UseVisualStyleBackColor = true;
+            // 
+            // tabControlStrings
+            // 
+            tabControlStrings.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tabControlStrings.Controls.Add(tabPageLocalized);
+            tabControlStrings.Controls.Add(tabPageSavefile);
+            tabControlStrings.Location = new Point(0, 3);
+            tabControlStrings.Name = "tabControlStrings";
+            tabControlStrings.SelectedIndex = 0;
+            tabControlStrings.Size = new Size(676, 374);
+            tabControlStrings.TabIndex = 0;
+            // 
+            // tabPageLocalized
+            // 
+            tabPageLocalized.Controls.Add(txtStringsLocalized);
+            tabPageLocalized.Location = new Point(4, 22);
+            tabPageLocalized.Name = "tabPageLocalized";
+            tabPageLocalized.Padding = new Padding(3);
+            tabPageLocalized.Size = new Size(668, 348);
+            tabPageLocalized.TabIndex = 0;
+            tabPageLocalized.Text = "Localized";
+            tabPageLocalized.UseVisualStyleBackColor = true;
+            // 
+            // txtStringsLocalized
+            // 
+            txtStringsLocalized.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtStringsLocalized.Location = new Point(4, 6);
+            txtStringsLocalized.Multiline = true;
+            txtStringsLocalized.Name = "txtStringsLocalized";
+            txtStringsLocalized.ReadOnly = true;
+            txtStringsLocalized.ScrollBars = ScrollBars.Vertical;
+            txtStringsLocalized.Size = new Size(656, 336);
+            txtStringsLocalized.TabIndex = 11;
+            // 
+            // tabPageSavefile
+            // 
+            tabPageSavefile.Controls.Add(txtStringsSavefile);
+            tabPageSavefile.Location = new Point(4, 22);
+            tabPageSavefile.Name = "tabPageSavefile";
+            tabPageSavefile.Padding = new Padding(3);
+            tabPageSavefile.Size = new Size(668, 348);
+            tabPageSavefile.TabIndex = 1;
+            tabPageSavefile.Text = "Savefile";
+            tabPageSavefile.UseVisualStyleBackColor = true;
+            // 
+            // txtStringsSavefile
+            // 
+            txtStringsSavefile.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtStringsSavefile.Location = new Point(4, 6);
+            txtStringsSavefile.Multiline = true;
+            txtStringsSavefile.Name = "txtStringsSavefile";
+            txtStringsSavefile.ReadOnly = true;
+            txtStringsSavefile.ScrollBars = ScrollBars.Vertical;
+            txtStringsSavefile.Size = new Size(656, 336);
+            txtStringsSavefile.TabIndex = 10;
+            // 
             // tabWorldStates
             // 
             tabWorldStates.Controls.Add(tabControlWorldStates);
@@ -1715,7 +1915,6 @@
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(label16);
             splitContainer1.Panel1.Controls.Add(label15);
             splitContainer1.Panel1.Controls.Add(lblAboutTitle);
             // 
@@ -1724,20 +1923,8 @@
             splitContainer1.Panel2.Controls.Add(lblLogs);
             splitContainer1.Panel2.Controls.Add(txtAddresses);
             splitContainer1.Size = new Size(679, 370);
-            splitContainer1.SplitterDistance = 219;
+            splitContainer1.SplitterDistance = 215;
             splitContainer1.TabIndex = 9;
-            // 
-            // label16
-            // 
-            label16.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label16.AutoSize = true;
-            label16.Font = new Font("Microsoft Sans Serif", 10F);
-            label16.Location = new Point(579, 11);
-            label16.Name = "label16";
-            label16.Size = new Size(65, 17);
-            label16.TabIndex = 14;
-            label16.Text = "Reattach";
-            label16.Visible = false;
             // 
             // label15
             // 
@@ -1745,7 +1932,7 @@
             label15.Font = new Font("Microsoft Sans Serif", 10F);
             label15.Location = new Point(8, 40);
             label15.Name = "label15";
-            label15.Size = new Size(662, 177);
+            label15.Size = new Size(662, 173);
             label15.TabIndex = 12;
             label15.Text = "Credits:\r\nNiV-L-A, TheOnlyZac, fr4nk0, SlyCooperReloadCoded, Sly Cooper Modding Discord Server, memory.dll, Microsoft Automatic Graph Layout";
             // 
@@ -1778,8 +1965,23 @@
             txtAddresses.Name = "txtAddresses";
             txtAddresses.ReadOnly = true;
             txtAddresses.ScrollBars = ScrollBars.Vertical;
-            txtAddresses.Size = new Size(668, 113);
+            txtAddresses.Size = new Size(668, 117);
             txtAddresses.TabIndex = 9;
+            // 
+            // cmbProcesses
+            // 
+            cmbProcesses.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            cmbProcesses.AutoCompleteMode = AutoCompleteMode.Suggest;
+            cmbProcesses.AutoCompleteSource = AutoCompleteSource.ListItems;
+            cmbProcesses.BackColor = SystemColors.Window;
+            cmbProcesses.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbProcesses.FormattingEnabled = true;
+            cmbProcesses.ItemHeight = 13;
+            cmbProcesses.Location = new Point(254, 0);
+            cmbProcesses.Name = "cmbProcesses";
+            cmbProcesses.Size = new Size(370, 21);
+            cmbProcesses.TabIndex = 15;
+            cmbProcesses.SelectionChangeCommitted += cmbProcesses_SelectionChangeCommitted;
             // 
             // btnReattach
             // 
@@ -1830,6 +2032,7 @@
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(687, 411);
+            Controls.Add(cmbProcesses);
             Controls.Add(btnSettings);
             Controls.Add(btnReattach);
             Controls.Add(tabControlMain);
@@ -1842,27 +2045,35 @@
             tabControlMain.ResumeLayout(false);
             tabMain.ResumeLayout(false);
             tabMain.PerformLayout();
+            grpGadgets.ResumeLayout(false);
+            grpGadgets.PerformLayout();
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
-            groupBox5.ResumeLayout(false);
-            groupBox4.ResumeLayout(false);
+            grpFlags.ResumeLayout(false);
+            grpCamera.ResumeLayout(false);
             grpFOV.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)trkFOV).EndInit();
-            groupBox3.ResumeLayout(false);
+            grpDrawDistance.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)trkDrawDistance).EndInit();
-            groupBox1.ResumeLayout(false);
+            grpClock.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)trkClock).EndInit();
             ((System.ComponentModel.ISupportInitialize)trkActCharCoord).EndInit();
             tabEntities.ResumeLayout(false);
             tabEntities.PerformLayout();
-            groupBox7.ResumeLayout(false);
+            grpFKXEntityScale.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityScale).EndInit();
-            groupBox6.ResumeLayout(false);
-            groupBox6.PerformLayout();
+            grpFKXEntityEditRotation.ResumeLayout(false);
+            grpFKXEntityEditRotation.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityRotationX).EndInit();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityRotationY).EndInit();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityRotationZ).EndInit();
             ((System.ComponentModel.ISupportInitialize)trkFKXEntityCoord).EndInit();
+            tabStrings.ResumeLayout(false);
+            tabControlStrings.ResumeLayout(false);
+            tabPageLocalized.ResumeLayout(false);
+            tabPageLocalized.PerformLayout();
+            tabPageSavefile.ResumeLayout(false);
+            tabPageSavefile.PerformLayout();
             tabWorldStates.ResumeLayout(false);
             tabControlWorldStates.ResumeLayout(false);
             tabAbout.ResumeLayout(false);
@@ -1888,27 +2099,27 @@
         public ComboBox cmbLuckyCharms;
         public Button btnLoadLevelFull;
         public Button btnCoinsSet;
-        public GroupBox groupBox5;
+        public GroupBox grpFlags;
         public CheckBox chkToggleUndetectable;
         public CheckBox chkToggleInvulnerable;
         public CheckBox chkDisableGuardAI;
         public CheckBox chkDisableDeathBarrier;
         public Button btnResetCamera;
-        public GroupBox groupBox4;
+        public GroupBox grpCamera;
         public CheckBox chkDrawDistanceFreeze;
         public Button btnDrawDistanceReset;
         public CheckBox chkFOVFreeze;
         public Button btnFOVReset;
         public GroupBox grpFOV;
         public TrackBar trkFOV;
-        public GroupBox groupBox3;
+        public GroupBox grpDrawDistance;
         public TrackBar trkDrawDistance;
         public ComboBox cmbWarps;
         public CheckBox chkClockFreeze;
         public Button btnClockReset;
-        public GroupBox groupBox1;
+        public GroupBox grpClock;
         public TrackBar trkClock;
-        public Button btnGetGadgets;
+        public Button btnToggleGadgets;
         public CheckBox chkInfiniteGadgetPower;
         public Label lblCoins;
         public TextBox txtCoins;
@@ -1990,9 +2201,9 @@
         public Label label10;
         public Label label11;
         public TrackBar trkFKXEntityScale;
-        public GroupBox groupBox6;
+        public GroupBox grpFKXEntityEditRotation;
         public Button btnFKXEntityScaleReset;
-        public GroupBox groupBox7;
+        public GroupBox grpFKXEntityScale;
         public TabPage tabWorldStates;
         public TabControl tabControlWorldStates;
         public TabPage tabWorldState1;
@@ -2000,20 +2211,36 @@
         public TabPage tabWorldState3;
         public TabPage tabWorldState4;
         public TabPage tabWorldState5;
-        private ToolStrip toolStrip1;
-        private ToolStripDropDownButton toolStripDropDownButton1;
-        private ToolStripMenuItem ToolStripMenuItemActCharCoordsCopyOver;
-        private ToolStripMenuItem ToolStripMenuItemActCharCoordsPasteXYZFromClipboard;
-        private ToolStripMenuItem ToolStripMenuItemActCharCoordsSetXYZ;
-        private TabPage tabAbout;
-        private SplitContainer splitContainer1;
+        public ToolStrip toolStrip1;
+        public ToolStripDropDownButton toolStripDropDownButton1;
+        public ToolStripMenuItem ToolStripMenuItemActCharCoordsCopyXYZToTextboxes;
+        public ToolStripMenuItem ToolStripMenuItemActCharCoordsPasteXYZFromClipboard;
+        public ToolStripMenuItem ToolStripMenuItemActCharCoordsSetXYZ;
+        public TabPage tabAbout;
+        public SplitContainer splitContainer1;
         public Label lblLogs;
-        private TextBox txtAddresses;
+        public TextBox txtAddresses;
         public Label lblAboutTitle;
         public Label label15;
         public CheckBox chkToggleInfDbJump;
         public Button btnReattach;
-        public Label label16;
         public TextBox txtEntitiesSearch;
+        public ComboBox cmbProcesses;
+        public Button btnFKXEntityWarpEntity;
+        public Label lblGadgetL1;
+        public ComboBox cmbGadgetL1;
+        public Label lblGadgetR2;
+        public ComboBox cmbGadgetR2;
+        public Label lblGadgetL2;
+        public ComboBox cmbGadgetL2;
+        public GroupBox grpGadgets;
+        public Button btnToggleThiefMoves;
+        public ToolStripMenuItem ToolStripMenuItemActCharCoordsCopyXYZToClipboard;
+        public TabPage tabStrings;
+        public TabControl tabControlStrings;
+        public TabPage tabPageLocalized;
+        public TabPage tabPageSavefile;
+        public TextBox txtStringsSavefile;
+        public TextBox txtStringsLocalized;
     }
 }

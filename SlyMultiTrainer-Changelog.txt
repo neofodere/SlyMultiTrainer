@@ -1,3 +1,53 @@
+Version 1.0.2 (19/01/2026)
+    - Added a process selector.
+    - Changed .sln file to .slnx.
+    - Added builds:
+        - The Sly Collection (NTSC)
+            - The 3 games will display as "Sly 1 NTSC (PS3)", "Sly 2 NTSC (PS3)" and "Sly 3 NTSC (PS3)".
+        - The Sly Trilogy (PAL)
+            - The 3 games will display as "Sly 1 PAL (PS3)", "Sly 2 PAL (PS3)" and "Sly 3 PAL (PS3)".
+        - The Sly Trilogy (UK)
+            - The 3 games will display as "Sly 1 UK (PS3)", "Sly 2 UK (PS3)" and "Sly 3 UK (PS3)".
+        - Sly Cooper Collection (NTSC-J)
+            - The 3 games will display as "Sly 1 NTSC-J (PS3)", "Sly 2 NTSC-J (PS3)" and "Sly 3 NTSC-J (PS3)".
+    - Added "Strings" tab for Sly 2 & 2:
+        - A tab that contains 2 sub-tabs:
+            - "Localized" tab:
+                - Populated on map change.
+                - These strings are localized on non-english versions of the games.
+                - Each entry represents the string id and the string itself, separated by a "-" symbol.
+                - NOTE: The app internally sorts the list by string id.
+            - "Savefile" tab:
+                - Each entry represents a field in the savefile region.
+                - NOTE: The app internally sorts the list by address.
+    - Entities:
+        - Added button "Warp entity to active character".
+        - The search bar now also searches through the entities' addresses.
+    - DAG:
+        - The "Set state to" function has been changed so that it also writes to the savefile, meaning the change persists between loads.
+        - Added job/checkpoint loading for Version 0 (Sly 2 NTSC March 17 and Sly 2 NTSC E3 Demo).
+        - Added "Load to this entrance location" for Version 0.
+        - Fixed a bug in which loading specific checkpoints (e.g. Sly 3 episode 1 "t1_gauntlet_interior_intro") would forcefully load the map in 3D.
+        - Fixed a bug in which loading a checkpoint would set to 1 the "Focus count" and the "Complete count" of tasks with the state set to "Available".
+            - E.g. Loading the Sly 2 episode 7 "t7_robot_war_intro_ext" task, abandoning the job and then entering the trigger for the "t7_bearcave_intro_ext" task would not play its binocucom dialogue.
+    - Sly 1:
+        - Implemented fly accelerate forward.
+        - NTSC (PS3 PSN):
+            - Fixed a bug that always loaded a map with the english language.
+        - PAL (PS3 PSN):
+            - Fixed a bug that always loaded a map with the english language.
+    - Sly 2:
+        - Added gadget binds editor.
+        - Warping now takes into account if the character's origin is not 0,0,0.
+        - Changed default text encoding from UTF8 to Windows-1252 (fixes the DAG tab when playing in Finnish).
+        - NTSC March 17:
+            - Fixed a crash when the user double left clicked on a task or a cluster (to load a checkpoint/job) in the DAG tab.
+        - NTSC PlayStation Magazine Demo Disc 089:
+            - Removed inaccessible maps from the maps combobox.
+    - Sly 3:
+        - Added gadget binds editor.
+        - Warping now takes into account if the character's origin is not 0,0,0.
+
 Version 1.0.1 (24/11/2025)
     - Updated to .net10.
     - The app is now DPI-aware.
