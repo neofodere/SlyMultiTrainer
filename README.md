@@ -5,6 +5,8 @@
 ## 📖 Description
 Sly Multi Trainer is a trainer for the Sly Cooper original trilogy principally developed by [NiV-L-A](https://github.com/NiV-L-A). It supports the [PCSX2](https://pcsx2.net/) and [RPCS3](https://rpcs3.net/) emulators.
 
+With Sly Multi Trainer, you can experiment with the internal parameters of the Sly Cooper trilogy, understand how things work under the hood, study the games’ inner mechanics, or simply have fun forcing behaviors that would be impossible in the original game without an external tool.
+
 Please, refer to the releases [Changelog](https://github.com/NiV-L-A/SlyMultiTrainer/releases) for information about changes for each version.
 
 >Video showcase
