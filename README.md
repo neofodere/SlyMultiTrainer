@@ -9,7 +9,7 @@ With Sly Multi Trainer, you can experiment with the internal parameters of the S
 
 Please, refer to the [Changelog](https://raw.githubusercontent.com/NiV-L-A/SlyMultiTrainer/refs/heads/master/SlyMultiTrainer-Changelog.txt) for information about changes for each version.
 
->[Download now](https://github.com/NiV-L-A/SlyMultiTrainer/releases)
+>[Download now](https://github.com/NiV-L-A/SlyMultiTrainer/releases/latest)
 
 ### Video showcase
 >https://www.youtube.com/watch?v=nfF_uditjxA
