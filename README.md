@@ -69,7 +69,7 @@ Please, refer to the [Changelog](https://raw.githubusercontent.com/NiV-L-A/SlyMu
 |         Sly 3         |             NTSC (PS3 PSN)              |        1222.1218        | NPUA80665  |      -    |
 |         Sly 3         |              PAL (PS3 PSN)              |        1222.1218        | NPEA00343  |      -    |
 |         Sly 3         |            NTSC-K (PS3 PSN)             |        1222.1218        | NPHA80176  |      -    |
-|  The Sly Collection   |                  NTSC                   |             -            | BCUS98246  |          |
+|  The Sly Collection   |                  NTSC                   |             -            | BCUS98246  |      -    |
 |    The Sly Trilogy    |                   PAL                   |             -            | BCES00968  |      -    |
 |    The Sly Trilogy    |                   UK                    |             -            | BCES00982  |      -    |
 | Sly Cooper Collection |                 NTSC-J                  |             -            | BCJS30061  |      -    |
