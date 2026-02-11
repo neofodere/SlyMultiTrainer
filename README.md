@@ -152,7 +152,7 @@ Please, refer to the releases [Changelog](https://github.com/NiV-L-A/SlyMultiTra
     - Depending on the entity's properties, it might be possible to edit its local transformation (position, rotation and scale)
     - Show world (final) position
     - Warp the active character to the selected entity
-- Sly 2 & 3: Interactive [DAG]() viewer tab
+- Sly 2 & 3: Interactive DAG viewer tab
   
   <img src="SlyMultiTrainer/Img/Sly2_DAG_1.png" width="512" height="auto">
   <img src="SlyMultiTrainer/Img/Sly2_DAG_2.png" width="512" height="auto">
