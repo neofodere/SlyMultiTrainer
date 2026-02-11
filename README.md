@@ -7,9 +7,11 @@ Sly Multi Trainer is a trainer for the Sly Cooper original trilogy principally d
 
 With Sly Multi Trainer, you can experiment with the internal parameters of the Sly Cooper trilogy, understand how things work under the hood, study the games’ inner mechanics, or simply have fun forcing behaviors that would be impossible in the original game without an external tool.
 
-Please, refer to the releases [Changelog](https://github.com/NiV-L-A/SlyMultiTrainer/releases) for information about changes for each version.
+Please, refer to the [Changelog](https://raw.githubusercontent.com/NiV-L-A/SlyMultiTrainer/refs/heads/master/SlyMultiTrainer-Changelog.txt) for information about changes for each version.
 
->Video showcase
+>[Download now](https://github.com/NiV-L-A/SlyMultiTrainer/releases)
+
+### Video showcase
 >https://www.youtube.com/watch?v=nfF_uditjxA
 
 <img src="https://i.ytimg.com/an_webp/nfF_uditjxA/mqdefault_6s.webp?du=3000&sqp=CIDesMwG&rs=AOn4CLCM4-SlkCcjDpDNc74JQ1er5j8dGQ" width="384" height="auto">
