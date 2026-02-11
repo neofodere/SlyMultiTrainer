@@ -60,19 +60,19 @@ Please, refer to the [Changelog](https://raw.githubusercontent.com/NiV-L-A/SlyMu
 |         Sly 3         |              NTSC July 16               |        0716.1854        | SCUS-97464 | 0190CF8B |
 |         Sly 3         |              PAL August 2               |        0802.0136        | SCES-52529 | 8C146034 |
 |         Sly 3         |             PAL September 2             |        0902.1747        | SCES-53409 | 3670B6F9 |
-|         Sly 1         |             NTSC (PS3 PSN)              |        0906.1415        | NPUA80663  |          |
-|         Sly 1         |              PAL (PS3 PSN)              |        1103.1309        | NPEA00341  |          |
-|         Sly 1         |            NTSC-K (PS3 PSN)             |        1129.1638        | NPHA80174  |          |
-|         Sly 2         |             NTSC (PS3 PSN)              |        0524.2241        | NPUA80664  |          |
-|         Sly 2         |              PAL (PS3 PSN)              |        0524.2241        | NPEA00342  |          |
-|         Sly 2         |            NTSC-K (PS3 PSN)             |        0524.2241        | NPHA80175  |          |
-|         Sly 3         |             NTSC (PS3 PSN)              |        1222.1218        | NPUA80665  |          |
-|         Sly 3         |              PAL (PS3 PSN)              |        1222.1218        | NPEA00343  |          |
-|         Sly 3         |            NTSC-K (PS3 PSN)             |        1222.1218        | NPHA80176  |          |
-|  The Sly Collection   |                  NTSC                   |                         | BCUS98246  |          |
-|    The Sly Trilogy    |                   PAL                   |                         | BCES00968  |          |
-|    The Sly Trilogy    |                   UK                    |                         | BCES00982  |          |
-| Sly Cooper Collection |                 NTSC-J                  |                         | BCJS30061  |          |
+|         Sly 1         |             NTSC (PS3 PSN)              |        0906.1415        | NPUA80663  |      -    |
+|         Sly 1         |              PAL (PS3 PSN)              |        1103.1309        | NPEA00341  |      -    |
+|         Sly 1         |            NTSC-K (PS3 PSN)             |        1129.1638        | NPHA80174  |      -    |
+|         Sly 2         |             NTSC (PS3 PSN)              |        0524.2241        | NPUA80664  |      -    |
+|         Sly 2         |              PAL (PS3 PSN)              |        0524.2241        | NPEA00342  |      -    |
+|         Sly 2         |            NTSC-K (PS3 PSN)             |        0524.2241        | NPHA80175  |      -    |
+|         Sly 3         |             NTSC (PS3 PSN)              |        1222.1218        | NPUA80665  |      -    |
+|         Sly 3         |              PAL (PS3 PSN)              |        1222.1218        | NPEA00343  |      -    |
+|         Sly 3         |            NTSC-K (PS3 PSN)             |        1222.1218        | NPHA80176  |      -    |
+|  The Sly Collection   |                  NTSC                   |             -            | BCUS98246  |          |
+|    The Sly Trilogy    |                   PAL                   |             -            | BCES00968  |      -    |
+|    The Sly Trilogy    |                   UK                    |             -            | BCES00982  |      -    |
+| Sly Cooper Collection |                 NTSC-J                  |             -            | BCJS30061  |      -    |
 
 ## 🚀 How to run and use
 >[!IMPORTANT]
