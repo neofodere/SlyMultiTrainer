@@ -14,7 +14,7 @@ Please, refer to the [Changelog](https://raw.githubusercontent.com/NiV-L-A/SlyMu
 ### Video showcase
 >https://www.youtube.com/watch?v=nfF_uditjxA
 
-<img src="https://i.ytimg.com/an_webp/nfF_uditjxA/mqdefault_6s.webp?du=3000&sqp=CIDesMwG&rs=AOn4CLCM4-SlkCcjDpDNc74JQ1er5j8dGQ" width="384" height="auto">
+<a href="https://www.youtube.com/watch?v=nfF_uditjxA"><img src="https://i.ytimg.com/vi/nfF_uditjxA/maxresdefault.jpg" width="256" height="auto"></a>
 
 ## 📸 Screenshots
 
