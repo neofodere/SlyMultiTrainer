@@ -11,7 +11,7 @@ Please, refer to the [Changelog](https://raw.githubusercontent.com/NiV-L-A/SlyMu
 
 >[Download now](https://github.com/NiV-L-A/SlyMultiTrainer/releases/latest)
 
-### Video showcase
+### 📹 Video showcase
 >https://www.youtube.com/watch?v=nfF_uditjxA
 
 <a href="https://www.youtube.com/watch?v=nfF_uditjxA"><img src="https://i.ytimg.com/vi/nfF_uditjxA/maxresdefault.jpg" width="256" height="auto"></a>
